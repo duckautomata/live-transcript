@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { TranscriptContext } from "./providers/TranscriptProvider";
-import { SettingContext } from "./providers/SettingProvider"
+import { SettingContext } from "./providers/SettingProvider";
 
 const MessageType = {
     NEW_LINE: "newline",
@@ -11,16 +11,13 @@ const MessageType = {
     STATUS: "status",
     STATUS_LIVE: "live",
     STATUS_ENDED: "ended",
-    ERROR: "error"
-}
+    ERROR: "error",
+};
 
 export const Websocket = () => {
-    const {wsKey} = useContext(SettingContext)
+    const { wsKey } = useContext(SettingContext);
     const WS_URL = `ws://207.211.182.145/ws/${wsKey}`;
-    const {
-        transcript, 
-        setActiveId, setActiveTitle, setIsLive, setTranscript
-    } = useContext(TranscriptContext)
+    const { transcript, setActiveId, setActiveTitle, setIsLive, setTranscript } = useContext(TranscriptContext);
 
     const { sendMessage, lastMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
         share: false,
@@ -31,43 +28,43 @@ export const Websocket = () => {
 
     useEffect(() => {
         if (lastJsonMessage?.event !== "hardrefresh") {
-            return
+            return;
         }
-        resetState(lastJsonMessage?.clientData)
+        resetState(lastJsonMessage?.clientData);
     }, [lastJsonMessage]);
 
     useEffect(() => {
         if (lastMessage === null) {
             // console.log("lastMessage is null");
-            return
+            return;
         }
         const message = lastMessage.data;
-        if (typeof(message) !== typeof("")) {
+        if (typeof message !== typeof "") {
             // console.log("message is not a string", typeof(message), message);
-            return
+            return;
         }
         if (message.length < 4 || message.substring(0, 3) !== "![]") {
             // console.log("message is too small or doens't have the starting key", message.length, message.substring(0, 3));
-            return
+            return;
         }
-        const parts = message.split("\n")
+        const parts = message.split("\n");
         const event = parts?.[0];
         switch (event) {
             case "![]refresh":
                 // console.log("addNewLine event", parts);
-                addNewLine(parts)
+                addNewLine(parts);
                 break;
             case "![]newstream":
                 // console.log("setNewActiveStream event", parts);
-                setNewActiveStream(parts)
+                setNewActiveStream(parts);
                 break;
             case "![]status":
                 // console.log("setStreamStatus event", parts);
-                setStreamStatus(parts)
+                setStreamStatus(parts);
                 break;
             case "![]error":
                 // console.log("handleError event", parts);
-                handleError(parts)
+                handleError(parts);
                 break;
             default:
                 // console.log("Error: unknown event from relay:", event);
@@ -75,84 +72,82 @@ export const Websocket = () => {
         }
     }, [lastMessage]);
 
-
     // {activeId, activeTitle, isLive, transcript}
     const resetState = (clientData) => {
         if (clientData === null) {
             // console.log("Error: resetState clientData is null");
-            return
+            return;
         }
 
         // console.log("resetState clientData", clientData);
-        
 
-        setActiveId(clientData.activeId ?? "")
-        setActiveTitle(clientData.activeTitle ?? "")
-        setIsLive(clientData.isLive ?? false)
+        setActiveId(clientData.activeId ?? "");
+        setActiveTitle(clientData.activeTitle ?? "");
+        setIsLive(clientData.isLive ?? false);
 
-        let newTranscript = []
+        let newTranscript = [];
         if (clientData.transcript !== null && clientData.transcript !== undefined) {
-            newTranscript = [...clientData.transcript]
+            newTranscript = [...clientData.transcript];
         }
-        setTranscript(newTranscript)
-    }
+        setTranscript(newTranscript);
+    };
 
     // [event, id, ts1, text1, ts2, text2, ..."]
-    // 
+    //
     const addNewLine = (parts) => {
-        if (typeof(parts) !== typeof([]) || parts.length % 2 !== 0) {
+        if (typeof parts !== typeof [] || parts.length % 2 !== 0) {
             // console.log("Error: addNewLine parts is not a valid array:", typeof(parts), parts.length);
-            return
+            return;
         }
 
-        const segments = []
-        for (let i = 2; i < parts.length; i+=2) {
+        const segments = [];
+        for (let i = 2; i < parts.length; i += 2) {
             const newSegment = {
                 timestamp: +parts[i],
-                text: parts[i+1],
-            }
-            segments.push(newSegment)
+                text: parts[i + 1],
+            };
+            segments.push(newSegment);
         }
         const newLine = {
             id: +parts[1],
-            segments: segments
-        }
+            segments: segments,
+        };
 
-        setTranscript([...transcript, newLine])
-    }
+        setTranscript([...transcript, newLine]);
+    };
 
     // [event, activeId, activeTitle, isLive]
     const setNewActiveStream = (parts) => {
-        if (typeof(parts) !== typeof([]) || parts.length !== 4) {
+        if (typeof parts !== typeof [] || parts.length !== 4) {
             // console.log("Error: setNewActiveStream parts is not a valid array:", typeof(parts), parts.length);
-            return
+            return;
         }
 
-        setActiveId(parts[1])
-        setActiveTitle(parts[2])
-        setIsLive(parts[3] === "true")
-        setTranscript([])
-    }
+        setActiveId(parts[1]);
+        setActiveTitle(parts[2]);
+        setIsLive(parts[3] === "true");
+        setTranscript([]);
+    };
 
     // [event, activeId, activeTitle, isLive]
     const setStreamStatus = (parts) => {
-        if (typeof(parts) !== typeof([]) || parts.length !== 4) {
+        if (typeof parts !== typeof [] || parts.length !== 4) {
             // console.log("Error: setStreamStatus parts is not a valid array:", typeof(parts), parts.length);
-            return
+            return;
         }
 
-        setActiveId(parts[1])
-        setActiveTitle(parts[2])
-        setIsLive(parts[3] === "true")
-    }
+        setActiveId(parts[1]);
+        setActiveTitle(parts[2]);
+        setIsLive(parts[3] === "true");
+    };
 
     // [event, errorType, errorMessage]
     const handleError = (parts) => {
-        if (typeof(parts) !== typeof([]) || parts.length !== 3) {
+        if (typeof parts !== typeof [] || parts.length !== 3) {
             // console.log("Error: handleError parts is not a valid array:", typeof(parts), parts.length);
-            return
+            return;
         }
-        
+
         // console.log(`Error from relay. type: '${parts[1]}' message: '${parts[2]}'`);
-    }
+    };
 };

@@ -1,5 +1,5 @@
 import { createContext, useMemo, useState } from "react";
-import * as examples from "./exampleTranscriptData"
+import * as examples from "./exampleTranscriptData";
 
 export const TranscriptContext = createContext({
     activeId: "",
@@ -12,17 +12,16 @@ export const TranscriptContext = createContext({
     setTranscript: () => {},
 });
 
-export const TranscriptProvider = ({children}) => {
+export const TranscriptProvider = ({ children }) => {
     const [activeId, setActiveId] = useState("");
     const [activeTitle, setActiveTitle] = useState("");
     const [isLive, setIsLive] = useState(false);
     const [transcript, setTranscript] = useState([]);
 
-    const transcriptValue = useMemo(() => ({ activeId, activeTitle, isLive, transcript, setActiveId, setActiveTitle, setIsLive, setTranscript }), [activeId, activeTitle, isLive, transcript]);
+    const transcriptValue = useMemo(
+        () => ({ activeId, activeTitle, isLive, transcript, setActiveId, setActiveTitle, setIsLive, setTranscript }),
+        [activeId, activeTitle, isLive, transcript],
+    );
 
-    return (
-        <TranscriptContext.Provider value={transcriptValue}>
-            {children}
-        </TranscriptContext.Provider>
-    )
-}
+    return <TranscriptContext.Provider value={transcriptValue}>{children}</TranscriptContext.Provider>;
+};

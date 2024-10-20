@@ -5,15 +5,15 @@ import Line from "./Line";
 import { SettingContext } from "../providers/SettingProvider";
 
 export default function StreamLogs() {
-    const {activeTitle, isLive, transcript} = useContext(TranscriptContext)
-    const {newAtTop} = useContext(SettingContext)
+    const { activeTitle, isLive, transcript } = useContext(TranscriptContext);
+    const { newAtTop } = useContext(SettingContext);
 
     const liveText = isLive ? "live" : "offline";
-    
-    const mapArray = [...transcript]
+
+    const mapArray = [...transcript];
     if (newAtTop) {
         // Asume transcript is already sorted
-        mapArray.reverse()
+        mapArray.reverse();
     }
 
     return (
@@ -26,7 +26,9 @@ export default function StreamLogs() {
             </Typography>
             <hr />
             <div className="transcript">
-                {mapArray.map((line, index) => <Line key={line?.id} id={line?.id} segments={line?.segments} isEven={index % 2 === 0}/>)}
+                {mapArray.map((line, index) => (
+                    <Line key={line?.id} id={line?.id} segments={line?.segments} isEven={index % 2 === 0} />
+                ))}
             </div>
         </>
     );

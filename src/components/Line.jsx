@@ -19,7 +19,7 @@ const TimestampTheme = styled("span")(({ theme }) => ({
 
 export default function Line({ id, segments }) {
     const theme = useTheme();
-    const {setOpen, setTimestamp} = useContext(TagOffsetPopupContext)
+    const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
     const unixToLocal = (unix) => {
         // Convert to milliseconds
         const date = new Date(unix * 1000);
@@ -31,9 +31,9 @@ export default function Line({ id, segments }) {
     };
 
     const onClick = (timestamp) => {
-        setTimestamp(timestamp)
-        setOpen(true)
-    }
+        setTimestamp(timestamp);
+        setOpen(true);
+    };
 
     const firstTime = segments?.[0]?.timestamp ?? 0;
 
@@ -43,7 +43,7 @@ export default function Line({ id, segments }) {
             <TimestampTheme theme={theme}>{unixToLocal(firstTime)}</TimestampTheme>]{" "}
             {segments.map((segment, index) => (
                 <Fragment key={segment?.timestamp}>
-                    <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onClick}/>
+                    <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onClick} />
                     {index < segments.length - 1 && " "}
                 </Fragment>
             ))}

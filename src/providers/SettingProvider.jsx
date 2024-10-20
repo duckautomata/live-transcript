@@ -32,36 +32,45 @@ export const SettingContext = createContext({
     setDefaultOffset: () => {},
 });
 
-export const SettingProvider = ({children}) => {
+export const SettingProvider = ({ children }) => {
     const [theme, setTheme] = useState(getCookie("theme", "system"));
     const [newAtTop, setNewAtTop] = useState(getCookie("newAtTop", true));
     const [enableTagHelper, setEnableTagHelper] = useState(getCookie("enableTagHelper", false));
     const [wsKey, setWsKey] = useState(getCookie("wsKey", "doki"));
     const [defaultOffset, setDefaultOffset] = useState(getCookie("defaultOffset", "-20"));
 
+    const settingValue = useMemo(
+        () => ({
+            theme,
+            newAtTop,
+            enableTagHelper,
+            wsKey,
+            defaultOffset,
+            setTheme,
+            setNewAtTop,
+            setEnableTagHelper,
+            setWsKey,
+            setDefaultOffset,
+        }),
+        [theme, newAtTop, enableTagHelper, wsKey, defaultOffset],
+    );
 
-    const settingValue = useMemo(() => ({ theme, newAtTop, enableTagHelper, wsKey, defaultOffset, setTheme, setNewAtTop, setEnableTagHelper, setWsKey, setDefaultOffset }), [theme, newAtTop, enableTagHelper, wsKey, defaultOffset]);
-    
     // Saves current settings to cookie when any value changes
     useEffect(() => {
-        setCookie("theme", theme)
+        setCookie("theme", theme);
     }, [theme]);
     useEffect(() => {
-        setCookie("newAtTop", newAtTop)
+        setCookie("newAtTop", newAtTop);
     }, [newAtTop]);
     useEffect(() => {
-        setCookie("enableTagHelper", enableTagHelper)
+        setCookie("enableTagHelper", enableTagHelper);
     }, [enableTagHelper]);
     useEffect(() => {
-        setCookie("wsKey", wsKey)
+        setCookie("wsKey", wsKey);
     }, [wsKey]);
     useEffect(() => {
-        setCookie("defaultOffset", defaultOffset)
+        setCookie("defaultOffset", defaultOffset);
     }, [defaultOffset]);
 
-    return (
-        <SettingContext.Provider value={settingValue}>
-            {children}
-        </SettingContext.Provider>
-    )
-}
+    return <SettingContext.Provider value={settingValue}>{children}</SettingContext.Provider>;
+};

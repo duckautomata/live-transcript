@@ -82,10 +82,7 @@ const TagOffsetPopup = ({ open, setOpen, timestamp }) => {
                 <Button onClick={handleCopyToClipboard} color="primary" disabled={command === null}>
                     Copy Command
                 </Button>
-                <Button
-                    onClick={handleClose}
-                    color="primary"
-                >
+                <Button onClick={handleClose} color="primary">
                     Close
                 </Button>
             </DialogActions>

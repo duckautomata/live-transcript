@@ -1,31 +1,31 @@
 const isInt = (num) => {
-    return num !== "" && num !== null && Number.isInteger(+num)
-}
+    return num !== "" && num !== null && Number.isInteger(+num);
+};
 
 export const snowflakeToUnix = (snowflake) => {
     if (!isInt(snowflake)) {
-		throw Error("snowflake is not an int")
-	}
+        throw Error("snowflake is not an int");
+    }
 
-	if (snowflake < 4194304) {
-		throw Error("Snowflake is too small")
+    if (snowflake < 4194304) {
+        throw Error("Snowflake is too small");
     }
 
     const discordEpochSec = 1420070400;
     // https://discord.com/developers/docs/reference#snowflakes
 
     // Use BigInt to prevent js from using scientific notation
-    const milliseconds = BigInt(snowflake) >> 22n
+    const milliseconds = BigInt(snowflake) >> 22n;
 
     // Verify that the number is still within the safe range
     if (milliseconds > Number.MAX_SAFE_INTEGER) {
-        throw Error("Number is outside the safe int range")
+        throw Error("Number is outside the safe int range");
     }
 
-    const seconds = Number(milliseconds / BigInt(1000))
+    const seconds = Number(milliseconds / BigInt(1000));
 
     return seconds + discordEpochSec;
-}
+};
 
 /**
  * The return value is how far off (in seconds) your tag is from when it happened on stream.
@@ -37,19 +37,19 @@ export const snowflakeToUnix = (snowflake) => {
  */
 export const calculateOffset = (toUnix, fromUnix, defaultOffset) => {
     if (!isInt(toUnix) || !isInt(fromUnix) || !isInt(defaultOffset)) {
-		throw Error("parameters need to be an int")
-	}
+        throw Error("parameters need to be an int");
+    }
 
-    const offset = (+fromUnix + +defaultOffset) - +toUnix
-    return offset
-}
+    const offset = +fromUnix + +defaultOffset - +toUnix;
+    return offset;
+};
 
 export const offsetToCommand = (offset) => {
     if (!isInt(offset)) {
-		throw Error("offset need to be an int")
-	}
+        throw Error("offset need to be an int");
+    }
 
-    const op = +offset > 0 ? "-" : ""
+    const op = +offset > 0 ? "-" : "";
 
-    return `!adjust ${op}${Math.abs(+offset)}`
-}
+    return `!adjust ${op}${Math.abs(+offset)}`;
+};
