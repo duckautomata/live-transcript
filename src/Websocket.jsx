@@ -16,7 +16,7 @@ const MessageType = {
 
 export const Websocket = () => {
     const { wsKey } = useContext(SettingContext);
-    const WS_URL = `ws://207.211.182.145/ws/${wsKey}`;
+    const WS_URL = `ws://207.211.184.177/ws/${wsKey}`;
     const { transcript, setActiveId, setActiveTitle, setIsLive, setTranscript } = useContext(TranscriptContext);
 
     const { sendMessage, lastMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
