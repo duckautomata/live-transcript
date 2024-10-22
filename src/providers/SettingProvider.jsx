@@ -1,8 +1,8 @@
 import { createContext, useEffect, useMemo, useState } from "react";
-import cookie from "cookiejs";
+import Cookies from "js-cookie";
 
 const getCookie = (key, alt) => {
-    const value = cookie.get(key);
+    const value = Cookies.get(key);
 
     if (!value) {
         return alt;
@@ -16,7 +16,7 @@ const getCookie = (key, alt) => {
 };
 
 const setCookie = (key, value) => {
-    cookie.set(key, value);
+    Cookies.set(key, value, { expires: 365 * 10, sameSite: "strict" });
 };
 
 export const SettingContext = createContext({

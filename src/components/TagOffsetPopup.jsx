@@ -73,15 +73,15 @@ const TagOffsetPopup = ({ open, setOpen, timestamp }) => {
                 {command !== null && (
                     <>
                         <Typography variant="body1" marginTop="16px">
-                            Command: <span style={{ fontFamily: "monospace" }}>{command}</span>
+                            <span style={{ fontFamily: "monospace" }}>{command}</span>
                         </Typography>
                     </>
                 )}
             </DialogContent>
             <DialogActions sx={{ justifyContent: "space-between" }}>
-                <Button onClick={handleCopyToClipboard} color="primary" disabled={command === null}>
+                {/* <Button onClick={handleCopyToClipboard} color="primary" disabled={command === null}>
                     Copy Command
-                </Button>
+                </Button> */}
                 <Button onClick={handleClose} color="primary">
                     Close
                 </Button>
