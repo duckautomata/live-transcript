@@ -79,9 +79,9 @@ const TagOffsetPopup = ({ open, setOpen, timestamp }) => {
                 )}
             </DialogContent>
             <DialogActions sx={{ justifyContent: "space-between" }}>
-                {/* <Button onClick={handleCopyToClipboard} color="primary" disabled={command === null}>
+                <Button onClick={handleCopyToClipboard} color="primary" disabled={command === null}>
                     Copy Command
-                </Button> */}
+                </Button>
                 <Button onClick={handleClose} color="primary">
                     Close
                 </Button>
