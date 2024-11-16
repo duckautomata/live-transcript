@@ -25,11 +25,13 @@ export const SettingContext = createContext({
     enableTagHelper: false,
     wsKey: "",
     defaultOffset: "-20",
+    page: "",
     setTheme: () => {},
     setNewAtTop: () => {},
     setEnableTagHelper: () => {},
     setWsKey: () => {},
     setDefaultOffset: () => {},
+    setPage: () => {},
 });
 
 export const SettingProvider = ({ children }) => {
@@ -38,6 +40,7 @@ export const SettingProvider = ({ children }) => {
     const [enableTagHelper, setEnableTagHelper] = useState(getCookie("enableTagHelper", false));
     const [wsKey, setWsKey] = useState(getCookie("wsKey", "doki"));
     const [defaultOffset, setDefaultOffset] = useState(getCookie("defaultOffset", "-20"));
+    const [page, setPage] = useState(getCookie("page", "transcript"));
 
     const settingValue = useMemo(
         () => ({
@@ -46,13 +49,15 @@ export const SettingProvider = ({ children }) => {
             enableTagHelper,
             wsKey,
             defaultOffset,
+            page,
             setTheme,
             setNewAtTop,
             setEnableTagHelper,
             setWsKey,
             setDefaultOffset,
+            setPage,
         }),
-        [theme, newAtTop, enableTagHelper, wsKey, defaultOffset],
+        [theme, newAtTop, enableTagHelper, wsKey, defaultOffset, page],
     );
 
     // Saves current settings to cookie when any value changes
@@ -71,6 +76,9 @@ export const SettingProvider = ({ children }) => {
     useEffect(() => {
         setCookie("defaultOffset", defaultOffset);
     }, [defaultOffset]);
+    useEffect(() => {
+        setCookie("page", page);
+    }, [page]);
 
     return <SettingContext.Provider value={settingValue}>{children}</SettingContext.Provider>;
 };

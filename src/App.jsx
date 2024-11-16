@@ -9,9 +9,10 @@ import { SettingContext } from "./providers/SettingProvider";
 import StreamLogs from "./components/StreamLogs";
 import Header from "./components/Header";
 import { TagOffsetPopupProvider } from "./providers/TagOffsetPopupProvider";
+import StreamWordCount from "./components/StreamWordCount";
 
 function App() {
-    const { theme } = useContext(SettingContext);
+    const { theme, page } = useContext(SettingContext);
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
     let colorTheme = prefersDarkMode ? darkTheme : lightTheme;
     if (theme === "light") {
@@ -28,7 +29,8 @@ function App() {
                     <Websocket />
                     <Header />
                     <div style={{ marginTop: 40 }} />
-                    <StreamLogs />
+                    {page === "transcript" && <StreamLogs />}
+                    {page === "wordCount" && <StreamWordCount />}
                 </TagOffsetPopupProvider>
             </ThemeProvider>
         </TranscriptProvider>

@@ -16,7 +16,7 @@ const MessageType = {
 
 export const Websocket = () => {
     const { wsKey } = useContext(SettingContext);
-    const WS_URL = `wss://www.dokiscripts.com/ws/${wsKey}`;
+    const WS_URL = `wss://dokiscripts.com/ws/doki`;
     const { transcript, setActiveId, setActiveTitle, setIsLive, setTranscript } = useContext(TranscriptContext);
 
     const { sendMessage, lastMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
@@ -44,7 +44,7 @@ export const Websocket = () => {
             return;
         }
         if (message.length < 4 || message.substring(0, 3) !== "![]") {
-            // console.log("message is too small or doens't have the starting key", message.length, message.substring(0, 3));
+            // console.log("message is too small or doesn't have the starting key", message.length, message.substring(0, 3));
             return;
         }
         const parts = message.split("\n");

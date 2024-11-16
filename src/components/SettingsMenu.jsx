@@ -65,7 +65,6 @@ const SettingsMenu = ({ anchorEl, handleSettingsClose }) => {
                         }}
                     >
                         <MenuItem value="doki">Doki</MenuItem>
-                        <MenuItem value="mint">Mint</MenuItem>
                     </Select>
                 </FormControl>
             </MenuItem>

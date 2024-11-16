@@ -4,6 +4,7 @@ import Segment from "./Segment";
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { TagOffsetPopupContext } from "../providers/TagOffsetPopupProvider";
+import { unixToLocal } from "../logic/dateTime";
 
 const IdTheme = styled("span")(({ theme }) => ({
     "&": {
@@ -20,15 +21,6 @@ const TimestampTheme = styled("span")(({ theme }) => ({
 export default function Line({ id, segments }) {
     const theme = useTheme();
     const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
-    const unixToLocal = (unix) => {
-        // Convert to milliseconds
-        const date = new Date(unix * 1000);
-
-        // Convert to local time string
-        const localTime = date.toLocaleTimeString();
-
-        return localTime;
-    };
 
     const onClick = (timestamp) => {
         setTimestamp(timestamp);

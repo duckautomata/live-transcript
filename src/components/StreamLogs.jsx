@@ -12,7 +12,7 @@ export default function StreamLogs() {
 
     const mapArray = [...transcript];
     if (newAtTop) {
-        // Asume transcript is already sorted
+        // Assume transcript is already sorted
         mapArray.reverse();
     }
 
