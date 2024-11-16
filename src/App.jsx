@@ -10,6 +10,7 @@ import StreamLogs from "./components/StreamLogs";
 import Header from "./components/Header";
 import { TagOffsetPopupProvider } from "./providers/TagOffsetPopupProvider";
 import StreamWordCount from "./components/StreamWordCount";
+import Maintenance from "./components/Maintenance";
 
 function App() {
     const { theme, page } = useContext(SettingContext);
@@ -26,11 +27,17 @@ function App() {
             <ThemeProvider theme={colorTheme}>
                 <CssBaseline />
                 <TagOffsetPopupProvider>
-                    <Websocket />
-                    <Header />
-                    <div style={{ marginTop: 40 }} />
-                    {page === "transcript" && <StreamLogs />}
-                    {page === "wordCount" && <StreamWordCount />}
+                    {window.maintenance ? (
+                        <Maintenance />
+                    ) : (
+                        <>
+                            <Websocket />
+                            <Header />
+                            <div style={{ marginTop: 40 }} />
+                            {page === "transcript" && <StreamLogs />}
+                            {page === "wordCount" && <StreamWordCount />}
+                        </>
+                    )}
                 </TagOffsetPopupProvider>
             </ThemeProvider>
         </TranscriptProvider>
