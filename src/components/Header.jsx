@@ -3,10 +3,12 @@ import { AppBar, Toolbar, Typography, IconButton, ButtonGroup, Button } from "@m
 import { GitHub, QuestionMark, Settings } from "@mui/icons-material";
 import { SettingContext } from "../providers/SettingProvider";
 import SettingsMenu from "./SettingsMenu";
+import HelpPopup from "./HelpPopup";
 
-const Header = () => {
+export default function Header() {
+    const { wsKey } = useContext(SettingContext);
     const [anchorEl, setAnchorEl] = useState(null);
-    const { wsKey, page, setPage } = useContext(SettingContext);
+    const [helpOpen, setHelpOpen] = useState(false);
 
     const handleSettingsOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -22,15 +24,7 @@ const Header = () => {
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1, textAlign: "left" }}>
                     {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}'s Live Transcript
                 </Typography>
-                <ButtonGroup variant="contained" sx={{ marginLeft: 2 }}>
-                    <Button color={page === "wordCount" ? "info" : "secondary"} onClick={() => setPage("wordCount")}>
-                        Word Count
-                    </Button>
-                    <Button color={page === "transcript" ? "info" : "secondary"} onClick={() => setPage("transcript")}>
-                        Transcript
-                    </Button>
-                </ButtonGroup>
-                <IconButton color="inherit" title="help">
+                <IconButton color="inherit" title="help" onClick={() => setHelpOpen(true)}>
                     <QuestionMark />
                 </IconButton>
                 <IconButton
@@ -45,9 +39,8 @@ const Header = () => {
                     <Settings />
                 </IconButton>
                 <SettingsMenu anchorEl={anchorEl} handleSettingsClose={handleSettingsClose} />
+                <HelpPopup open={helpOpen} setOpen={setHelpOpen} />
             </Toolbar>
         </AppBar>
     );
-};
-
-export default Header;
+}

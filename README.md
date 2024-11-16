@@ -39,7 +39,7 @@ There are currently 4 settings. All settings are stored in a cookie and persist 
 -   Enable Tag Helper
     > This enables a feature to help time a tag with the text that appears in the transcript. This will be explained further in [Tagging Feature](#tagging-feature).
 -   Streamer
-    > This denotes what transcript to pull in. Currently only supports Doki and Mint.
+    > This denotes what transcript to pull in. Currently only supports Doki.
 
 ### Fix out-of-sync transcript
 

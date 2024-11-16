@@ -11,6 +11,7 @@ import Header from "./components/Header";
 import { TagOffsetPopupProvider } from "./providers/TagOffsetPopupProvider";
 import StreamWordCount from "./components/StreamWordCount";
 import Maintenance from "./components/Maintenance";
+import Footer from "./components/Footer";
 
 function App() {
     const { theme, page } = useContext(SettingContext);
@@ -36,6 +37,8 @@ function App() {
                             <div style={{ marginTop: 40 }} />
                             {page === "transcript" && <StreamLogs />}
                             {page === "wordCount" && <StreamWordCount />}
+                            <div style={{ marginTop: 40 }} />
+                            <Footer />
                         </>
                     )}
                 </TagOffsetPopupProvider>
