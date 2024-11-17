@@ -10,7 +10,7 @@ export const countWord = (text, word) => {
         return 0;
     }
 
-    return text.split(word.toLowerCase()).length - 1;
+    return text.toLowerCase().split(word.toLowerCase()).length - 1;
 };
 
 export default function StreamWordCount() {
