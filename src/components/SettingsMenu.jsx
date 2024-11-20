@@ -3,8 +3,18 @@ import { Menu, MenuItem, FormControlLabel, Switch, Select, FormControl, InputLab
 import { SettingContext } from "../providers/SettingProvider";
 
 const SettingsMenu = ({ anchorEl, handleSettingsClose }) => {
-    const { theme, newAtTop, enableTagHelper, wsKey, setTheme, setNewAtTop, setEnableTagHelper, setWsKey } =
-        useContext(SettingContext);
+    const {
+        theme,
+        newAtTop,
+        enableTagHelper,
+        wsKey,
+        audioDownloader,
+        setTheme,
+        setNewAtTop,
+        setEnableTagHelper,
+        setWsKey,
+        setAudioDownloader,
+    } = useContext(SettingContext);
 
     return (
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleSettingsClose}>
@@ -51,6 +61,20 @@ const SettingsMenu = ({ anchorEl, handleSettingsClose }) => {
                         />
                     }
                     label="Enable Tag Helper"
+                />
+            </MenuItem>
+            <MenuItem>
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={audioDownloader}
+                            onChange={(e) => {
+                                setAudioDownloader(e.target.checked);
+                            }}
+                            name="audioDownloader"
+                        />
+                    }
+                    label="Beta: Audio Downloader"
                 />
             </MenuItem>
             <MenuItem>

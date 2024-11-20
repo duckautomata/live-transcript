@@ -6,7 +6,7 @@ import { SettingContext } from "../providers/SettingProvider";
 
 export default function StreamLogs() {
     const { activeTitle, isLive, transcript } = useContext(TranscriptContext);
-    const { newAtTop } = useContext(SettingContext);
+    const { newAtTop, wsKey } = useContext(SettingContext);
 
     const liveText = isLive ? "live" : "offline";
 
@@ -27,7 +27,13 @@ export default function StreamLogs() {
             <hr />
             <div className="transcript">
                 {mapArray.map((line, index) => (
-                    <Line key={line?.id} id={line?.id} segments={line?.segments} isEven={index % 2 === 0} />
+                    <Line
+                        key={line?.id}
+                        id={line?.id}
+                        segments={line?.segments}
+                        isEven={index % 2 === 0}
+                        audioUrl={`https://dokiscripts.com/${wsKey}/audio?id=${line?.id}`}
+                    />
                 ))}
             </div>
         </>

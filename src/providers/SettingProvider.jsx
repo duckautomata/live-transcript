@@ -26,12 +26,14 @@ export const SettingContext = createContext({
     wsKey: "",
     defaultOffset: "-20",
     page: "",
+    audioDownloader: false,
     setTheme: () => {},
     setNewAtTop: () => {},
     setEnableTagHelper: () => {},
     setWsKey: () => {},
     setDefaultOffset: () => {},
     setPage: () => {},
+    setAudioDownloader: () => {},
 });
 
 export const SettingProvider = ({ children }) => {
@@ -41,6 +43,7 @@ export const SettingProvider = ({ children }) => {
     const [wsKey, setWsKey] = useState(getCookie("wsKey", "doki"));
     const [defaultOffset, setDefaultOffset] = useState(getCookie("defaultOffset", "-20"));
     const [page, setPage] = useState(getCookie("page", "transcript"));
+    const [audioDownloader, setAudioDownloader] = useState(getCookie("audioDownloader", false));
 
     const settingValue = useMemo(
         () => ({
@@ -50,14 +53,16 @@ export const SettingProvider = ({ children }) => {
             wsKey,
             defaultOffset,
             page,
+            audioDownloader,
             setTheme,
             setNewAtTop,
             setEnableTagHelper,
             setWsKey,
             setDefaultOffset,
             setPage,
+            setAudioDownloader,
         }),
-        [theme, newAtTop, enableTagHelper, wsKey, defaultOffset, page],
+        [theme, newAtTop, enableTagHelper, wsKey, defaultOffset, page, audioDownloader],
     );
 
     // Saves current settings to cookie when any value changes
@@ -79,6 +84,9 @@ export const SettingProvider = ({ children }) => {
     useEffect(() => {
         setCookie("page", page);
     }, [page]);
+    useEffect(() => {
+        setCookie("audioDownloader", audioDownloader);
+    }, [audioDownloader]);
 
     return <SettingContext.Provider value={settingValue}>{children}</SettingContext.Provider>;
 };

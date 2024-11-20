@@ -7,6 +7,7 @@ export const darkTheme = createTheme({
         mode: "dark",
         id: {
             main: red.A400,
+            background: "#FFFFFF",
         },
         timestamp: {
             main: "#8093E0",
@@ -33,6 +34,7 @@ export const lightTheme = createTheme({
         mode: "light",
         id: {
             main: red.A400,
+            background: "#000000",
         },
         timestamp: {
             main: "#304BC5",
