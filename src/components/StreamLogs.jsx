@@ -26,6 +26,7 @@ export default function StreamLogs() {
             </Typography>
             <hr />
             <div className="transcript">
+                {mapArray.length === 0 && <Typography>No transcripts at this time.</Typography>}
                 {mapArray.map((line, index) => (
                     <Line
                         key={line?.id}

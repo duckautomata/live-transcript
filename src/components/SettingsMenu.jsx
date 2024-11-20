@@ -89,6 +89,7 @@ const SettingsMenu = ({ anchorEl, handleSettingsClose }) => {
                         }}
                     >
                         <MenuItem value="doki">Doki</MenuItem>
+                        {import.meta.env.DEV && <MenuItem value="test">Test</MenuItem>}
                     </Select>
                 </FormControl>
             </MenuItem>

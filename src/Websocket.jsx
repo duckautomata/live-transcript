@@ -16,7 +16,7 @@ const MessageType = {
 
 export const Websocket = () => {
     const { wsKey } = useContext(SettingContext);
-    const WS_URL = `wss://dokiscripts.com/ws/doki`;
+    const WS_URL = `wss://dokiscripts.com/ws/${wsKey}`;
     const { transcript, setActiveId, setActiveTitle, setIsLive, setTranscript } = useContext(TranscriptContext);
 
     const { sendMessage, lastMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
