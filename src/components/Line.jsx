@@ -52,7 +52,7 @@ export default function Line({ id, segments, audioUrl }) {
             )}
             : [<TimestampTheme theme={theme}>{unixToLocal(firstTime)}</TimestampTheme>]{" "}
             {segments.map((segment, index) => (
-                <Fragment key={segment?.timestamp}>
+                <Fragment key={segment?.timestamp + segment?.text}>
                     <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onClick} />
                     {index < segments.length - 1 && " "}
                 </Fragment>
