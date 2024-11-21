@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { countWord } from "./StreamWordCount";
+import { countWord } from "./wordCount";
 
 describe("countWord", () => {
     test.each([

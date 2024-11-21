@@ -1,4 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { createContext, useMemo, useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import * as examples from "./exampleTranscriptData";
 
 export const TranscriptContext = createContext({

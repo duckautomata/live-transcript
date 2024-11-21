@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { createContext, useMemo, useState } from "react";
 import TagOffsetPopup from "../components/TagOffsetPopup";
 

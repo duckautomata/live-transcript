@@ -2,7 +2,6 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
-    Box,
     Button,
     Dialog,
     DialogActions,
@@ -225,8 +224,8 @@ export default function HelpPopup({ open, setOpen }) {
                                 </Typography>
                                 <img src={messageId_img} />
                                 <Typography variant="body1" gutterBottom>
-                                    The default offset is whatever your server's tagger bot is set to. For DPS, it is
-                                    -20. This value is also stored in the cookie, so you will only have to change it
+                                    The default offset is whatever your server&#39;s tagger bot is set to. For DPS, it
+                                    is -20. This value is also stored in the cookie, so you will only have to change it
                                     once.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>

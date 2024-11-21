@@ -1,27 +1,18 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
+/* eslint-disable react-hooks/exhaustive-deps */
+
+import { useContext, useEffect } from "react";
+import useWebSocket from "react-use-websocket";
 import { TranscriptContext } from "./providers/TranscriptProvider";
 import { SettingContext } from "./providers/SettingProvider";
-
-const MessageType = {
-    NEW_LINE: "newline",
-    CLEAR_ALL: "clearall",
-    RESET: "reset",
-    MISSING: "missing",
-    STATUS: "status",
-    STATUS_LIVE: "live",
-    STATUS_ENDED: "ended",
-    ERROR: "error",
-};
 
 export const Websocket = () => {
     const { wsKey } = useContext(SettingContext);
     const WS_URL = `wss://dokiscripts.com/ws/${wsKey}`;
     const { transcript, setActiveId, setActiveTitle, setIsLive, setTranscript } = useContext(TranscriptContext);
 
-    const { sendMessage, lastMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    const { lastMessage, lastJsonMessage } = useWebSocket(WS_URL, {
         share: false,
-        shouldReconnect: (closeEvent) => true,
+        shouldReconnect: () => true,
         reconnectAttempts: 10,
         reconnectInterval: 3000,
     });

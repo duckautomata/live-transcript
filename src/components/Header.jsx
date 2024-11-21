@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { AppBar, Toolbar, Typography, IconButton, ButtonGroup, Button } from "@mui/material";
+import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
 import { GitHub, QuestionMark, Settings } from "@mui/icons-material";
 import { SettingContext } from "../providers/SettingProvider";
 import SettingsMenu from "./SettingsMenu";
@@ -22,7 +22,7 @@ export default function Header() {
         <AppBar position="fixed">
             <Toolbar>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1, textAlign: "left" }}>
-                    {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}'s Live Transcript
+                    {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}&#39;s Live Transcript
                 </Typography>
                 <IconButton color="inherit" title="help" onClick={() => setHelpOpen(true)}>
                     <QuestionMark />

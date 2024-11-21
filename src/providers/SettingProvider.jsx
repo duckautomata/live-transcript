@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { createContext, useEffect, useMemo, useState } from "react";
 import Cookies from "js-cookie";
 

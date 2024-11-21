@@ -1,3 +1,5 @@
+/* eslint-disable no-loss-of-precision */
+
 import { describe, expect, test } from "vitest";
 import { calculateOffset, offsetToCommand, snowflakeToUnix } from "./timestamp";
 

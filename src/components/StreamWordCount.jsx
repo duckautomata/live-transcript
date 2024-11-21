@@ -4,14 +4,7 @@ import { TranscriptContext } from "../providers/TranscriptProvider";
 import { LineChart } from "@mui/x-charts";
 import { unixToLocal } from "../logic/dateTime";
 import "./StreamWordCount.css";
-
-export const countWord = (text, word) => {
-    if (text === undefined || typeof text !== "string" || word.length === 0) {
-        return 0;
-    }
-
-    return text.toLowerCase().split(word.toLowerCase()).length - 1;
-};
+import { countWord } from "../logic/wordCount";
 
 export default function StreamWordCount() {
     const { transcript } = useContext(TranscriptContext);

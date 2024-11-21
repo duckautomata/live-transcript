@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AppBar, Toolbar, ButtonGroup, Button, Box, Container, Typography, Link } from "@mui/material";
+import { AppBar, Toolbar, ButtonGroup, Button, Container } from "@mui/material";
 import { SettingContext } from "../providers/SettingProvider";
 
 export default function Footer() {

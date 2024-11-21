@@ -18,7 +18,9 @@ const TagOffsetPopup = ({ open, setOpen, timestamp }) => {
             snowflakeUnix = snowflakeToUnix(event.target.value);
             tagOffset = calculateOffset(timestamp, snowflakeUnix, tempDefaultOffset);
             tagOffsetCommand = offsetToCommand(tagOffset);
-        } catch (error) {}
+        } catch {
+            tagOffsetCommand = null;
+        }
         setCommand(tagOffsetCommand);
     };
 
@@ -31,7 +33,9 @@ const TagOffsetPopup = ({ open, setOpen, timestamp }) => {
             snowflakeUnix = snowflakeToUnix(snowflakeId);
             tagOffset = calculateOffset(timestamp, snowflakeUnix, event.target.value);
             tagOffsetCommand = offsetToCommand(tagOffset);
-        } catch (error) {}
+        } catch {
+            tagOffsetCommand = null;
+        }
         setCommand(tagOffsetCommand);
     };
 

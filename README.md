@@ -117,8 +117,7 @@ You can also change the initial values for the other variables to whatever you w
 ### Contributing
 
 1. create a branch and put your code onto it.
-2. Run `npm run test` and `npm run format` and make sure everything is all good.
-    > `npm run lint` is not working right now.
+2. Run `npm run test`, `npm run format`, `npm run lint` and make sure everything is all good.
 3. Push, raise pr, I'll approve.
 
 ### Contrubiting ideas
