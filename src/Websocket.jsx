@@ -111,7 +111,7 @@ export const Websocket = () => {
 
     // [event, activeId, activeTitle, startTime, isLive]
     const setNewActiveStream = (parts) => {
-        if (typeof parts !== typeof [] || parts.length !== 4) {
+        if (typeof parts !== typeof [] || parts.length !== 5) {
             // console.log("Error: setNewActiveStream parts is not a valid array:", typeof(parts), parts.length);
             return;
         }
