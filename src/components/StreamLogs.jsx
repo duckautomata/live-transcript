@@ -5,16 +5,16 @@ import Line from "./Line";
 import { SettingContext } from "../providers/SettingProvider";
 
 export default function StreamLogs() {
-    const { activeTitle, isLive, transcript } = useContext(TranscriptContext);
-    const { newAtTop, wsKey } = useContext(SettingContext);
+    const { activeTitle, startTime, isLive, transcript } = useContext(TranscriptContext);
+    const { newAtTop, wsKey, audioDownloader, timeFormat } = useContext(SettingContext);
     const [page, setPage] = useState(1);
 
     const liveText = isLive ? "live" : "offline";
 
     const mapArray = [...transcript];
 
-    // 300 lines at 8 seconds per line is about 40 mins per page
-    const linesPerPage = 300;
+    // 450 lines at 8 seconds per line is about 1 hour per page
+    const linesPerPage = 450;
     const totalPages = Math.ceil(mapArray.length / linesPerPage);
     const actualPage = Math.max(Math.min(totalPages, page), 1);
 
@@ -63,12 +63,14 @@ export default function StreamLogs() {
                                 showLastButton
                             />
                         </div>
-                        {displayedLines.slice(0).map((line, index) => (
+                        {displayedLines.slice(0).map((line) => (
                             <Line
                                 key={line?.id}
                                 id={line?.id}
                                 segments={line?.segments}
-                                isEven={index % 2 === 0}
+                                audioDownloader={audioDownloader}
+                                timeFormat={timeFormat}
+                                startTime={startTime}
                                 audioUrl={`https://dokiscripts.com/${wsKey}/audio?id=${line?.id}`}
                             />
                         ))}

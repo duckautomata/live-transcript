@@ -5,11 +5,13 @@ import { SettingContext } from "../providers/SettingProvider";
 const SettingsMenu = ({ anchorEl, handleSettingsClose }) => {
     const {
         theme,
+        timeFormat,
         newAtTop,
         enableTagHelper,
         wsKey,
         audioDownloader,
         setTheme,
+        setTimeFormat,
         setNewAtTop,
         setEnableTagHelper,
         setWsKey,
@@ -32,6 +34,23 @@ const SettingsMenu = ({ anchorEl, handleSettingsClose }) => {
                         <MenuItem value="light">Light</MenuItem>
                         <MenuItem value="system">System</MenuItem>
                         <MenuItem value="dark">Dark</MenuItem>
+                    </Select>
+                </FormControl>
+            </MenuItem>
+            <MenuItem>
+                <FormControl fullWidth variant="filled">
+                    <InputLabel id="theme-select-label">Time Format</InputLabel>
+                    <Select
+                        labelId="theme-select-label"
+                        name="timeFormat"
+                        value={timeFormat}
+                        onChange={(e) => {
+                            setTimeFormat(e.target.value);
+                        }}
+                    >
+                        <MenuItem value="relative">Relative</MenuItem>
+                        <MenuItem value="local">Local</MenuItem>
+                        <MenuItem value="UTC">UTC</MenuItem>
                     </Select>
                 </FormControl>
             </MenuItem>

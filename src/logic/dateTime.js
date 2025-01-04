@@ -7,3 +7,33 @@ export const unixToLocal = (unix) => {
 
     return localTime;
 };
+
+export const unixToRelative = (unix, startTime) => {
+    if (startTime <= 0) {
+        return "00:00:00";
+    }
+
+    let offset = unix - startTime;
+    const isNegative = offset < 0;
+    offset = Math.abs(offset);
+
+    const hours = Math.floor(offset / 3600);
+    const minutes = Math.floor((offset % 3600) / 60);
+    const remainingSeconds = offset % 60;
+
+    const timeString = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+
+    return isNegative ? "-" + timeString : timeString;
+};
+
+export const unixToUTC = (unix) => {
+    // Convert to milliseconds
+    const date = new Date(unix * 1000);
+
+    // Convert to local time string
+    const utcHours = date.getUTCHours().toString().padStart(2, "0");
+    const utcMinutes = date.getUTCMinutes().toString().padStart(2, "0");
+    const utcSeconds = date.getUTCSeconds().toString().padStart(2, "0");
+
+    return `${utcHours}:${utcMinutes}:${utcSeconds}`;
+};

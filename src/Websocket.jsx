@@ -8,7 +8,8 @@ import { SettingContext } from "./providers/SettingProvider";
 export const Websocket = () => {
     const { wsKey } = useContext(SettingContext);
     const WS_URL = `wss://dokiscripts.com/ws/${wsKey}`;
-    const { transcript, setActiveId, setActiveTitle, setIsLive, setTranscript } = useContext(TranscriptContext);
+    const { transcript, setActiveId, setActiveTitle, setStartTime, setIsLive, setTranscript } =
+        useContext(TranscriptContext);
 
     const { lastMessage, lastJsonMessage } = useWebSocket(WS_URL, {
         share: false,
@@ -74,6 +75,7 @@ export const Websocket = () => {
 
         setActiveId(clientData.activeId ?? "");
         setActiveTitle(clientData.activeTitle ?? "");
+        setStartTime(clientData.startTime ? +clientData.startTime : 0);
         setIsLive(clientData.isLive ?? false);
 
         let newTranscript = [];
@@ -107,7 +109,7 @@ export const Websocket = () => {
         setTranscript([...transcript, newLine]);
     };
 
-    // [event, activeId, activeTitle, isLive]
+    // [event, activeId, activeTitle, startTime, isLive]
     const setNewActiveStream = (parts) => {
         if (typeof parts !== typeof [] || parts.length !== 4) {
             // console.log("Error: setNewActiveStream parts is not a valid array:", typeof(parts), parts.length);
@@ -116,7 +118,8 @@ export const Websocket = () => {
 
         setActiveId(parts[1]);
         setActiveTitle(parts[2]);
-        setIsLive(parts[3] === "true");
+        setStartTime(+parts[3]);
+        setIsLive(parts[4] === "true");
         setTranscript([]);
     };
 

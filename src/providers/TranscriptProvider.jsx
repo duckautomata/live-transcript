@@ -7,10 +7,12 @@ import * as examples from "./exampleTranscriptData";
 export const TranscriptContext = createContext({
     activeId: "",
     activeTitle: "",
+    startTime: 0,
     isLive: false,
     transcript: [],
     setActiveId: () => {},
     setActiveTitle: () => {},
+    setStartTime: () => {},
     setIsLive: () => {},
     setTranscript: () => {},
 });
@@ -18,12 +20,24 @@ export const TranscriptContext = createContext({
 export const TranscriptProvider = ({ children }) => {
     const [activeId, setActiveId] = useState("");
     const [activeTitle, setActiveTitle] = useState("");
+    const [startTime, setStartTime] = useState(0);
     const [isLive, setIsLive] = useState(false);
     const [transcript, setTranscript] = useState([]);
 
     const transcriptValue = useMemo(
-        () => ({ activeId, activeTitle, isLive, transcript, setActiveId, setActiveTitle, setIsLive, setTranscript }),
-        [activeId, activeTitle, isLive, transcript],
+        () => ({
+            activeId,
+            activeTitle,
+            startTime,
+            isLive,
+            transcript,
+            setActiveId,
+            setActiveTitle,
+            setStartTime,
+            setIsLive,
+            setTranscript,
+        }),
+        [activeId, activeTitle, startTime, isLive, transcript],
     );
 
     return <TranscriptContext.Provider value={transcriptValue}>{children}</TranscriptContext.Provider>;

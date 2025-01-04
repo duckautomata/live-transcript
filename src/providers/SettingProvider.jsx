@@ -23,6 +23,7 @@ const setCookie = (key, value) => {
 
 export const SettingContext = createContext({
     theme: "",
+    timeFormat: "",
     newAtTop: false,
     enableTagHelper: false,
     wsKey: "",
@@ -30,6 +31,7 @@ export const SettingContext = createContext({
     page: "",
     audioDownloader: false,
     setTheme: () => {},
+    setTimeFormat: () => {},
     setNewAtTop: () => {},
     setEnableTagHelper: () => {},
     setWsKey: () => {},
@@ -40,6 +42,7 @@ export const SettingContext = createContext({
 
 export const SettingProvider = ({ children }) => {
     const [theme, setTheme] = useState(getCookie("theme", "system"));
+    const [timeFormat, setTimeFormat] = useState(getCookie("timeFormat", "relative"));
     const [newAtTop, setNewAtTop] = useState(getCookie("newAtTop", true));
     const [enableTagHelper, setEnableTagHelper] = useState(getCookie("enableTagHelper", false));
     const [wsKey, setWsKey] = useState(getCookie("wsKey", "doki"));
@@ -50,6 +53,7 @@ export const SettingProvider = ({ children }) => {
     const settingValue = useMemo(
         () => ({
             theme,
+            timeFormat,
             newAtTop,
             enableTagHelper,
             wsKey,
@@ -57,6 +61,7 @@ export const SettingProvider = ({ children }) => {
             page,
             audioDownloader,
             setTheme,
+            setTimeFormat,
             setNewAtTop,
             setEnableTagHelper,
             setWsKey,
@@ -64,13 +69,16 @@ export const SettingProvider = ({ children }) => {
             setPage,
             setAudioDownloader,
         }),
-        [theme, newAtTop, enableTagHelper, wsKey, defaultOffset, page, audioDownloader],
+        [theme, timeFormat, newAtTop, enableTagHelper, wsKey, defaultOffset, page, audioDownloader],
     );
 
     // Saves current settings to cookie when any value changes
     useEffect(() => {
         setCookie("theme", theme);
     }, [theme]);
+    useEffect(() => {
+        setCookie("timeFormat", timeFormat);
+    }, [timeFormat]);
     useEffect(() => {
         setCookie("newAtTop", newAtTop);
     }, [newAtTop]);
