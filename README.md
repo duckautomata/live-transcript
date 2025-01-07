@@ -6,19 +6,19 @@ Transcribes a live stream near real-time with a live latency of 4-6 seconds.
 
 _General_
 
--   **[Settings](#settings)**
--   **[Fix out-of-sync transcript](#fix-out-of-sync-transcript)**
--   **[Tagging Feature](#tagging-feature)**
--   **[Tagging Feature Notes](#note)**
+- **[Settings](#settings)**
+- **[Fix out-of-sync transcript](#fix-out-of-sync-transcript)**
+- **[Tagging Feature](#tagging-feature)**
+- **[Tagging Feature Notes](#note)**
 
 _Development_
 
--   **[Tech Used](#tech-used)**
--   **[Running Locally](#running-locally)**
--   **[Contributing](#contributing)**
--   **[Contributing Ideas](#contrubiting-ideas)**
--   **[Building a Release](#building-a-new-release)**
--   **[Release Process](#release-process)**
+- **[Tech Used](#tech-used)**
+- **[Running Locally](#running-locally)**
+- **[Contributing](#contributing)**
+- **[Contributing Ideas](#contrubiting-ideas)**
+- **[Building a Release](#building-a-new-release)**
+- **[Release Process](#release-process)**
 
 ## How To Use
 
@@ -30,16 +30,18 @@ Settings are at the top right of the page. Click the cogwheel icon to view the s
 
 ![settings](docs/settings.png)
 
-There are currently 4 settings. All settings are stored in a cookie and persist across sessions.
+There are currently 5 settings. All settings are stored in a cookie and persist across sessions.
 
--   Theme: Select the color theme of the site. Light, Dark, or System default.
+- Theme: Select the color theme of the site. Light, Dark, or System default.
     > System default will use whatever you set in your operating system. This is set by default.
--   New Lines at Top
+- Time Format: How you want the timestamp for each line to be formatted.
+    > Relative displays the time since the stream has started. Local displays the time in your local timezone.
+- New Lines at Top
     > When enabled, new lines will appear at the top. When disabled, new lines will appear at the bottom. When disabled, you will need to constantly scroll down to see the newest lines.
--   Enable Tag Helper
+- Enable Tag Helper
     > This enables a feature to help time a tag with the text that appears in the transcript. This will be explained further in [Tagging Feature](#tagging-feature).
--   Streamer
-    > This denotes what transcript to pull in. Currently only supports Doki.
+- Audio Downloader (beta)
+    > Enables you to download the mp3 file for a specific line. When enabled, click on the id you wish to download.
 
 ### Fix out-of-sync transcript
 
@@ -85,10 +87,10 @@ Once both values are set, it will display the adjust command to run. As well as 
 
 ### Tech Used
 
--   Node 22
--   Vite to run locally
--   React18
--   MUI 5
+- Node 22
+- Vite to run locally
+- React19
+- MUI 5
 
 ### Running Locally
 

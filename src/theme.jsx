@@ -6,7 +6,7 @@ export const darkTheme = createTheme({
     palette: {
         mode: "dark",
         id: {
-            main: red.A400,
+            main: "#20A79A",
             background: "#FFFFFF",
         },
         timestamp: {
@@ -33,8 +33,8 @@ export const lightTheme = createTheme({
     palette: {
         mode: "light",
         id: {
-            main: red.A400,
-            background: "#000000",
+            main: "#12645B",
+            background: "#22B9AA",
         },
         timestamp: {
             main: "#304BC5",

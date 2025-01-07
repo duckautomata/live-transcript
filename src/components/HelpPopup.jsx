@@ -12,12 +12,12 @@ import {
 } from "@mui/material";
 import settings_img from "../assets/helpguide/settings.png";
 import wordCount_img from "../assets/helpguide/word-count.png";
-import pageToggle_img from "../assets/helpguide/page-toggle.png";
 import transcript_img from "../assets/helpguide/transcript.png";
 import tagHighlightText_img from "../assets/helpguide/tag-highlihgt-text-light.png";
 import tagMenu_img from "../assets/helpguide/tag-menu.png";
 import messageId_img from "../assets/helpguide/message-ID.png";
 import filledOutTagMenu_img from "../assets/helpguide/filled-out-tag-menu.png";
+import sidebar_img from "../assets/helpguide/sidebar.png";
 import { ExpandMore } from "@mui/icons-material";
 
 export default function HelpPopup({ open, setOpen }) {
@@ -54,12 +54,12 @@ export default function HelpPopup({ open, setOpen }) {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography variant="body1" gutterBottom>
-                                    Settings are at the top right of the page. Click the cogwheel icon to view the
-                                    settings menu.
+                                    Settings are at the left of the page. Click the cogwheel icon to view the settings
+                                    menu.
                                 </Typography>
-                                <img src={settings_img} />
+                                <img src={settings_img} width="75%" />
                                 <Typography variant="body1" gutterBottom>
-                                    There are currently 4 settings. All settings are stored in a cookie and persist
+                                    There are currently 5 settings. All settings are stored in a cookie and persist
                                     across sessions.
                                 </Typography>
                                 <ul>
@@ -68,6 +68,13 @@ export default function HelpPopup({ open, setOpen }) {
                                         <blockquote>
                                             System default will use whatever you set in your operating system. This is
                                             set by default.
+                                        </blockquote>
+                                    </li>
+                                    <li>
+                                        Time Format: How you want the timestamp for each line to be formatted.
+                                        <blockquote>
+                                            Relative displays the time since the stream has started. Local displays the
+                                            time in your local timezone.
                                         </blockquote>
                                     </li>
                                     <li>
@@ -86,33 +93,95 @@ export default function HelpPopup({ open, setOpen }) {
                                         </blockquote>
                                     </li>
                                     <li>
-                                        Streamer
+                                        Audio Downloader (beta)
                                         <blockquote>
-                                            This denotes what transcript to pull in. Currently only supports Doki.
+                                            Enables you to download the mp3 file for a specific line. When enabled,
+                                            click on the id you wish to download.
                                         </blockquote>
                                     </li>
                                 </ul>
                             </AccordionDetails>
                         </Accordion>
 
-                        {/* Pages */}
+                        {/* Sidebar */}
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
                                 aria-controls="panel1a-content"
                                 id="panel1a-header"
                             >
-                                <Typography>Pages</Typography>
+                                <Typography>Sidebar</Typography>
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography variant="body1" gutterBottom>
-                                    Different pages can be get to by using the toggle buttons at the bottom of the page.
+                                    Allows you to easily jump between pages and streamers. Located on the left of your
+                                    screen.
                                 </Typography>
-                                <img src={pageToggle_img} />
+                                <img src={sidebar_img} width="50%" />
                                 <Typography variant="body1" gutterBottom>
-                                    There are currently 2 pages: Word Count and Transcript. You can find more about them
-                                    below.
+                                    Sidebar is broken up into 3 parts.
                                 </Typography>
+                                <ul>
+                                    <li>
+                                        Transcripts
+                                        <blockquote>
+                                            Select which transcripts you wish to load. Currently there are only 2: Doki
+                                            and Mint.
+                                        </blockquote>
+                                    </li>
+                                    <li>
+                                        Pages
+                                        <blockquote>
+                                            Select how you want to use the transcripts. Either view them, graph them, or
+                                            use it to fix tags.
+                                        </blockquote>
+                                    </li>
+                                    <li>
+                                        Other
+                                        <blockquote>
+                                            General options. View github url, open the help menu (this), or change the
+                                            site settings.
+                                        </blockquote>
+                                    </li>
+                                </ul>
+                                <Typography variant="body1" gutterBottom>
+                                    Note: you must select a transcript before you can select a page.
+                                </Typography>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        {/* Transcript */}
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMore />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>Transcript Viewer</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body1" gutterBottom>
+                                    Transcript allows you to view back what was said during the stream. This updates in
+                                    real time so there is no need to refresh.
+                                </Typography>
+                                <Typography variant="body1" color="error" gutterBottom>
+                                    NOTE: The transcripts are not guaranteed to be accurate to what was said on stream,
+                                    or if the streamer said it, or it was said in game or by someone else. Please use
+                                    this with caution.
+                                </Typography>
+                                <img src={transcript_img} width="100%" />
+                                There are 3 parts to the transcript page.
+                                <ol>
+                                    <li>The title</li>
+                                    <li>The stream status (live or offline)</li>
+                                    <li>The transcripts themselves</li>
+                                </ol>
+                                The transcripts are broken up into 3 parts.
+                                <ol>
+                                    <li>The id (in red)</li>
+                                    <li>The timestamp (in your local time)</li>
+                                    <li>The text</li>
+                                </ol>
                             </AccordionDetails>
                         </Accordion>
 
@@ -137,45 +206,6 @@ export default function HelpPopup({ open, setOpen }) {
                                 <Typography variant="body1" gutterBottom>
                                     To view the graph value, either hover over it with your mouse if you are on PC, or
                                     tap/drag on the graph if you are on mobile.
-                                </Typography>
-                            </AccordionDetails>
-                        </Accordion>
-
-                        {/* Transcript */}
-                        <Accordion>
-                            <AccordionSummary
-                                expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
-                            >
-                                <Typography>Transcript</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography variant="body1" gutterBottom>
-                                    Transcript allows you to view back what was said during the stream. This updates in
-                                    real time so there is no need to refresh.
-                                </Typography>
-                                <Typography variant="body1" color="error" gutterBottom>
-                                    NOTE: The transcripts are not guaranteed to be accurate to what was said on stream,
-                                    or if the streamer said it, or it was said in game or by someone else. Please use
-                                    this with caution.
-                                </Typography>
-                                <img src={transcript_img} width="100%" />
-                                <Typography variant="body1" gutterBottom>
-                                    There are 3 parts to the transcript page.
-                                    <ol>
-                                        <li>The title</li>
-                                        <li>The stream status (live or offline)</li>
-                                        <li>The transcripts themselves</li>
-                                    </ol>
-                                </Typography>
-                                <Typography variant="body1" gutterBottom>
-                                    The transcripts are broken up into 3 parts.
-                                    <ol>
-                                        <li>The id (in red)</li>
-                                        <li>The timestamp (in your local time)</li>
-                                        <li>The text</li>
-                                    </ol>
                                 </Typography>
                             </AccordionDetails>
                         </Accordion>
@@ -213,15 +243,13 @@ export default function HelpPopup({ open, setOpen }) {
                                     calculates the offset you need for it to align with the beginning of the segment you
                                     selected.
                                 </Typography>
-                                <Typography variant="body1" gutterBottom>
-                                    If you do not know how to get the message ID of your tag:
-                                    <ol>
-                                        <li>
-                                            Enable developer mode. Settings {"->"} Advanced {"->"} Enable developer mode
-                                        </li>
-                                        <li>Right-click on your message and click Copy Message ID</li>
-                                    </ol>
-                                </Typography>
+                                If you do not know how to get the message ID of your tag:
+                                <ol>
+                                    <li>
+                                        Enable developer mode. Settings {"->"} Advanced {"->"} Enable developer mode
+                                    </li>
+                                    <li>Right-click on your message and click Copy Message ID</li>
+                                </ol>
                                 <img src={messageId_img} />
                                 <Typography variant="body1" gutterBottom>
                                     The default offset is whatever your server&#39;s tagger bot is set to. For DPS, it
@@ -233,24 +261,21 @@ export default function HelpPopup({ open, setOpen }) {
                                     enable the button Copy Command to copy the command to your clipboard.
                                 </Typography>
                                 <img src={filledOutTagMenu_img} />
-                                <Typography variant="body1" gutterBottom>
-                                    Note:
-                                    <ol>
-                                        <li>
-                                            As said above, this will time the tag to the beginning of the section you
-                                            clicked. Meaning, that if an entire line is one section, then it will time
-                                            it to go at the beginning of that line. The only way to make it start in the
-                                            middle of a section is to guess how long a section is and change the offset
-                                            accordingly.
-                                        </li>
-                                        <li>
-                                            The timings seem to be very accurate. When you want to start at the
-                                            beginning of the section, it might be best to move it back by one second to
-                                            give the YT player time to start the video/audio. Though this should be
-                                            determined after testing it out for a few streams.
-                                        </li>
-                                    </ol>
-                                </Typography>
+                                Note:
+                                <ol>
+                                    <li>
+                                        As said above, this will time the tag to the beginning of the section you
+                                        clicked. Meaning, that if an entire line is one section, then it will time it to
+                                        go at the beginning of that line. The only way to make it start in the middle of
+                                        a section is to guess how long a section is and change the offset accordingly.
+                                    </li>
+                                    <li>
+                                        The timings seem to be very accurate. When you want to start at the beginning of
+                                        the section, it might be best to move it back by one second to give the YT
+                                        player time to start the video/audio. Though this should be determined after
+                                        testing it out for a few streams.
+                                    </li>
+                                </ol>
                             </AccordionDetails>
                         </Accordion>
                     </div>

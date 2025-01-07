@@ -52,7 +52,7 @@ export default function Line({ id, segments, audioUrl, audioDownloader, timeForm
     const firstTime = segments?.[0]?.timestamp ?? 0;
 
     return (
-        <Typography color="secondary" aria-live="assertive" padding="0px" whiteSpace="pre-wrap" align="left">
+        <Typography color="secondary" aria-live="assertive" padding="1px" whiteSpace="pre-wrap" align="left">
             {audioDownloader ? (
                 <IdButtonTheme theme={theme} onClick={() => window.open(audioUrl, "_blank")}>
                     {id}
@@ -62,7 +62,7 @@ export default function Line({ id, segments, audioUrl, audioDownloader, timeForm
             )}
             : [<TimestampTheme theme={theme}>{convertTime(firstTime)}</TimestampTheme>]{" "}
             {segments.map((segment, index) => (
-                <Fragment key={segment?.timestamp + segment?.text}>
+                <Fragment key={`${index}_${segment?.timestamp}_${segment?.text}`}>
                     <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onClick} />
                     {index < segments.length - 1 && " "}
                 </Fragment>

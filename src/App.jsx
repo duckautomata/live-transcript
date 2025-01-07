@@ -1,20 +1,27 @@
-import { useContext } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+
+import { useContext, useEffect, useState } from "react";
 import "./App.css";
 import { CssBaseline, useMediaQuery } from "@mui/material";
 import { ThemeProvider } from "@emotion/react";
 import { darkTheme, lightTheme } from "./theme";
-import { TranscriptProvider } from "./providers/TranscriptProvider";
+import { TranscriptContext, TranscriptProvider } from "./providers/TranscriptProvider";
 import { Websocket } from "./Websocket";
 import { SettingContext } from "./providers/SettingProvider";
 import StreamLogs from "./components/StreamLogs";
-import Header from "./components/Header";
 import { TagOffsetPopupProvider } from "./providers/TagOffsetPopupProvider";
 import StreamWordCount from "./components/StreamWordCount";
 import Maintenance from "./components/Maintenance";
-import Footer from "./components/Footer";
+import Sidebar from "./components/Sidebar";
+import { Route, Routes, useLocation } from "react-router-dom";
+import Home from "./components/Home";
+import TagFixer from "./components/TagFixer";
 
 function App() {
-    const { theme, page } = useContext(SettingContext);
+    const location = useLocation();
+    const [wsKey, setWsKey] = useState(undefined);
+    const { theme } = useContext(SettingContext);
+    const { setActiveId, setActiveTitle, setStartTime, setIsLive, setTranscript } = useContext(TranscriptContext);
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
     let colorTheme = prefersDarkMode ? darkTheme : lightTheme;
     if (theme === "light") {
@@ -22,6 +29,30 @@ function App() {
     } else if (theme === "dark") {
         colorTheme = darkTheme;
     }
+
+    const keys = ["doki", "mint"];
+    if (import.meta.env.DEV) {
+        keys.push("test");
+    }
+
+    useEffect(() => {
+        let key;
+        keys.map((value) => {
+            if (location.pathname.split("/").at(1) === value) {
+                key = value;
+            }
+        });
+
+        if (key !== wsKey) {
+            setActiveId("");
+            setActiveTitle("");
+            setStartTime(0);
+            setIsLive(false);
+            setTranscript([]);
+        }
+
+        setWsKey(key);
+    }, [location]);
 
     return (
         <TranscriptProvider>
@@ -32,13 +63,20 @@ function App() {
                         <Maintenance />
                     ) : (
                         <>
-                            <Websocket />
-                            <Header />
-                            <div style={{ marginTop: 40 }} />
-                            {page === "transcript" && <StreamLogs />}
-                            {page === "wordCount" && <StreamWordCount />}
-                            <div style={{ marginTop: 40 }} />
-                            <Footer />
+                            <Sidebar wsKey={wsKey}>
+                                {wsKey ? (
+                                    <>
+                                        <Websocket wsKey={wsKey} />
+                                        <Routes>
+                                            <Route path={`${wsKey}/*`} element={<StreamLogs wsKey={wsKey} />} />
+                                            <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
+                                            <Route path={`${wsKey}/tagFixer/`} element={<TagFixer />} />
+                                        </Routes>
+                                    </>
+                                ) : (
+                                    <Home />
+                                )}
+                            </Sidebar>
                         </>
                     )}
                 </TagOffsetPopupProvider>

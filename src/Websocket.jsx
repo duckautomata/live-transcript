@@ -3,10 +3,8 @@
 import { useContext, useEffect } from "react";
 import useWebSocket from "react-use-websocket";
 import { TranscriptContext } from "./providers/TranscriptProvider";
-import { SettingContext } from "./providers/SettingProvider";
 
-export const Websocket = () => {
-    const { wsKey } = useContext(SettingContext);
+export const Websocket = ({ wsKey }) => {
     const WS_URL = `wss://dokiscripts.com/ws/${wsKey}`;
     const { transcript, setActiveId, setActiveTitle, setStartTime, setIsLive, setTranscript } =
         useContext(TranscriptContext);

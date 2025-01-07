@@ -21,7 +21,13 @@ export const unixToRelative = (unix, startTime) => {
     const minutes = Math.floor((offset % 3600) / 60);
     const remainingSeconds = offset % 60;
 
-    const timeString = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+    let timeString = "";
+
+    if (hours === 0) {
+        timeString = `${String(minutes).padStart(2, "0")}m${String(remainingSeconds).padStart(2, "0")}s`;
+    } else {
+        timeString = `${String(hours).padStart(2, "0")}h${String(minutes).padStart(2, "0")}m${String(remainingSeconds).padStart(2, "0")}s`;
+    }
 
     return isNegative ? "-" + timeString : timeString;
 };
