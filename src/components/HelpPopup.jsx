@@ -96,7 +96,8 @@ export default function HelpPopup({ open, setOpen }) {
                                         Audio Downloader (beta)
                                         <blockquote>
                                             Enables you to download the mp3 file for a specific line. When enabled,
-                                            click on the id you wish to download.
+                                            click on the id you wish to download. Then select either &#34;Download
+                                            Audio&#34; or &#34;Play Audio&#34;.
                                         </blockquote>
                                     </li>
                                 </ul>
@@ -178,10 +179,17 @@ export default function HelpPopup({ open, setOpen }) {
                                 </ol>
                                 The transcripts are broken up into 3 parts.
                                 <ol>
-                                    <li>The id (in red)</li>
+                                    <li>The id (in green)</li>
                                     <li>The timestamp (in your local time)</li>
                                     <li>The text</li>
                                 </ol>
+                                The id is a clickable button. Click on it to open a menu. This is where you can
+                                <ul>
+                                    <li>Download the audio if you have that setting enabled</li>
+                                    <li>Open the stream to this spot if DVR or Vod is available</li>
+                                </ul>
+                                Do note that the &#34;Open Stream&#34; option is not 100% accurate since we do not know
+                                exactly when the stream started.
                             </AccordionDetails>
                         </Accordion>
 

@@ -1,0 +1,66 @@
+import { useContext } from "react";
+import { LineMenuContext } from "../providers/LineMenuProvider";
+import { Menu, MenuItem } from "@mui/material";
+import { SettingContext } from "../providers/SettingProvider";
+import { TranscriptContext } from "../providers/TranscriptProvider";
+import { unixToRelative } from "../logic/dateTime";
+
+export default function LineMenu({ wsKey }) {
+    const { anchorEl, id, setAnchorEl } = useContext(LineMenuContext);
+    const { activeId, transcript, startTime } = useContext(TranscriptContext);
+    const { audioDownloader } = useContext(SettingContext);
+    const open = Boolean(anchorEl);
+
+    const downloadUrl = `https://dokiscripts.com/${wsKey}/audio?id=${id}`;
+    const playUrl = `https://dokiscripts.com/${wsKey}/audio?id=${id}&stream=true`;
+
+    const lines = transcript.filter((line) => line.id === id);
+    const ts = lines?.[0]?.segments?.[0]?.timestamp;
+    const formattedTime = unixToRelative(ts, startTime);
+
+    let openUrl = "";
+    if (/^\d+$/.test(activeId)) {
+        // twitch
+        openUrl = `https://www.twitch.tv/videos/${activeId}?t=${formattedTime}`;
+    } else {
+        // yt
+        openUrl = `https://www.youtube.com/live/${activeId}?t=${formattedTime}`;
+    }
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+    const handleDownload = () => {
+        window.open(downloadUrl, "_blank");
+        handleClose();
+    };
+    const handlePlay = () => {
+        window.open(playUrl, "_blank");
+        handleClose();
+    };
+    const handleOpenStream = () => {
+        window.open(openUrl, "_blank");
+        handleClose();
+    };
+
+    return (
+        <Menu
+            id="line-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+            }}
+            transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+            }}
+        >
+            {audioDownloader && <MenuItem onClick={handleDownload}>Download Audio</MenuItem>}
+            {audioDownloader && <MenuItem onClick={handlePlay}>Play Audio</MenuItem>}
+            {lines.length > 0 && <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>}
+        </Menu>
+    );
+}

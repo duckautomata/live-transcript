@@ -41,7 +41,7 @@ There are currently 5 settings. All settings are stored in a cookie and persist 
 - Enable Tag Helper
     > This enables a feature to help time a tag with the text that appears in the transcript. This will be explained further in [Tagging Feature](#tagging-feature).
 - Audio Downloader (beta)
-    > Enables you to download the mp3 file for a specific line. When enabled, click on the id you wish to download.
+    > Enables you to download the mp3 file for a specific line. When enabled, click on the id you wish to download. Then select either "Download Audio" or "Play Audio".
 
 ### Fix out-of-sync transcript
 

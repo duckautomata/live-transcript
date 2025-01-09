@@ -9,7 +9,7 @@ export const unixToLocal = (unix) => {
 };
 
 export const unixToRelative = (unix, startTime) => {
-    if (startTime <= 0) {
+    if (!startTime || !unix || startTime <= 0 || unix <= 0) {
         return "00:00:00";
     }
 

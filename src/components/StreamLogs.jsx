@@ -7,7 +7,7 @@ import { Clear, Search } from "@mui/icons-material";
 
 export default function StreamLogs({ wsKey }) {
     const { activeTitle, startTime, isLive, transcript } = useContext(TranscriptContext);
-    const { newAtTop, audioDownloader, timeFormat } = useContext(SettingContext);
+    const { newAtTop, timeFormat } = useContext(SettingContext);
     const [page, setPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -111,10 +111,8 @@ export default function StreamLogs({ wsKey }) {
                                 key={line?.id}
                                 id={line?.id}
                                 segments={line?.segments}
-                                audioDownloader={audioDownloader}
                                 timeFormat={timeFormat}
                                 startTime={startTime}
-                                audioUrl={`https://dokiscripts.com/${wsKey}/audio?id=${line?.id}`}
                             />
                         ))}
                         <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

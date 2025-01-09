@@ -62,7 +62,10 @@ export default function Sidebar({ wsKey, children }) {
         } else {
             parts[1] = value;
         }
-
+        // ensures we do not get a /key (View would not show as selected), always /key/
+        if (parts.length === 2) {
+            parts.push("");
+        }
         if (parts.join("/") !== location.pathname) {
             navigate(parts.join("/"));
         }

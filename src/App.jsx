@@ -16,6 +16,8 @@ import Sidebar from "./components/Sidebar";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./components/Home";
 import TagFixer from "./components/TagFixer";
+import LineMenu from "./components/LineMenu";
+import { LineMenuProvider } from "./providers/LineMenuProvider";
 
 function App() {
     const location = useLocation();
@@ -59,26 +61,29 @@ function App() {
             <ThemeProvider theme={colorTheme}>
                 <CssBaseline />
                 <TagOffsetPopupProvider>
-                    {window.maintenance ? (
-                        <Maintenance />
-                    ) : (
-                        <>
-                            <Sidebar wsKey={wsKey}>
-                                {wsKey ? (
-                                    <>
-                                        <Websocket wsKey={wsKey} />
-                                        <Routes>
-                                            <Route path={`${wsKey}/*`} element={<StreamLogs wsKey={wsKey} />} />
-                                            <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
-                                            <Route path={`${wsKey}/tagFixer/`} element={<TagFixer />} />
-                                        </Routes>
-                                    </>
-                                ) : (
-                                    <Home />
-                                )}
-                            </Sidebar>
-                        </>
-                    )}
+                    <LineMenuProvider>
+                        {window.maintenance ? (
+                            <Maintenance />
+                        ) : (
+                            <>
+                                <LineMenu wsKey={wsKey} />
+                                <Sidebar wsKey={wsKey}>
+                                    {wsKey ? (
+                                        <>
+                                            <Websocket wsKey={wsKey} />
+                                            <Routes>
+                                                <Route path={`${wsKey}/*`} element={<StreamLogs wsKey={wsKey} />} />
+                                                <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
+                                                <Route path={`${wsKey}/tagFixer/`} element={<TagFixer />} />
+                                            </Routes>
+                                        </>
+                                    ) : (
+                                        <Home />
+                                    )}
+                                </Sidebar>
+                            </>
+                        )}
+                    </LineMenuProvider>
                 </TagOffsetPopupProvider>
             </ThemeProvider>
         </TranscriptProvider>

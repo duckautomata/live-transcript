@@ -5,6 +5,7 @@ import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { TagOffsetPopupContext } from "../providers/TagOffsetPopupProvider";
 import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
+import { LineMenuContext } from "../providers/LineMenuProvider";
 
 const IdButtonTheme = styled("span")(({ theme }) => ({
     cursor: "pointer",
@@ -16,25 +17,25 @@ const IdButtonTheme = styled("span")(({ theme }) => ({
     },
 }));
 
-const IdTheme = styled("span")(({ theme }) => ({
-    "&": {
-        color: theme.palette.id.main,
-    },
-}));
-
 const TimestampTheme = styled("span")(({ theme }) => ({
     "&": {
         color: theme.palette.timestamp.main,
     },
 }));
 
-export default function Line({ id, segments, audioUrl, audioDownloader, timeFormat, startTime }) {
+export default function Line({ id, segments, timeFormat, startTime }) {
     const theme = useTheme();
     const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
+    const { setAnchorEl, setId } = useContext(LineMenuContext);
 
-    const onClick = (timestamp) => {
+    const onSegmentClick = (timestamp) => {
         setTimestamp(timestamp);
         setOpen(true);
+    };
+
+    const onIdClick = (event) => {
+        setId(id);
+        setAnchorEl(event.currentTarget);
     };
 
     const convertTime = (time) => {
@@ -50,20 +51,17 @@ export default function Line({ id, segments, audioUrl, audioDownloader, timeForm
     };
 
     const firstTime = segments?.[0]?.timestamp ?? 0;
-
+    // Menu item: https://mui.com/material-ui/react-menu/#positioned-menu
+    // Should have a separate component for the menu, and pass the anchorEl as a context
     return (
         <Typography color="secondary" aria-live="assertive" padding="1px" whiteSpace="pre-wrap" align="left">
-            {audioDownloader ? (
-                <IdButtonTheme theme={theme} onClick={() => window.open(audioUrl, "_blank")}>
-                    {id}
-                </IdButtonTheme>
-            ) : (
-                <IdTheme theme={theme}>{id}</IdTheme>
-            )}
+            <IdButtonTheme theme={theme} onClick={onIdClick}>
+                {id}
+            </IdButtonTheme>
             : [<TimestampTheme theme={theme}>{convertTime(firstTime)}</TimestampTheme>]{" "}
             {segments.map((segment, index) => (
                 <Fragment key={`${index}_${segment?.timestamp}_${segment?.text}`}>
-                    <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onClick} />
+                    <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onSegmentClick} />
                     {index < segments.length - 1 && " "}
                 </Fragment>
             ))}
