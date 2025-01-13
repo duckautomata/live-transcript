@@ -5,6 +5,7 @@ import { LineChart } from "@mui/x-charts";
 import { unixToLocal } from "../logic/dateTime";
 import "./StreamWordCount.css";
 import { countWord } from "../logic/wordCount";
+import { isMobile } from "../logic/mobile";
 
 export default function StreamWordCount() {
     const { transcript } = useContext(TranscriptContext);
@@ -65,7 +66,7 @@ export default function StreamWordCount() {
                                 },
                             ]}
                             series={[{ data: data, label: "Count", curve: "linear" }]}
-                            height={window.innerWidth < 600 ? 300 : 500}
+                            height={isMobile ? 300 : 500}
                             skipAnimation
                         />
                     </Box>

@@ -4,6 +4,7 @@ import { TranscriptContext } from "../providers/TranscriptProvider";
 import Line from "./Line";
 import { SettingContext } from "../providers/SettingProvider";
 import { Clear, Search } from "@mui/icons-material";
+import { isMobile } from "../logic/mobile";
 
 export default function StreamLogs({ wsKey }) {
     const { activeTitle, startTime, isLive, transcript } = useContext(TranscriptContext);
@@ -50,10 +51,17 @@ export default function StreamLogs({ wsKey }) {
 
     return (
         <>
-            <Typography color="primary" variant="h4" component="h1" sx={{ mb: 2 }}>
-                {activeTitle}
-            </Typography>
-            <Typography color="secondary" variant="h6" component="h1" sx={{ mb: 2 }} id={liveText}>
+            {isMobile ? (
+                <Typography color="primary" variant="h5" component="h5" sx={{ mb: 2 }}>
+                    {activeTitle}
+                </Typography>
+            ) : (
+                <Typography color="primary" variant="h4" component="h4" sx={{ mb: 2 }}>
+                    {activeTitle}
+                </Typography>
+            )}
+
+            <Typography color="secondary" variant="h6" component="h6" sx={{ mb: 2 }} id={liveText}>
                 {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}&#39;s Stream is {liveText}.
             </Typography>
             {transcript.length > 0 && (
@@ -73,7 +81,7 @@ export default function StreamLogs({ wsKey }) {
                                 ),
                             },
                         }}
-                        sx={{ width: window.innerWidth < 600 ? "100%" : "60%" }}
+                        sx={{ width: isMobile ? "100%" : "50%" }}
                     />
                     {searchTerm && ( // Conditionally render clear button
                         <IconButton

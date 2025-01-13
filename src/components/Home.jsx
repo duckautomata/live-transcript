@@ -3,6 +3,7 @@ import { List, ListItem, ListItemText, Typography, Box, ListItemButton, ListItem
 import dokiIcon from "../assets/icons/doki.jpg";
 import mintIcon from "../assets/icons/mint.jpg";
 import { useNavigate } from "react-router-dom";
+import { isMobile } from "../logic/mobile";
 
 export default function Home() {
     const navigate = useNavigate();
@@ -20,9 +21,15 @@ export default function Home() {
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", p: 4, gap: 2 }}>
-            <Typography variant="h2" component="h1" gutterBottom>
-                Live Transcripts
-            </Typography>
+            {isMobile ? (
+                <Typography color="primary" variant="h4" component="h4" gutterBottom>
+                    Live Transcripts
+                </Typography>
+            ) : (
+                <Typography color="primary" variant="h2" component="h2" gutterBottom>
+                    Live Transcripts
+                </Typography>
+            )}
 
             <List sx={{ width: "100%" }}>
                 <ListItemText primary="Available Transcripts" sx={{ ml: 1, display: "block" }} />

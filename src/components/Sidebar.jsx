@@ -19,8 +19,9 @@ import { SettingContext } from "../providers/SettingProvider";
 import dokiIcon from "../assets/icons/doki.jpg";
 import mintIcon from "../assets/icons/mint.jpg";
 import { useLocation, useNavigate } from "react-router-dom";
+import { isMobile } from "../logic/mobile";
 
-const drawerWidth = 200;
+const drawerWidth = isMobile ? 160 : 200;
 const drawerWidthCollapsed = 60;
 
 export default function Sidebar({ wsKey, children }) {
@@ -203,8 +204,8 @@ export default function Sidebar({ wsKey, children }) {
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    p: 3,
-                    width: `calc(100% - ${sidebarOpen ? drawerWidth : drawerWidthCollapsed}px)`,
+                    padding: 1,
+                    width: `calc(97vw - ${sidebarOpen ? drawerWidth : drawerWidthCollapsed}px)`,
                     transition: "margin-left 0.3s ease-in-out",
                 }}
             >
