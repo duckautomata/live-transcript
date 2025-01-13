@@ -74,7 +74,10 @@ function App() {
                                             <Routes>
                                                 <Route path={`${wsKey}/*`} element={<StreamLogs wsKey={wsKey} />} />
                                                 <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
-                                                <Route path={`${wsKey}/tagFixer/`} element={<TagFixer />} />
+                                                <Route
+                                                    path={`${wsKey}/tagFixer/`}
+                                                    element={<TagFixer wsKey={wsKey} />}
+                                                />
                                             </Routes>
                                         </>
                                     ) : (

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
-import { genericCensor } from "../logic/censors";
+import { genericCensor, mintCensor } from "../logic/censors";
 
-const TagFixer = () => {
+const TagFixer = ({ wsKey }) => {
     const [leftText, setLeftText] = useState("");
     const [rightText, setRightText] = useState("");
     const [numFixedLines, setNumFixedLines] = useState(0);
@@ -18,7 +18,10 @@ const TagFixer = () => {
         const fixed = text
             ?.split("\n")
             ?.map((line) => {
-                const newLine = genericCensor(line);
+                let newLine = genericCensor(line);
+                if (wsKey === "mint") {
+                    newLine = mintCensor(newLine);
+                }
                 if (newLine !== line) {
                     numFixed++;
                 }
@@ -31,7 +34,11 @@ const TagFixer = () => {
     };
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(rightText); // Copy left text to clipboard
+        const copyText = rightText
+            .split("\n")
+            .filter((line) => line.length > 0)
+            .join("\n");
+        navigator.clipboard.writeText(copyText); // Copy left text to clipboard
     };
 
     return (

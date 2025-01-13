@@ -2,51 +2,68 @@
 // [search, replacement]
 // case insensitive. It will automatically match the replacement with the source format.
 const replacements = [
-    [/(\bn)t(r)/gi, "$1*$2"], //ntr -> n*r
-    [/(\bd)i(ck)/gi, "$1*$2"], //dick -> d*ck
-    [/(\bc)u(ck)/gi, "$1*$2"], //cuck -> c*ck
-    [/(\bf)uck(ing)/gi, "$1-$2"], //fucking -> f-ing
-    [/(\bf)u(ck)/gi, "$1*$2"], //fuck -> f*ck
-    [/(\bsh)i(t)/gi, "$1*$2"], //shit -> sh*t
-    [/(\bwh)o(re)/gi, "$1*$2"], //whore -> wh*re
-    [/(\bsl)u(t)/gi, "$1*$2"], //slut -> sl*t
-    [/(\bb)i(tch)/gi, "$1*$2"], //bitch -> b*tch
-    [/(\bstr)i(p)/gi, "$1*$2"], //strip -> str*p
-    [/(\bcond)o(m)/gi, "$1*$2"], //condom -> cond*m
-    [/\b(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)+\.[a-zA-Z]{2,}/gi, "$3's website"], // www.example.com -> example's website
-    [/\b(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)+\.[a-zA-Z]{2,}/gi, "$3"], // running multiple times for any .com.ca domains
-    [/\b(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)+\.[a-zA-Z]{2,}/gi, "$3"],
-    [/(\bmess)a(ge)/gi, "$1*$2"], //message -> mess*ge
-    [/(\bcomm)e(nt)/gi, "$1*$2"], //comment -> comm*nt
-    [/\b#(\w+)/gi, "hashtag-$1"], //#example -> hashtag-example
-    [/(\btw)i(tter)/gi, "$1*$2"], //twitter -> tw*tter
-    [/(\bti)k(tok)/gi, "$1*$2"], //tiktok -> ti*tok
-    [/(\btw)i(tch)/gi, "$1*$2"], //twitch -> tw*tch
-    [/(\bs)e(x)/gi, "$1*$2"], //sex -> s*x
-    [/(\bp)o(rn)/gi, "$1*$2"], //porn -> p*rn
-    [/(\bb)a(ll)/gi, "$1*$2"], //ball -> b*ll
+    [/((\b|"|'|\(|\[|-|_)n)t(r)/gi, "$1*$3"], //ntr -> n*r
+    [/((\b|"|'|\(|\[|-|_)d)i(ck)/gi, "$1*$3"], //dick -> d*ck
+    [/((\b|"|'|\(|\[|-|_)c)o(ck)/gi, "$1*$3"], //cock -> c*ck
+    [/((\b|"|'|\(|\[|-|_)cu)c(k)/gi, "$1*$3"], //cuck -> cu*k
+    [/((\b|"|'|\(|\[|-|_)f)uck(ing)/gi, "$1-$3"], //fucking -> f-ing
+    [/((\b|"|'|\(|\[|-|_)f)u(ck)/gi, "$1*$3"], //fuck -> f*ck
+    [/((\b|"|'|\(|\[|-|_)sh)i(t)/gi, "$1*$3"], //shit -> sh*t
+    [/((\b|"|'|\(|\[|-|_)wh)o(re)/gi, "$1*$3"], //whore -> wh*re
+    [/((\b|"|'|\(|\[|-|_)wh)o(ring)/gi, "$1*$3"], //whoring -> wh*ring
+    [/((\b|"|'|\(|\[|-|_)sl)u(t)/gi, "$1*$3"], //slut -> sl*t
+    [/((\b|"|'|\(|\[|-|_)b)i(tch)/gi, "$1*$3"], //bitch -> b*tch
+    [/((\b|"|'|\(|\[|-|_)str)i(p)/gi, "$1*$3"], //strip -> str*p
+    [/((\b|"|'|\(|\[|-|_)cond)o(m)/gi, "$1*$3"], //condom -> cond*m
+    [
+        /(\b|"|'|\(|\[|-|_)(https?:\/\/)?(www\.|t\.|m\.)?([a-zA-Z0-9-]+)+\.(com|io|ai|tv|be|cc|ly|co|net|org|us|ca|net|edu|gov|mil)/gi,
+        "$4's website",
+    ], // www.example.com -> example's website
+    [/(\b|"|'|\(|\[|-|_)([a-zA-Z0-9-]+)+\.(com|io|ai|tv|be|cc|ly|co|net|org|us|ca|net|edu|gov|mil)/gi, "$2. $3"], // end.start -> end. start
+    [/(\b|"|'|\(|\[|-|_)([a-zA-Z0-9-]+)+\.(com|io|ai|tv|be|cc|ly|co|net|org|us|ca|net|edu|gov|mil)/gi, "$2. $3"], // running again for any duplicates
+    [/((\b|"|'|\(|\[|-|_)mess)a(ge)/gi, "$1*$3"], //message -> mess*ge
+    [/((\b|"|'|\(|\[|-|_)mess)a(ging)/gi, "$1*$3"], //messaging -> mess*ging
+    [/((\b|"|'|\(|\[|-|_)comm)e(nt)/gi, "$1*$3"], //comment -> comm*nt
+    [/(\b|"|'|\(|\[|-|_| )#(\w*[a-zA-Z]+\w*)/gi, "$1hashtag-$2"], //#example -> hashtag-example
+    [/((\b|"|'|\(|\[|-|_)tw)i(tter)/gi, "$1*$3"], //twitter -> tw*tter
+    [/((\b|"|'|\(|\[|-|_)ti)k(tok)/gi, "$1*$3"], //tiktok -> ti*tok
+    [/((\b|"|'|\(|\[|-|_)tw)i(tch)/gi, "$1*$3"], //twitch -> tw*tch
+    [/((\b|"|'|\(|\[|-|_)s)e(x)/gi, "$1*$3"], //sex -> s*x
+    [/(p)o(rn)/gi, "$1*$2"], //porn -> p*rn
+    [/((\b|"|'|\(|\[|-|_)b)a(ll)/gi, "$1*$3"], //ball -> b*ll
     [/kill yourself/gi, "unalive"], //kill yourself -> unalive
-    [/18\+/gi, "18 up"], //ball -> b*ll
-    [/(\bsp)e(rm)/gi, "$1*$2"], //sperm -> sp*rm
-    [/(\bn)i(pple)/gi, "$1*$2"], //nipple -> n*pple
-    [/(\bp)u(ssies)/gi, "$1*$2"], //pussies -> p*ssies
-    [/(\bp)u(ssy)/gi, "$1*$2"], //pussy -> p*ssy
-    [/(\brac)i(st)/gi, "$1*$2"], //racist -> rac*st
-    [/(\bper)v(ert)/gi, "$1*$2"], //pervert -> per*ert
-    [/(\bg)a(ngb)a(ng)/gi, "$1*$2*$3"], //gangbang -> g*ngb*ng
-    [/(\bh)i(tler)/gi, "$1*$2"], //hitler -> h*tler
-    [/(\bd)u(mbass)/gi, "$1*$2"], //dumbass -> d*mbass
-    [/(\bc)o(vid)/gi, "$1*$2"], //covid -> c*vid
-    [/(\bb)o(bb)/gi, "$1*$2"], //boob -> b*oob
-    ["\\", ""], //\ -> nothing
+    [/((\b|"|'|\(|\[|-|_)k)i(ll)/gi, "$1*$3"], //kill -> k*ll
+    [/18\+/gi, "18 up"], //18+ -> 18 UP
+    [/((\b|"|'|\(|\[|-|_)sp)e(rm)/gi, "$1*$3"], //sperm -> sp*rm
+    [/((\b|"|'|\(|\[|-|_)n)i(pple)/gi, "$1*$3"], //nipple -> n*pple
+    [/(pu)s(sies)/gi, "$1*$2"], //pussies -> pu*sies
+    [/(pu)s(sy)/gi, "$1*$2"], //pussy -> pu*sy
+    [/((\b|"|'|\(|\[|-|_)rac)i(st)/gi, "$1*$3"], //racist -> rac*st
+    [/((\b|"|'|\(|\[|-|_)per)v(ert)/gi, "$1*$3"], //pervert -> per*ert
+    [/((\b|"|'|\(|\[|-|_)g)a(ngb)a(ng)/gi, "$1*$3*$4"], //gangbang -> g*ngb*ng
+    [/((\b|"|'|\(|\[|-|_)h)i(tler)/gi, "$1*$3"], //hitler -> h*tler
+    [/((\b|"|'|\(|\[|-|_)d)u(mbass)/gi, "$1*$3"], //dumbass -> d*mbass
+    [/(c)o(vid)/gi, "$1*$2"], //covid -> c*vid
+    [/((\b|"|'|\(|\[|-|_)b)o(ob)/gi, "$1*$3"], //boob -> b*ob
+    [/\\/g, ""], // \ -> nothing
+    [/^(\d )/, "00:0$1"], //adds 00:0 to any tags that do not have it
     [/^(\d+ )/, "00:$1"], //adds 00: to any tags that do not have it
     [/^00:00/, "00:01"], //00:00 -> 00:01
-    [/^(!adjust|!t)\b.*/, ""], //removes any accidental tags
-    [/^00:00/, "00:01"], //00:00 -> 00:01
+    [/^[0-9:]+ (!adjust|!t)\b.*/, ""], //removes any accidental tags
 ];
+
+const mintReplacements = [[/:memboo/gi, ":_"]];
 
 export const genericCensor = (text) => {
     replacements.forEach((replacement) => {
+        text = text.replace(replacement[0], replacement[1]);
+    });
+
+    return text;
+};
+
+export const mintCensor = (text) => {
+    mintReplacements.forEach((replacement) => {
         text = text.replace(replacement[0], replacement[1]);
     });
 
