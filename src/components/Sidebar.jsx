@@ -15,11 +15,11 @@ import SettingsPopup from "./SettingsPopup";
 import { Construction, GitHub, Help } from "@mui/icons-material";
 import { Avatar, Tooltip } from "@mui/material";
 import { SettingContext } from "../providers/SettingProvider";
-
-import dokiIcon from "../assets/icons/doki.jpg";
-import mintIcon from "../assets/icons/mint.jpg";
 import { useLocation, useNavigate } from "react-router-dom";
 import { isMobile } from "../logic/mobile";
+import dokiIcon from "../assets/icons/doki.jpg";
+import mintIcon from "../assets/icons/mint.jpg";
+import junaIcon from "../assets/icons/juna.jpg";
 
 const drawerWidth = isMobile ? 160 : 200;
 const drawerWidthCollapsed = 60;
@@ -33,7 +33,8 @@ export default function Sidebar({ wsKey, children }) {
 
     const streamers = [
         { name: "Doki", icon: <Avatar src={dokiIcon} alt="doki" sx={{ width: 32, height: 32 }} />, value: "doki" },
-        { name: "Mint", icon: <Avatar src={mintIcon} alt="doki" sx={{ width: 32, height: 32 }} />, value: "mint" },
+        { name: "Mint", icon: <Avatar src={mintIcon} alt="mint" sx={{ width: 32, height: 32 }} />, value: "mint" },
+        { name: "Juna", icon: <Avatar src={junaIcon} alt="juna" sx={{ width: 32, height: 32 }} />, value: "juna" },
     ];
     if (import.meta.env.DEV) {
         streamers.push({

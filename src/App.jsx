@@ -32,7 +32,7 @@ function App() {
         colorTheme = darkTheme;
     }
 
-    const keys = ["doki", "mint"];
+    const keys = ["doki", "mint", "juna"];
     if (import.meta.env.DEV) {
         keys.push("test");
     }

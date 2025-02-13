@@ -2,6 +2,7 @@ import { List, ListItem, ListItemText, Typography, Box, ListItemButton, ListItem
 
 import dokiIcon from "../assets/icons/doki.jpg";
 import mintIcon from "../assets/icons/mint.jpg";
+import junaIcon from "../assets/icons/juna.jpg";
 import { useNavigate } from "react-router-dom";
 import { isMobile } from "../logic/mobile";
 
@@ -9,7 +10,8 @@ export default function Home() {
     const navigate = useNavigate();
     const streamers = [
         { name: "Doki", icon: <Avatar src={dokiIcon} alt="doki" />, value: "doki" },
-        { name: "Mint", icon: <Avatar src={mintIcon} alt="doki" />, value: "mint" },
+        { name: "Mint", icon: <Avatar src={mintIcon} alt="mint" />, value: "mint" },
+        { name: "Juna", icon: <Avatar src={junaIcon} alt="juna" />, value: "juna" },
     ];
     if (import.meta.env.DEV) {
         streamers.push({ name: "Test", icon: <Avatar alt="test">T</Avatar>, value: "test" });
