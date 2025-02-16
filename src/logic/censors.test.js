@@ -307,6 +307,41 @@ describe("genericCensor", () => {
     });
 
     test.each([
+        ["fis", "fis"],
+        ["fist", "f*st"],
+        ["ist", "ist"],
+        ["trafist", "trafist"],
+        ["FIST", "F*ST"],
+        ["Fist", "F*st"],
+        ["fist a fist", "f*st a f*st"],
+        ["fist'd", "f*st'd"],
+        ["fisted", "f*sted"],
+        ["fisting", "f*sting"],
+        ['"fist"', '"f*st"'],
+        ["'fist'", "'f*st'"],
+        ["(fist)", "(f*st)"],
+        ["[fist]", "[f*st]"],
+        ["-fist-", "-f*st-"],
+        ["_fist_", "_f*st_"],
+    ])("fist genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
+        ["trafisting", "traf*sting"],
+        ["TRAFISTING", "TRAF*STING"],
+        ["Trafisting", "Traf*sting"],
+        ['"trafisting"', '"traf*sting"'],
+        ["'trafisting'", "'traf*sting'"],
+        ["(trafisting)", "(traf*sting)"],
+        ["[trafisting]", "[traf*sting]"],
+        ["-trafisting-", "-traf*sting-"],
+        ["_trafisting_", "_traf*sting_"],
+    ])("fisting global genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
         ["a #", "a #"],
         ["a #2", "a #2"],
         ["a #2b", "a hashtag-2b"],

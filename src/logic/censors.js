@@ -24,6 +24,8 @@ const replacements = [
     [/((\b|"|'|\(|\[|-|_)mess)a(ge)/gi, "$1*$3"], //message -> mess*ge
     [/((\b|"|'|\(|\[|-|_)mess)a(ging)/gi, "$1*$3"], //messaging -> mess*ging
     [/((\b|"|'|\(|\[|-|_)comm)e(nt)/gi, "$1*$3"], //comment -> comm*nt
+    [/((\b|"|'|\(|\[|-|_)f)i(st)/gi, "$1*$3"], //fist -> f*st
+    [/(f)i(sting)/gi, "$1*$2"], //fisting -> f*sting (global)
     [/(\b|"|'|\(|\[|-|_| )#(\w*[a-zA-Z]+\w*)/gi, "$1hashtag-$2"], //#example -> hashtag-example
     [/((\b|"|'|\(|\[|-|_)tw)i(tter)/gi, "$1*$3"], //twitter -> tw*tter
     [/((\b|"|'|\(|\[|-|_)ti)k(tok)/gi, "$1*$3"], //tiktok -> ti*tok
