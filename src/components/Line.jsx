@@ -1,11 +1,12 @@
 import { Typography } from "@mui/material";
-import { Fragment, useContext } from "react";
+import { Fragment, useContext, useState } from "react";
 import Segment from "./Segment";
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { TagOffsetPopupContext } from "../providers/TagOffsetPopupProvider";
 import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
 import { LineMenuContext } from "../providers/LineMenuProvider";
+import { SettingContext } from "../providers/SettingProvider";
 
 const IdButtonTheme = styled("span")(({ theme }) => ({
     cursor: "pointer",
@@ -26,7 +27,9 @@ const TimestampTheme = styled("span")(({ theme }) => ({
 export default function Line({ id, segments, timeFormat, startTime }) {
     const theme = useTheme();
     const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
-    const { setAnchorEl, setId } = useContext(LineMenuContext);
+    const { lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
+    const { newAtTop } = useContext(SettingContext);
+    const [idOver, setIdOver] = useState(false);
 
     const onSegmentClick = (timestamp) => {
         setTimestamp(timestamp);
@@ -34,7 +37,7 @@ export default function Line({ id, segments, timeFormat, startTime }) {
     };
 
     const onIdClick = (event) => {
-        setId(id);
+        setLineMenuId(id);
         setAnchorEl(event.currentTarget);
     };
 
@@ -54,8 +57,20 @@ export default function Line({ id, segments, timeFormat, startTime }) {
     // Menu item: https://mui.com/material-ui/react-menu/#positioned-menu
     // Should have a separate component for the menu, and pass the anchorEl as a context
     return (
-        <Typography color="secondary" aria-live="assertive" padding="1px" whiteSpace="pre-wrap" align="left">
-            <IdButtonTheme theme={theme} onClick={onIdClick}>
+        <Typography
+            color="secondary"
+            aria-live="assertive"
+            padding="1px"
+            whiteSpace="pre-wrap"
+            align="left"
+            style={{ textDecoration: idOver || lineMenuId === id ? (newAtTop ? "underline" : "overline") : "none" }}
+        >
+            <IdButtonTheme
+                theme={theme}
+                onClick={onIdClick}
+                onMouseEnter={() => setIdOver(true)}
+                onMouseLeave={() => setIdOver(false)}
+            >
                 {id}
             </IdButtonTheme>
             : [<TimestampTheme theme={theme}>{convertTime(firstTime)}</TimestampTheme>]{" "}

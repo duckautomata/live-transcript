@@ -6,15 +6,15 @@ import { TranscriptContext } from "../providers/TranscriptProvider";
 import { unixToRelative } from "../logic/dateTime";
 
 export default function LineMenu({ wsKey }) {
-    const { anchorEl, id, setAnchorEl } = useContext(LineMenuContext);
+    const { anchorEl, lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
     const { activeId, transcript, startTime } = useContext(TranscriptContext);
     const { audioDownloader } = useContext(SettingContext);
     const open = Boolean(anchorEl);
 
-    const downloadUrl = `https://dokiscripts.com/${wsKey}/audio?id=${id}`;
-    const playUrl = `https://dokiscripts.com/${wsKey}/audio?id=${id}&stream=true`;
+    const downloadUrl = `https://dokiscripts.com/${wsKey}/audio?id=${lineMenuId}`;
+    const playUrl = `https://dokiscripts.com/${wsKey}/audio?id=${lineMenuId}&stream=true`;
 
-    const lines = transcript.filter((line) => line.id === id);
+    const lines = transcript.filter((line) => line.id === lineMenuId);
     const ts = lines?.[0]?.segments?.[0]?.timestamp;
     const formattedTime = unixToRelative(ts, startTime);
 
@@ -29,6 +29,7 @@ export default function LineMenu({ wsKey }) {
 
     const handleClose = () => {
         setAnchorEl(null);
+        setLineMenuId(-1);
     };
     const handleDownload = () => {
         window.open(downloadUrl, "_blank");
@@ -41,6 +42,10 @@ export default function LineMenu({ wsKey }) {
     const handleOpenStream = () => {
         window.open(openUrl, "_blank");
         handleClose();
+    };
+
+    const handleCopyTimestamp = () => {
+        navigator.clipboard.writeText(ts);
     };
 
     return (
@@ -61,6 +66,7 @@ export default function LineMenu({ wsKey }) {
             {audioDownloader && <MenuItem onClick={handleDownload}>Download Audio</MenuItem>}
             {audioDownloader && <MenuItem onClick={handlePlay}>Play Audio</MenuItem>}
             {lines.length > 0 && <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>}
+            {lines.length > 0 && <MenuItem onClick={handleCopyTimestamp}>Copy Timestamp</MenuItem>}
         </Menu>
     );
 }
