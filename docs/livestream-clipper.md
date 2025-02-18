@@ -7,7 +7,7 @@
 
 ### Installation
 1. If you already have yt-dlp installed, get a second copy and name it `yt-dlp-stream-clipper`.
-2. Run `yt-dlp-stream-clipper--update-to bashonly/yt-dlp@live-from-sections`
+2. Run `yt-dlp-stream-clipper --update-to bashonly/yt-dlp@live-from-sections`
 > Main branch of yt-dlp does not currently support --live-from-start and --download-sections at the same time. So we will have to use a feature branch that does.
 3. save the powershell script locally. Name the file extension `.ps1`
 ```powershell
