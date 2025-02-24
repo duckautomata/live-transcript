@@ -21,6 +21,7 @@
         "js-cookie": "^3.0.5",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+        "react-h5-audio-player": "^3.10.0-rc.1",
         "react-router-dom": "^7.1.5",
         "react-use-websocket": "^4.13.0"
     },

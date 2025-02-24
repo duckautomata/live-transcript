@@ -4,15 +4,16 @@ import { Menu, MenuItem } from "@mui/material";
 import { SettingContext } from "../providers/SettingProvider";
 import { TranscriptContext } from "../providers/TranscriptProvider";
 import { unixToRelative } from "../logic/dateTime";
+import { AudioContext } from "../providers/AudioProvider";
 
 export default function LineMenu({ wsKey }) {
     const { anchorEl, lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
     const { activeId, transcript, startTime } = useContext(TranscriptContext);
     const { audioDownloader } = useContext(SettingContext);
+    const { setAudioId } = useContext(AudioContext);
     const open = Boolean(anchorEl);
 
     const downloadUrl = `https://dokiscripts.com/${wsKey}/audio?id=${lineMenuId}`;
-    const playUrl = `https://dokiscripts.com/${wsKey}/audio?id=${lineMenuId}&stream=true`;
 
     const lines = transcript.filter((line) => line.id === lineMenuId);
     const ts = lines?.[0]?.segments?.[0]?.timestamp;
@@ -36,7 +37,7 @@ export default function LineMenu({ wsKey }) {
         handleClose();
     };
     const handlePlay = () => {
-        window.open(playUrl, "_blank");
+        setAudioId(lineMenuId);
         handleClose();
     };
     const handleOpenStream = () => {

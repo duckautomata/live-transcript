@@ -18,12 +18,14 @@ import Home from "./components/Home";
 import TagFixer from "./components/TagFixer";
 import LineMenu from "./components/LineMenu";
 import { LineMenuProvider } from "./providers/LineMenuProvider";
+import { AudioContext, AudioProvider } from "./providers/AudioProvider";
 
 function App() {
     const location = useLocation();
     const [wsKey, setWsKey] = useState(undefined);
     const { theme } = useContext(SettingContext);
     const { setActiveId, setActiveTitle, setStartTime, setIsLive, setTranscript } = useContext(TranscriptContext);
+    const { setAudioId } = useContext(AudioContext);
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
     let colorTheme = prefersDarkMode ? darkTheme : lightTheme;
     if (theme === "light") {
@@ -51,6 +53,7 @@ function App() {
             setStartTime(0);
             setIsLive(false);
             setTranscript([]);
+            setAudioId(-1);
         }
 
         setWsKey(key);
@@ -62,30 +65,32 @@ function App() {
                 <CssBaseline />
                 <TagOffsetPopupProvider>
                     <LineMenuProvider>
-                        {window.maintenance ? (
-                            <Maintenance />
-                        ) : (
-                            <>
-                                <LineMenu wsKey={wsKey} />
-                                <Sidebar wsKey={wsKey}>
-                                    {wsKey ? (
-                                        <>
-                                            <Websocket wsKey={wsKey} />
-                                            <Routes>
-                                                <Route path={`${wsKey}/*`} element={<StreamLogs wsKey={wsKey} />} />
-                                                <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
-                                                <Route
-                                                    path={`${wsKey}/tagFixer/`}
-                                                    element={<TagFixer wsKey={wsKey} />}
-                                                />
-                                            </Routes>
-                                        </>
-                                    ) : (
-                                        <Home />
-                                    )}
-                                </Sidebar>
-                            </>
-                        )}
+                        <AudioProvider>
+                            {window.maintenance ? (
+                                <Maintenance />
+                            ) : (
+                                <>
+                                    <LineMenu wsKey={wsKey} />
+                                    <Sidebar wsKey={wsKey}>
+                                        {wsKey ? (
+                                            <>
+                                                <Websocket wsKey={wsKey} />
+                                                <Routes>
+                                                    <Route path={`${wsKey}/*`} element={<StreamLogs wsKey={wsKey} />} />
+                                                    <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
+                                                    <Route
+                                                        path={`${wsKey}/tagFixer/`}
+                                                        element={<TagFixer wsKey={wsKey} />}
+                                                    />
+                                                </Routes>
+                                            </>
+                                        ) : (
+                                            <Home />
+                                        )}
+                                    </Sidebar>
+                                </>
+                            )}
+                        </AudioProvider>
                     </LineMenuProvider>
                 </TagOffsetPopupProvider>
             </ThemeProvider>

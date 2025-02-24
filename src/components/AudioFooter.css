@@ -1,0 +1,12 @@
+header.MuiPaper-root {
+    background: transparent;
+    box-shadow: none;
+}
+
+div.rhap_container svg {
+    color: white;
+}
+
+/* div.rhap_progress-filled, div.rhap_progress-indicator, div.rhap_volume-filled, div.rhap_volume-indicator  {
+    background: black;
+} */

@@ -20,6 +20,8 @@ import { isMobile } from "../logic/mobile";
 import dokiIcon from "../assets/icons/doki.jpg";
 import mintIcon from "../assets/icons/mint.jpg";
 import junaIcon from "../assets/icons/juna.jpg";
+import AudioFooter from "./AudioFooter";
+import { AudioContext } from "../providers/AudioProvider";
 
 const drawerWidth = isMobile ? 160 : 200;
 const drawerWidthCollapsed = 60;
@@ -28,6 +30,7 @@ export default function Sidebar({ wsKey, children }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { sidebarOpen, setSidebarOpen } = useContext(SettingContext);
+    const { setAudioId } = useContext(AudioContext);
     const [helpOpen, setHelpOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -70,6 +73,7 @@ export default function Sidebar({ wsKey, children }) {
         }
         if (parts.join("/") !== location.pathname) {
             navigate(parts.join("/"));
+            setAudioId(-1);
         }
     };
 
@@ -85,6 +89,7 @@ export default function Sidebar({ wsKey, children }) {
 
         if (parts.join("/") !== location.pathname) {
             navigate(parts.join("/"));
+            setAudioId(-1);
         }
     };
 
@@ -211,6 +216,7 @@ export default function Sidebar({ wsKey, children }) {
                 }}
             >
                 {children}
+                <AudioFooter wsKey={wsKey} offset={sidebarOpen ? drawerWidth : drawerWidthCollapsed} />
             </Box>
         </Box>
     );
