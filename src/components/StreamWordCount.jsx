@@ -2,14 +2,28 @@ import { Box, Stack, TextField, Typography } from "@mui/material";
 import { useCallback, useContext, useState } from "react";
 import { TranscriptContext } from "../providers/TranscriptProvider";
 import { LineChart } from "@mui/x-charts";
-import { unixToLocal } from "../logic/dateTime";
+import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
 import "./StreamWordCount.css";
 import { countWord } from "../logic/wordCount";
 import { isMobile } from "../logic/mobile";
+import { SettingContext } from "../providers/SettingProvider";
 
 export default function StreamWordCount() {
-    const { transcript } = useContext(TranscriptContext);
+    const { transcript, startTime } = useContext(TranscriptContext);
+    const { timeFormat } = useContext(SettingContext);
     const [word, setWord] = useState("");
+
+    const convertTime = (time) => {
+        if (timeFormat === "relative") {
+            return unixToRelative(time, startTime);
+        } else if (timeFormat === "local") {
+            return unixToLocal(time);
+        } else if (timeFormat === "UTC") {
+            return unixToUTC(time);
+        } else {
+            return time;
+        }
+    };
 
     const transcriptToLineData = useCallback(() => {
         // Each index in the data array is a specific line in the transcript.
@@ -37,13 +51,11 @@ export default function StreamWordCount() {
     }, [transcript, word]);
     const { data, timestamps } = transcriptToLineData();
     const maxCount = data.length > 0 ? data.at(-1) : 0;
-    const durationSec = timestamps.length > 0 ? timestamps.at(-1) - timestamps.at(0) : 0;
-    const durationMin = Math.floor(durationSec / 60.0);
-    const durationRemainingSec = durationSec % 60;
-    const firstCountSec = data.length > 1 ? timestamps.at(1) - timestamps.at(0) : 0;
+    const duration = timestamps.length > 0 ? unixToRelative(timestamps.at(-1), startTime) : 0;
+    const firstCount = data.length > 1 ? unixToRelative(timestamps.at(1), startTime) : 0;
 
     return (
-        <Stack direction="column" sx={{ width: "60vw", minWidth: 300 }}>
+        <Stack direction="column" width={"auto"} maxWidth={1200} minWidth={300}>
             <TextField
                 id="word-input"
                 label="Text to search"
@@ -62,7 +74,7 @@ export default function StreamWordCount() {
                                     data: timestamps,
                                     scaleType: "time",
                                     dataKey: "time",
-                                    valueFormatter: (time) => unixToLocal(time),
+                                    valueFormatter: (time) => convertTime(time),
                                 },
                             ]}
                             series={[{ data: data, label: "Count", curve: "linear" }]}
@@ -71,13 +83,9 @@ export default function StreamWordCount() {
                         />
                     </Box>
                     <Stack direction="column">
-                        <Typography sx={{ display: "flex" }}>Max Count: {maxCount}</Typography>
-                        <Typography sx={{ display: "flex" }}>
-                            Transcript Duration: {durationMin} minutes {durationRemainingSec} seconds
-                        </Typography>
-                        <Typography sx={{ display: "flex" }}>
-                            Time to first usage: {(firstCountSec / 60.0).toFixed(2)} minutes
-                        </Typography>
+                        <Typography sx={{ display: "flex" }}>Max count: {maxCount}</Typography>
+                        <Typography sx={{ display: "flex" }}>Stream duration: {duration}</Typography>
+                        <Typography sx={{ display: "flex" }}>Time to first usage: {firstCount}</Typography>
                     </Stack>
                 </Stack>
             ) : (
