@@ -12,6 +12,9 @@ export const darkTheme = createTheme({
         timestamp: {
             main: "#8093E0",
         },
+        lineground: {
+            main: "#7d5593",
+        },
         primary: {
             main: "#20A79A",
             background: "#FFFFFF",
@@ -38,6 +41,9 @@ export const lightTheme = createTheme({
         },
         timestamp: {
             main: "#304BC5",
+        },
+        lineground: {
+            main: "#b095be",
         },
         primary: {
             main: "#12645B",

@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { LineMenuContext } from "../providers/LineMenuProvider";
 import { Menu, MenuItem } from "@mui/material";
-import { SettingContext } from "../providers/SettingProvider";
 import { TranscriptContext } from "../providers/TranscriptProvider";
 import { unixToRelative } from "../logic/dateTime";
 import { AudioContext } from "../providers/AudioProvider";
@@ -9,7 +8,6 @@ import { AudioContext } from "../providers/AudioProvider";
 export default function LineMenu({ wsKey }) {
     const { anchorEl, lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
     const { activeId, transcript, startTime } = useContext(TranscriptContext);
-    const { audioDownloader } = useContext(SettingContext);
     const { setAudioId } = useContext(AudioContext);
     const open = Boolean(anchorEl);
 
@@ -64,8 +62,8 @@ export default function LineMenu({ wsKey }) {
                 horizontal: "left",
             }}
         >
-            {audioDownloader && <MenuItem onClick={handleDownload}>Download Audio</MenuItem>}
-            {audioDownloader && <MenuItem onClick={handlePlay}>Play Audio</MenuItem>}
+            {lines.length > 0 && <MenuItem onClick={handleDownload}>Download Audio</MenuItem>}
+            {lines.length > 0 && <MenuItem onClick={handlePlay}>Play Audio</MenuItem>}
             {lines.length > 0 && <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>}
             {lines.length > 0 && <MenuItem onClick={handleCopyTimestamp}>Copy Timestamp</MenuItem>}
         </Menu>

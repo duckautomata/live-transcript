@@ -6,7 +6,6 @@ import styled from "@emotion/styled";
 import { TagOffsetPopupContext } from "../providers/TagOffsetPopupProvider";
 import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
 import { LineMenuContext } from "../providers/LineMenuProvider";
-import { SettingContext } from "../providers/SettingProvider";
 import { AudioContext } from "../providers/AudioProvider";
 
 const IdButtonTheme = styled("span")(({ theme }) => ({
@@ -29,7 +28,6 @@ export default function Line({ id, segments, timeFormat, startTime }) {
     const theme = useTheme();
     const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
     const { lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
-    const { newAtTop } = useContext(SettingContext);
     const { audioId } = useContext(AudioContext);
     const [idOver, setIdOver] = useState(false);
 
@@ -65,9 +63,9 @@ export default function Line({ id, segments, timeFormat, startTime }) {
             padding="1px"
             whiteSpace="pre-wrap"
             align="left"
+            id={id}
             style={{
-                textDecoration:
-                    idOver || lineMenuId === id || audioId === id ? (newAtTop ? "underline" : "overline") : "none",
+                background: idOver || lineMenuId === id || audioId === id ? theme.palette.lineground.main : "none",
             }}
         >
             <IdButtonTheme

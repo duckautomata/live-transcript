@@ -13,6 +13,8 @@ import {
 import settings_img from "../assets/helpguide/settings.png";
 import wordCount_img from "../assets/helpguide/word-count.png";
 import transcript_img from "../assets/helpguide/transcript.png";
+import linemenu_img from "../assets/helpguide/linemenu-example.png";
+import audioplayerDesktop_img from "../assets/helpguide/audioplayer-desktop.png";
 import tagHighlightText_img from "../assets/helpguide/tag-highlihgt-text-light.png";
 import tagMenu_img from "../assets/helpguide/tag-menu.png";
 import messageId_img from "../assets/helpguide/message-ID.png";
@@ -59,7 +61,7 @@ export default function HelpPopup({ open, setOpen }) {
                                 </Typography>
                                 <img src={settings_img} width="75%" />
                                 <Typography variant="body1" gutterBottom>
-                                    There are currently 5 settings. All settings are stored in a cookie and persist
+                                    There are currently 4 settings. All settings are stored in a cookie and persist
                                     across sessions.
                                 </Typography>
                                 <ul>
@@ -92,14 +94,6 @@ export default function HelpPopup({ open, setOpen }) {
                                             transcript. This will be explained further in Tagging Feature.
                                         </blockquote>
                                     </li>
-                                    <li>
-                                        Audio Downloader (beta)
-                                        <blockquote>
-                                            Enables you to download the mp3 file for a specific line. When enabled,
-                                            click on the id you wish to download. Then select either &#34;Download
-                                            Audio&#34; or &#34;Play Audio&#34;.
-                                        </blockquote>
-                                    </li>
                                 </ul>
                             </AccordionDetails>
                         </Accordion>
@@ -126,8 +120,8 @@ export default function HelpPopup({ open, setOpen }) {
                                     <li>
                                         Transcripts
                                         <blockquote>
-                                            Select which transcripts you wish to load. Currently there are 3: Doki,
-                                            Mint, Juna.
+                                            Select which transcripts you wish to load. Currently there is: Doki, Mint,
+                                            Juna.
                                         </blockquote>
                                     </li>
                                     <li>
@@ -185,11 +179,48 @@ export default function HelpPopup({ open, setOpen }) {
                                 </ol>
                                 The id is a clickable button. Click on it to open a menu. This is where you can
                                 <ul>
-                                    <li>Download the audio if you have that setting enabled</li>
+                                    <li>Play or download the audio</li>
                                     <li>Open the stream to this spot if DVR or Vod is available</li>
+                                    <li>Copy the unix timestamp of when the line starts</li>
                                 </ul>
+                                <img src={linemenu_img} width="100%" />
                                 Do note that the &#34;Open Stream&#34; option is not 100% accurate since we do not know
                                 exactly when the stream started.
+                            </AccordionDetails>
+                        </Accordion>
+
+                        {/* Audio Player */}
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMore />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>Audio Player</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body1" gutterBottom>
+                                    When you click on a line id and select &#34;Play Audio&#34;, it will open the audio
+                                    player and start playing the audio of that line.
+                                </Typography>
+                                <img src={audioplayerDesktop_img} width="100%" />
+                                To keep track of the line it is playing, it will highlight that line purple. You can do
+                                the following with the audio player:
+                                <ol>
+                                    <li>Close it by clicking the &#9587; button</li>
+                                    <li>Download the audio by clicking the download button</li>
+                                    <li>Jump forward/backward one line</li>
+                                    <li>Play, pause, mute, seek</li>
+                                </ol>
+                                Important things to note
+                                <ol>
+                                    <li>
+                                        If you spam the forward/backward button, the server will throttle you. If you do
+                                        spam it, just give it a couple of seconds for the throttle to reset.
+                                    </li>
+                                    <li>The audio will automatically stop when you go to another page or streamer</li>
+                                    <li>If the audio fails to load, it will not show anything</li>
+                                </ol>
                             </AccordionDetails>
                         </Accordion>
 
@@ -245,7 +276,7 @@ export default function HelpPopup({ open, setOpen }) {
                                     Once you find the section you want to time a tag to; click it and a menu will
                                     appear.
                                 </Typography>
-                                <img src={tagMenu_img} />
+                                <img src={tagMenu_img} width="100%" />
                                 <Typography variant="body1" gutterBottom>
                                     This is the tagging alignment menu. It takes the discord message ID of your tag, and
                                     calculates the offset you need for it to align with the beginning of the segment you
@@ -268,7 +299,8 @@ export default function HelpPopup({ open, setOpen }) {
                                     Once both values are set, it will display the adjust command to run. As well as
                                     enable the button Copy Command to copy the command to your clipboard.
                                 </Typography>
-                                <img src={filledOutTagMenu_img} />
+                                <img src={filledOutTagMenu_img} width="100%" />
+                                <br />
                                 Note:
                                 <ol>
                                     <li>

@@ -16,18 +16,8 @@ import {
 import { SettingContext } from "../providers/SettingProvider";
 
 const SettingsPopup = ({ open, setOpen }) => {
-    const {
-        theme,
-        timeFormat,
-        newAtTop,
-        enableTagHelper,
-        audioDownloader,
-        setTheme,
-        setTimeFormat,
-        setNewAtTop,
-        setEnableTagHelper,
-        setAudioDownloader,
-    } = useContext(SettingContext);
+    const { theme, timeFormat, newAtTop, enableTagHelper, setTheme, setTimeFormat, setNewAtTop, setEnableTagHelper } =
+        useContext(SettingContext);
 
     const handleClose = () => {
         setOpen(false);
@@ -87,16 +77,6 @@ const SettingsPopup = ({ open, setOpen }) => {
                             />
                         }
                         label="Enable Tag Helper"
-                    />
-                    <FormControlLabel
-                        control={
-                            <Switch
-                                checked={audioDownloader}
-                                onChange={(e) => setAudioDownloader(e.target.checked)}
-                                name="audioDownloader"
-                            />
-                        }
-                        label="Beta: Audio Downloader"
                     />
                 </Box>
             </DialogContent>

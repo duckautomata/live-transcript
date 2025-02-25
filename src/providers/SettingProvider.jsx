@@ -27,14 +27,12 @@ export const SettingContext = createContext({
     newAtTop: false,
     enableTagHelper: false,
     defaultOffset: "-20",
-    audioDownloader: false,
     sidebarOpen: true,
     setTheme: () => {},
     setTimeFormat: () => {},
     setNewAtTop: () => {},
     setEnableTagHelper: () => {},
     setDefaultOffset: () => {},
-    setAudioDownloader: () => {},
     setSidebarOpen: () => {},
 });
 
@@ -44,7 +42,6 @@ export const SettingProvider = ({ children }) => {
     const [newAtTop, setNewAtTop] = useState(getCookie("newAtTop", true));
     const [enableTagHelper, setEnableTagHelper] = useState(getCookie("enableTagHelper", false));
     const [defaultOffset, setDefaultOffset] = useState(getCookie("defaultOffset", "-20"));
-    const [audioDownloader, setAudioDownloader] = useState(getCookie("audioDownloader", false));
     const [sidebarOpen, setSidebarOpen] = useState(getCookie("sidebarOpen", false));
 
     const settingValue = useMemo(
@@ -54,17 +51,15 @@ export const SettingProvider = ({ children }) => {
             newAtTop,
             enableTagHelper,
             defaultOffset,
-            audioDownloader,
             sidebarOpen,
             setTheme,
             setTimeFormat,
             setNewAtTop,
             setEnableTagHelper,
             setDefaultOffset,
-            setAudioDownloader,
             setSidebarOpen,
         }),
-        [theme, timeFormat, newAtTop, enableTagHelper, defaultOffset, audioDownloader, sidebarOpen],
+        [theme, timeFormat, newAtTop, enableTagHelper, defaultOffset, sidebarOpen],
     );
 
     // Saves current settings to cookie when any value changes
@@ -83,9 +78,6 @@ export const SettingProvider = ({ children }) => {
     useEffect(() => {
         setCookie("defaultOffset", defaultOffset);
     }, [defaultOffset]);
-    useEffect(() => {
-        setCookie("audioDownloader", audioDownloader);
-    }, [audioDownloader]);
     useEffect(() => {
         setCookie("sidebarOpen", sidebarOpen);
     }, [sidebarOpen]);
