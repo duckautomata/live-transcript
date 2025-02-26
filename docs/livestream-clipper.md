@@ -13,6 +13,60 @@
     > Main branch of yt-dlp does not currently support --live-from-start and --download-sections at the same time. So we will have to use a feature branch that does.
 3. save the powershell script locally. Name the file extension `.ps1`
 
+If you do not know what the stream live mode is set to, open stat for nerds and check Live Mode
+![live-mode](live-mode.png)
+
+#### SCRIPT FOR LOW LATENCY STREAMS
+
+```powershell
+$url = Read-Host -Prompt "Livestream URL"
+Write-Host "Using url for this session"
+while ($true) {
+  $startTimestamp = Read-Host -Prompt "Start UNIX"
+  $endTimestamp = Read-Host -Prompt "End   UNIX"
+
+  try {
+    $startSeconds = [int]$startTimestamp
+    $endSeconds = [int]$endTimestamp
+
+    $startTimestamp = [Math]::Max(0, $startSeconds - 6)
+    $endTimestamp = $endSeconds - 2
+  } catch {
+    Write-Error "Invalid Unix timestamp format. Please provide integer values."
+    continue
+  }
+
+  $clipName = Read-Host -Prompt "Enter the clip name (without extension)"
+  $audioOnly = Read-Host -Prompt "Audio only? (y/n)"
+
+  $audioCommand = ""
+  if ($audioOnly -eq "Y" -or $audioOnly -eq "y") {
+    $audioCommand = '-f "ba"'
+  }
+
+  Start-Process -FilePath yt-dlp-stream-clipper -Wait -ArgumentList "$url", "$audioCommand", "--live-from-start", "--download-sections", "*$startTimestamp-$endTimestamp", '-o', "temp.mp4"
+
+  # If the name is empty, generate a timestamp
+  if ([string]::IsNullOrEmpty($clipName)) {
+    $timestamp = Get-Date -Format "yyyyMMddHHmmss"
+    $clipName = "$timestamp"
+    Write-Host "No name provided, using timestamp $timestamp"
+  } else {
+    $timestamp = Get-Date -Format "yyyyMMdd"
+    $clipName = "$timestamp $clipName"
+  }
+
+  if ($audioOnly -eq "Y" -or $audioOnly -eq "y") {
+    ffmpeg -i "temp.mp4" "$clipName.mp3" > $null
+    Remove-Item -Path "temp.mp4" -Force
+  } else {
+    Rename-Item -Path "temp.mp4" -NewName "$clipName.mp4"
+  }
+}
+```
+
+#### SCRIPT FOR ULTRA-LOW LATENCY STREAMS
+
 ```powershell
 $url = Read-Host -Prompt "Livestream URL"
 Write-Host "Using url for this session"
