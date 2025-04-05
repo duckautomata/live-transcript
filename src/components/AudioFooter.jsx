@@ -4,14 +4,14 @@ import "react-h5-audio-player/lib/styles.css";
 import "./AudioFooter.css";
 import { AudioContext } from "../providers/AudioProvider";
 import { TranscriptContext } from "../providers/TranscriptProvider";
-import { AppBar, Box, IconButton, Toolbar, Tooltip, useTheme } from "@mui/material";
+import { AppBar, Box, IconButton, Toolbar, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { Close, Download } from "@mui/icons-material";
-import { isMobile } from "../logic/mobile";
 
-export default function AudioFooter({ wsKey, offset }) {
+export default function AudioFooter({ wsKey, offset, width }) {
     const { audioId, setAudioId } = useContext(AudioContext);
     const { transcript } = useContext(TranscriptContext);
     const theme = useTheme();
+    const isMobile = useMediaQuery("(max-width:768px)");
 
     const playUrl = `https://dokiscripts.com/${wsKey}/audio?id=${audioId}&stream=true`;
     const downloadUrl = `https://dokiscripts.com/${wsKey}/audio?id=${audioId}`;
@@ -36,8 +36,8 @@ export default function AudioFooter({ wsKey, offset }) {
                 top: "auto",
                 bottom: 0,
                 background: "green",
-                left: isMobile ? `${offset - 24}px` : `${window.innerWidth - desktopWidth + 9}px`,
-                width: isMobile ? `${window.innerWidth - 27}px` : desktopWidth,
+                left: isMobile ? `${offset - 24}px` : `${width - desktopWidth + 9}px`,
+                width: isMobile ? `${width - 27}px` : desktopWidth,
             }}
         >
             <Toolbar>

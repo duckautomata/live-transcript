@@ -66,6 +66,7 @@ export default function Line({ id, segments, timeFormat, startTime }) {
             id={id}
             style={{
                 background: idOver || lineMenuId === id || audioId === id ? theme.palette.lineground.main : "none",
+                wordBreak: "break-word",
             }}
         >
             <IdButtonTheme

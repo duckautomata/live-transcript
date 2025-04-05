@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -13,18 +13,14 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import HelpPopup from "./HelpPopup";
 import SettingsPopup from "./SettingsPopup";
 import { Construction, GitHub, Help } from "@mui/icons-material";
-import { Avatar, Tooltip } from "@mui/material";
+import { Avatar, Tooltip, useMediaQuery } from "@mui/material";
 import { SettingContext } from "../providers/SettingProvider";
 import { useLocation, useNavigate } from "react-router-dom";
-import { isMobile } from "../logic/mobile";
 import dokiIcon from "../assets/icons/doki.jpg";
 import mintIcon from "../assets/icons/mint.jpg";
 import junaIcon from "../assets/icons/juna.jpg";
 import AudioFooter from "./AudioFooter";
 import { AudioContext } from "../providers/AudioProvider";
-
-const drawerWidth = isMobile ? 160 : 200;
-const drawerWidthCollapsed = 60;
 
 export default function Sidebar({ wsKey, children }) {
     const location = useLocation();
@@ -33,6 +29,10 @@ export default function Sidebar({ wsKey, children }) {
     const { setAudioId } = useContext(AudioContext);
     const [helpOpen, setHelpOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [width, setWidth] = useState(window.innerWidth);
+    const isMobile = useMediaQuery("(max-width:768px)");
+    const drawerWidth = isMobile ? 160 : 200;
+    const drawerWidthCollapsed = 60;
 
     const streamers = [
         { name: "Doki", icon: <Avatar src={dokiIcon} alt="doki" sx={{ width: 32, height: 32 }} />, value: "doki" },
@@ -92,6 +92,23 @@ export default function Sidebar({ wsKey, children }) {
             setAudioId(-1);
         }
     };
+
+    useEffect(() => {
+        const updateWidth = () => {
+            setWidth(window.innerWidth);
+        };
+
+        // Log initial width
+        updateWidth();
+
+        // Add resize event listener
+        window.addEventListener("resize", updateWidth);
+
+        // Cleanup on unmount
+        return () => {
+            window.removeEventListener("resize", updateWidth);
+        };
+    }, []);
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -216,7 +233,7 @@ export default function Sidebar({ wsKey, children }) {
                 }}
             >
                 {children}
-                <AudioFooter wsKey={wsKey} offset={sidebarOpen ? drawerWidth : drawerWidthCollapsed} />
+                <AudioFooter wsKey={wsKey} offset={sidebarOpen ? drawerWidth : drawerWidthCollapsed} width={width} />
             </Box>
         </Box>
     );

@@ -1,16 +1,16 @@
-import { Box, IconButton, InputAdornment, Pagination, TextField, Typography } from "@mui/material";
+import { Box, IconButton, InputAdornment, Pagination, TextField, Typography, useMediaQuery } from "@mui/material";
 import { useContext, useState } from "react";
 import { TranscriptContext } from "../providers/TranscriptProvider";
 import Line from "./Line";
 import { SettingContext } from "../providers/SettingProvider";
 import { Clear, Search } from "@mui/icons-material";
-import { isMobile } from "../logic/mobile";
 
 export default function StreamLogs({ wsKey }) {
     const { activeTitle, startTime, isLive, transcript } = useContext(TranscriptContext);
     const { newAtTop, timeFormat } = useContext(SettingContext);
     const [page, setPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const isMobile = useMediaQuery("(max-width:768px)");
 
     const liveText = isLive ? "live" : "offline";
 
@@ -52,11 +52,11 @@ export default function StreamLogs({ wsKey }) {
     return (
         <>
             {isMobile ? (
-                <Typography color="primary" variant="h5" component="h5" sx={{ mb: 2 }}>
+                <Typography color="primary" variant="h5" component="h5" sx={{ mb: 2, wordBreak: "break-word" }}>
                     {activeTitle}
                 </Typography>
             ) : (
-                <Typography color="primary" variant="h4" component="h4" sx={{ mb: 2 }}>
+                <Typography color="primary" variant="h4" component="h4" sx={{ mb: 2, wordBreak: "break-word" }}>
                     {activeTitle}
                 </Typography>
             )}

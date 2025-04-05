@@ -13,7 +13,7 @@ export const darkTheme = createTheme({
             main: "#8093E0",
         },
         lineground: {
-            main: "#7d5593",
+            main: "#395553",
         },
         primary: {
             main: "#20A79A",
@@ -43,7 +43,7 @@ export const lightTheme = createTheme({
             main: "#304BC5",
         },
         lineground: {
-            main: "#b095be",
+            main: "#89A5A3",
         },
         primary: {
             main: "#12645B",
