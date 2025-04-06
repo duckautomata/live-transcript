@@ -7,11 +7,12 @@ import { TagOffsetPopupContext } from "../providers/TagOffsetPopupProvider";
 import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
 import { LineMenuContext } from "../providers/LineMenuProvider";
 import { AudioContext } from "../providers/AudioProvider";
+import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
 
-const IdButtonTheme = styled("span")(({ theme }) => ({
+const IdButtonTheme = styled("span")(({ theme, isClipable }) => ({
     cursor: "pointer",
     "&": {
-        color: theme.palette.id.main,
+        color: isClipable ? theme.palette.id.clip : theme.palette.id.main,
     },
     "&:hover": {
         backgroundColor: theme.palette.id.background,
@@ -29,6 +30,7 @@ export default function Line({ id, segments, timeFormat, startTime }) {
     const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
     const { lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
     const { audioId } = useContext(AudioContext);
+    const { clipStartIndex, clipEndIndex, maxClipSize } = useContext(ClipperPopupContext);
     const [idOver, setIdOver] = useState(false);
 
     const onSegmentClick = (timestamp) => {
@@ -53,6 +55,35 @@ export default function Line({ id, segments, timeFormat, startTime }) {
         }
     };
 
+    const colorBackground = () => {
+        if (clipStartIndex === id) {
+            return theme.palette.lineground.clip;
+        }
+
+        if (
+            lineMenuId >= 0 &&
+            clipStartIndex >= 0 &&
+            Math.abs(clipStartIndex - id) < maxClipSize &&
+            ((clipStartIndex <= id && id <= lineMenuId) || (lineMenuId <= id && id <= clipStartIndex))
+        ) {
+            return theme.palette.lineground.clip;
+        }
+
+        if (
+            clipEndIndex >= 0 &&
+            clipStartIndex >= 0 &&
+            Math.abs(clipStartIndex - id) < maxClipSize &&
+            ((clipStartIndex <= id && id <= clipEndIndex) || (clipEndIndex <= id && id <= clipStartIndex))
+        ) {
+            return theme.palette.lineground.clip;
+        }
+
+        if (idOver || lineMenuId === id || audioId === id) {
+            return theme.palette.lineground.main;
+        }
+        return "none";
+    };
+
     const firstTime = segments?.[0]?.timestamp ?? 0;
     // Menu item: https://mui.com/material-ui/react-menu/#positioned-menu
     // Should have a separate component for the menu, and pass the anchorEl as a context
@@ -65,7 +96,7 @@ export default function Line({ id, segments, timeFormat, startTime }) {
             align="left"
             id={id}
             style={{
-                background: idOver || lineMenuId === id || audioId === id ? theme.palette.lineground.main : "none",
+                background: colorBackground(),
                 wordBreak: "break-word",
             }}
         >
@@ -74,6 +105,7 @@ export default function Line({ id, segments, timeFormat, startTime }) {
                 onClick={onIdClick}
                 onMouseEnter={() => setIdOver(true)}
                 onMouseLeave={() => setIdOver(false)}
+                isClipable={clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize}
             >
                 {id}
             </IdButtonTheme>

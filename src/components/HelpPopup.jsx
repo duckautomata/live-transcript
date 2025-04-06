@@ -20,6 +20,9 @@ import tagMenu_img from "../assets/helpguide/tag-menu.png";
 import messageId_img from "../assets/helpguide/message-ID.png";
 import filledOutTagMenu_img from "../assets/helpguide/filled-out-tag-menu.png";
 import sidebar_img from "../assets/helpguide/sidebar.png";
+import clippingStarted_img from "../assets/helpguide/clipping-started.png";
+import clippingMenuDownload_img from "../assets/helpguide/clipping-menu-download.png";
+import clippingPopup_img from "../assets/helpguide/clipping-popup.png";
 import { ExpandMore } from "@mui/icons-material";
 
 export default function HelpPopup({ open, setOpen }) {
@@ -179,6 +182,7 @@ export default function HelpPopup({ open, setOpen }) {
                                 </ol>
                                 The id is a clickable button. Click on it to open a menu. This is where you can
                                 <ul>
+                                    <li>Start a clip (explained more in the Clipping section)</li>
                                     <li>Play or download the audio</li>
                                     <li>Open the stream to this spot if DVR or Vod is available</li>
                                     <li>Copy the unix timestamp of when the line starts</li>
@@ -221,6 +225,70 @@ export default function HelpPopup({ open, setOpen }) {
                                     <li>The audio will automatically stop when you go to another page or streamer</li>
                                     <li>If the audio fails to load, it will not show anything</li>
                                 </ol>
+                            </AccordionDetails>
+                        </Accordion>
+
+                        {/* Clipping */}
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMore />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>Clipping</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                Clipping allows you to generate a media clip that spans multiple lines in the
+                                transcript. The benefits with using this instead of downloading each line separately is
+                                <ul>
+                                    <li>Significantly faster since you do not have to combine them manually</li>
+                                    <li>No audio artifacts or missed audio between lines due to encoding issues</li>
+                                    <li>Clearly see what you are clipping</li>
+                                </ul>
+                                As of now, only audio clipping is available.
+                                <Typography variant="body1" gutterBottom>
+                                    To start clipping, click on a line id and select &#34;Start Clipping&#34;. This will
+                                    do the following:
+                                </Typography>
+                                <ul>
+                                    <li>
+                                        Mark that line as one of the ends of the clip (either start or finish depending
+                                        on the next id you pick)
+                                    </li>
+                                    <li>
+                                        Highlight all ids next to it in red to depict the range of the clip. Clips are
+                                        limited in how large they can get.
+                                    </li>
+                                    <li>Any lines that will be in the clip will now be highlighted in purple.</li>
+                                </ul>
+                                <img src={clippingStarted_img} width="100%" />
+                                To mark the second end of the clip, click on one of the red ids and click &#34;Download
+                                Clip&#34;.
+                                <img src={clippingMenuDownload_img} width="100%" />
+                                <Typography variant="caption">
+                                    Caption: as you can see, the lines between 631 (the id I started with) and 634 (the
+                                    id I just clicked on) is highlight. This visually shows you what lines will be
+                                    included in the clip.
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    When you click on the download button, a popup will appear. From here, give the clip
+                                    a name and click download to finish the clipping process.
+                                </Typography>
+                                <img src={clippingPopup_img} width="100%" />
+                                Important notes:
+                                <ul>
+                                    <li>At any point, you can click Reset Clip to get out of the clipping process</li>
+                                    <li>
+                                        If one of the lines in a clip does not have any audio (either it did not get
+                                        saved or it was deleted), then the whole clip will get rejected and you will
+                                        land on a Sever Error page.
+                                    </li>
+                                    <li>You cannot clip a single line. Just download the line audio instead</li>
+                                    <li>
+                                        There is a limit to how many lines can go into a single clip. If you really want
+                                        to increase the limit, just DM me and I will make the change.
+                                    </li>
+                                </ul>
                             </AccordionDetails>
                         </Accordion>
 

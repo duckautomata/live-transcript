@@ -19,6 +19,8 @@ import TagFixer from "./components/TagFixer";
 import LineMenu from "./components/LineMenu";
 import { LineMenuProvider } from "./providers/LineMenuProvider";
 import { AudioContext, AudioProvider } from "./providers/AudioProvider";
+import { ClipperPopupProvider } from "./providers/ClipperPopupProvider";
+import ClipperPopup from "./components/ClipperPopup";
 
 function App() {
     const location = useLocation();
@@ -64,34 +66,40 @@ function App() {
             <ThemeProvider theme={colorTheme}>
                 <CssBaseline />
                 <TagOffsetPopupProvider>
-                    <LineMenuProvider>
-                        <AudioProvider>
-                            {window.maintenance ? (
-                                <Maintenance />
-                            ) : (
-                                <>
-                                    <LineMenu wsKey={wsKey} />
-                                    <Sidebar wsKey={wsKey}>
-                                        {wsKey ? (
-                                            <>
-                                                <Websocket wsKey={wsKey} />
-                                                <Routes>
-                                                    <Route path={`${wsKey}/*`} element={<StreamLogs wsKey={wsKey} />} />
-                                                    <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
-                                                    <Route
-                                                        path={`${wsKey}/tagFixer/`}
-                                                        element={<TagFixer wsKey={wsKey} />}
-                                                    />
-                                                </Routes>
-                                            </>
-                                        ) : (
-                                            <Home />
-                                        )}
-                                    </Sidebar>
-                                </>
-                            )}
-                        </AudioProvider>
-                    </LineMenuProvider>
+                    <ClipperPopupProvider>
+                        <LineMenuProvider>
+                            <AudioProvider>
+                                {window.maintenance ? (
+                                    <Maintenance />
+                                ) : (
+                                    <>
+                                        <LineMenu wsKey={wsKey} />
+                                        <ClipperPopup wsKey={wsKey} />
+                                        <Sidebar wsKey={wsKey}>
+                                            {wsKey ? (
+                                                <>
+                                                    <Websocket wsKey={wsKey} />
+                                                    <Routes>
+                                                        <Route
+                                                            path={`${wsKey}/*`}
+                                                            element={<StreamLogs wsKey={wsKey} />}
+                                                        />
+                                                        <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
+                                                        <Route
+                                                            path={`${wsKey}/tagFixer/`}
+                                                            element={<TagFixer wsKey={wsKey} />}
+                                                        />
+                                                    </Routes>
+                                                </>
+                                            ) : (
+                                                <Home />
+                                            )}
+                                        </Sidebar>
+                                    </>
+                                )}
+                            </AudioProvider>
+                        </LineMenuProvider>
+                    </ClipperPopupProvider>
                 </TagOffsetPopupProvider>
             </ThemeProvider>
         </TranscriptProvider>

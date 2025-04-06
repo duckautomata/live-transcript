@@ -4,11 +4,14 @@ import { Menu, MenuItem } from "@mui/material";
 import { TranscriptContext } from "../providers/TranscriptProvider";
 import { unixToRelative } from "../logic/dateTime";
 import { AudioContext } from "../providers/AudioProvider";
+import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
 
 export default function LineMenu({ wsKey }) {
     const { anchorEl, lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
     const { activeId, transcript, startTime } = useContext(TranscriptContext);
     const { setAudioId } = useContext(AudioContext);
+    const { clipStartIndex, maxClipSize, setClipStartIndex, setClipEndIndex, setClipPopupOpen } =
+        useContext(ClipperPopupContext);
     const open = Boolean(anchorEl);
 
     const downloadUrl = `https://dokiscripts.com/${wsKey}/audio?id=${lineMenuId}`;
@@ -30,6 +33,20 @@ export default function LineMenu({ wsKey }) {
         setAnchorEl(null);
         setLineMenuId(-1);
     };
+    const handleStartClip = () => {
+        setClipStartIndex(lineMenuId);
+        handleClose();
+    };
+    const handleDownloadClip = () => {
+        setClipEndIndex(lineMenuId);
+        setClipPopupOpen(true);
+        handleClose();
+    };
+    const handleResetClip = () => {
+        setClipStartIndex(-1);
+        setClipEndIndex(-1);
+        handleClose();
+    };
     const handleDownload = () => {
         window.open(downloadUrl, "_blank");
         handleClose();
@@ -47,25 +64,47 @@ export default function LineMenu({ wsKey }) {
         navigator.clipboard.writeText(ts);
     };
 
+    const shouldRenderStartClip = clipStartIndex < 0;
+    const shouldRenderDownloadClip =
+        !shouldRenderStartClip && lineMenuId !== clipStartIndex && Math.abs(clipStartIndex - lineMenuId) < maxClipSize;
+    const shouldRenderResetClip = !shouldRenderStartClip;
+
+    let anchorOrigin = {
+        vertical: "bottom",
+        horizontal: "left",
+    };
+    let transformOrigin = {
+        vertical: "top",
+        horizontal: "left",
+    };
+
+    if (clipStartIndex >= 0 && lineMenuId > clipStartIndex) {
+        anchorOrigin = {
+            vertical: "top",
+            horizontal: "left",
+        };
+        transformOrigin = {
+            vertical: "bottom",
+            horizontal: "left",
+        };
+    }
+
     return (
         <Menu
             id="line-menu"
             anchorEl={anchorEl}
             open={open}
             onClose={handleClose}
-            anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-            }}
-            transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-            }}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
         >
-            {lines.length > 0 && <MenuItem onClick={handleDownload}>Download Audio</MenuItem>}
-            {lines.length > 0 && <MenuItem onClick={handlePlay}>Play Audio</MenuItem>}
-            {lines.length > 0 && <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>}
-            {lines.length > 0 && <MenuItem onClick={handleCopyTimestamp}>Copy Timestamp</MenuItem>}
+            {shouldRenderStartClip && <MenuItem onClick={handleStartClip}>Start Clip</MenuItem>}
+            {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Download Clip</MenuItem>}
+            {shouldRenderResetClip && <MenuItem onClick={handleResetClip}>Reset Clip</MenuItem>}
+            <MenuItem onClick={handleDownload}>Download Audio</MenuItem>
+            <MenuItem onClick={handlePlay}>Play Audio</MenuItem>
+            <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>
+            <MenuItem onClick={handleCopyTimestamp}>Copy Timestamp</MenuItem>
         </Menu>
     );
 }

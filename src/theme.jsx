@@ -7,6 +7,7 @@ export const darkTheme = createTheme({
         mode: "dark",
         id: {
             main: "#20A79A",
+            clip: red[900],
             background: "#FFFFFF",
         },
         timestamp: {
@@ -14,6 +15,7 @@ export const darkTheme = createTheme({
         },
         lineground: {
             main: "#395553",
+            clip: "#39254D",
         },
         primary: {
             main: "#20A79A",
@@ -37,6 +39,7 @@ export const lightTheme = createTheme({
         mode: "light",
         id: {
             main: "#12645B",
+            clip: red[900],
             background: "#22B9AA",
         },
         timestamp: {
@@ -44,6 +47,7 @@ export const lightTheme = createTheme({
         },
         lineground: {
             main: "#89A5A3",
+            clip: "#C5B4E3",
         },
         primary: {
             main: "#12645B",
