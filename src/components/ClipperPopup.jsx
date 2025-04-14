@@ -12,7 +12,7 @@ const ClipperPopup = ({ wsKey }) => {
         const end = Math.max(clipStartIndex, clipEndIndex);
         const downloadUrl = `https://dokiscripts.com/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}`;
         window.open(downloadUrl, "_blank");
-        handleClose();
+        handleReset();
     };
 
     const handleNameChange = (event) => {
@@ -44,7 +44,11 @@ const ClipperPopup = ({ wsKey }) => {
                     label="Clip Name"
                     type="text"
                     value={clipName}
+                    inputRef={(input) => input && input.focus()}
                     onChange={handleNameChange}
+                    onKeyDown={(e) => {
+                        e.key === "Enter" && handleDownload();
+                    }}
                     fullWidth
                     margin="normal"
                 />

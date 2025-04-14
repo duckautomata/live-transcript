@@ -12,7 +12,7 @@ import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import HelpPopup from "./HelpPopup";
 import SettingsPopup from "./SettingsPopup";
-import { Construction, GitHub, Help } from "@mui/icons-material";
+import { Construction, GitHub, Help, Home } from "@mui/icons-material";
 import { Avatar, Tooltip, useMediaQuery } from "@mui/material";
 import { SettingContext } from "../providers/SettingProvider";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -21,12 +21,14 @@ import mintIcon from "../assets/icons/mint.jpg";
 import junaIcon from "../assets/icons/juna.jpg";
 import AudioFooter from "./AudioFooter";
 import { AudioContext } from "../providers/AudioProvider";
+import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
 
 export default function Sidebar({ wsKey, children }) {
     const location = useLocation();
     const navigate = useNavigate();
     const { sidebarOpen, setSidebarOpen } = useContext(SettingContext);
     const { setAudioId } = useContext(AudioContext);
+    const { setClipStartIndex, setClipEndIndex } = useContext(ClipperPopupContext);
     const [helpOpen, setHelpOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [width, setWidth] = useState(window.innerWidth);
@@ -60,6 +62,13 @@ export default function Sidebar({ wsKey, children }) {
         setSidebarOpen(!sidebarOpen);
     };
 
+    const handleHomeButton = () => {
+        navigate("/");
+        setAudioId(-1);
+        setClipStartIndex(-1);
+        setClipEndIndex(-1);
+    };
+
     const handleStreamerChange = (value) => {
         const parts = location.pathname.split("/");
         if (parts.length < 2) {
@@ -74,6 +83,8 @@ export default function Sidebar({ wsKey, children }) {
         if (parts.join("/") !== location.pathname) {
             navigate(parts.join("/"));
             setAudioId(-1);
+            setClipStartIndex(-1);
+            setClipEndIndex(-1);
         }
     };
 
@@ -90,6 +101,8 @@ export default function Sidebar({ wsKey, children }) {
         if (parts.join("/") !== location.pathname) {
             navigate(parts.join("/"));
             setAudioId(-1);
+            setClipStartIndex(-1);
+            setClipEndIndex(-1);
         }
     };
 
@@ -137,6 +150,20 @@ export default function Sidebar({ wsKey, children }) {
                                 {sidebarOpen && <ListItemText primary="" />}
                             </ListItemButton>
                         </ListItem>
+                        <ListItem disablePadding>
+                            <Tooltip title={sidebarOpen ? "" : "Home"} placement="right">
+                                <ListItemButton
+                                    onClick={handleHomeButton}
+                                    sx={{ paddingLeft: sidebarOpen ? undefined : 2.4, overflow: "hidden" }}
+                                >
+                                    <ListItemIcon>
+                                        <Home />
+                                    </ListItemIcon>
+                                    {sidebarOpen && <ListItemText primary="Home" />}
+                                </ListItemButton>
+                            </Tooltip>
+                        </ListItem>
+                        {!sidebarOpen && <ListItem sx={{ height: 16 }} />}
                         {/* Streamers List */}
                         <ListItemText primary="Transcripts" sx={{ ml: 1, display: sidebarOpen ? "block" : "none" }} />
                         {streamers.map((streamer) => (
