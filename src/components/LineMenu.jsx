@@ -6,7 +6,7 @@ import { unixToRelative } from "../logic/dateTime";
 import { AudioContext } from "../providers/AudioProvider";
 import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
 
-export default function LineMenu({ wsKey }) {
+export default function LineMenu({ wsKey, jumpToLine }) {
     const { anchorEl, lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
     const { activeId, transcript, startTime } = useContext(TranscriptContext);
     const { setAudioId } = useContext(AudioContext);
@@ -32,6 +32,10 @@ export default function LineMenu({ wsKey }) {
     const handleClose = () => {
         setAnchorEl(null);
         setLineMenuId(-1);
+    };
+    const handleJumpToLine = () => {
+        jumpToLine(lineMenuId);
+        setAnchorEl(null);
     };
     const handleStartClip = () => {
         setClipStartIndex(lineMenuId);
@@ -98,13 +102,15 @@ export default function LineMenu({ wsKey }) {
             anchorOrigin={anchorOrigin}
             transformOrigin={transformOrigin}
         >
+            <MenuItem disabled>id: {lineMenuId}</MenuItem>
             {shouldRenderStartClip && <MenuItem onClick={handleStartClip}>Start Clip</MenuItem>}
-            {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Download Clip</MenuItem>}
+            {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Process Clip</MenuItem>}
             {shouldRenderResetClip && <MenuItem onClick={handleResetClip}>Reset Clip</MenuItem>}
             <MenuItem onClick={handleDownload}>Download Audio</MenuItem>
             <MenuItem onClick={handlePlay}>Play Audio</MenuItem>
             <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>
             <MenuItem onClick={handleCopyTimestamp}>Copy Timestamp</MenuItem>
+            <MenuItem onClick={handleJumpToLine}>Jump to line</MenuItem>
         </Menu>
     );
 }

@@ -16,7 +16,6 @@ import Sidebar from "./components/Sidebar";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./components/Home";
 import TagFixer from "./components/TagFixer";
-import LineMenu from "./components/LineMenu";
 import { LineMenuProvider } from "./providers/LineMenuProvider";
 import { AudioContext, AudioProvider } from "./providers/AudioProvider";
 import { ClipperPopupProvider } from "./providers/ClipperPopupProvider";
@@ -73,7 +72,6 @@ function App() {
                                     <Maintenance />
                                 ) : (
                                     <>
-                                        <LineMenu wsKey={wsKey} />
                                         <ClipperPopup wsKey={wsKey} />
                                         <Sidebar wsKey={wsKey}>
                                             {wsKey ? (

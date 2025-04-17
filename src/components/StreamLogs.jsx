@@ -4,11 +4,13 @@ import { TranscriptContext } from "../providers/TranscriptProvider";
 import Line from "./Line";
 import { SettingContext } from "../providers/SettingProvider";
 import { Clear, Search } from "@mui/icons-material";
+import LineMenu from "./LineMenu";
 
 export default function StreamLogs({ wsKey }) {
     const { activeTitle, startTime, isLive, transcript } = useContext(TranscriptContext);
-    const { newAtTop, timeFormat } = useContext(SettingContext);
+    const { newAtTop, timeFormat, density } = useContext(SettingContext);
     const [page, setPage] = useState(1);
+    const [jumpId, setJumpId] = useState(-1);
     const [searchTerm, setSearchTerm] = useState("");
     const isMobile = useMediaQuery("(max-width:768px)");
 
@@ -25,7 +27,28 @@ export default function StreamLogs({ wsKey }) {
     // 450 lines at 8 seconds per line is about 1 hour per page
     const linesPerPage = 450;
     const totalPages = Math.ceil(mapArray.length / linesPerPage);
-    const actualPage = Math.max(Math.min(totalPages, page), 1);
+    let actualJumpPage = -1;
+    let actualPage = Math.max(Math.min(totalPages, page), 1);
+
+    if (jumpId >= 0 && transcript?.length > 0 && jumpId >= transcript.at(0).id && jumpId <= transcript.at(-1).id) {
+        let actualJumpId = jumpId;
+        if (newAtTop) {
+            actualJumpId = transcript.at(-1).id - jumpId;
+        }
+
+        const totalNumberUnfilteredPages = Math.ceil(transcript.length / linesPerPage);
+        const jumpToPage = Math.ceil((actualJumpId + 1) / linesPerPage);
+        const jumpToActualPage = Math.max(Math.min(totalNumberUnfilteredPages, jumpToPage), 1);
+
+        actualJumpPage = jumpToActualPage;
+        actualPage = actualJumpPage;
+    }
+
+    if (actualJumpPage === page) {
+        // we are now on the page with the line we want to jump to. Change hash so the browser goes to the line.
+        window.location.hash = "#" + jumpId;
+        setJumpId(-1);
+    }
 
     if (actualPage !== page) {
         setPage(actualPage);
@@ -49,8 +72,14 @@ export default function StreamLogs({ wsKey }) {
         displayedLines = mapArray.slice(start, end);
     }
 
+    const jumpToLine = (id) => {
+        setJumpId(id);
+        setSearchTerm("");
+    };
+
     return (
         <>
+            <LineMenu wsKey={wsKey} jumpToLine={jumpToLine} />
             {isMobile ? (
                 <Typography color="primary" variant="h5" component="h5" sx={{ mb: 2, wordBreak: "break-word" }}>
                     {activeTitle}
@@ -114,13 +143,14 @@ export default function StreamLogs({ wsKey }) {
                                 showLastButton
                             />
                         </div>
-                        {displayedLines.slice(0).map((line) => (
+                        {displayedLines.map((line) => (
                             <Line
                                 key={line?.id}
                                 id={line?.id}
                                 segments={line?.segments}
                                 timeFormat={timeFormat}
                                 startTime={startTime}
+                                density={density}
                             />
                         ))}
                         <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

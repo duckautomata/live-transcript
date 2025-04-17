@@ -1,5 +1,5 @@
 import { createTheme } from "@mui/material/styles";
-import { red } from "@mui/material/colors";
+import { red, orange } from "@mui/material/colors";
 
 // A custom theme for this app
 export const darkTheme = createTheme({
@@ -7,7 +7,7 @@ export const darkTheme = createTheme({
         mode: "dark",
         id: {
             main: "#20A79A",
-            clip: red[900],
+            clip: orange[900],
             background: "#FFFFFF",
         },
         timestamp: {
@@ -39,7 +39,7 @@ export const lightTheme = createTheme({
         mode: "light",
         id: {
             main: "#12645B",
-            clip: red[900],
+            clip: orange[900],
             background: "#22B9AA",
         },
         timestamp: {

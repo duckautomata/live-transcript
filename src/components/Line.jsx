@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { IconButton, Typography } from "@mui/material";
 import { Fragment, useContext, useState } from "react";
 import Segment from "./Segment";
 import { useTheme } from "@emotion/react";
@@ -8,16 +8,7 @@ import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
 import { LineMenuContext } from "../providers/LineMenuProvider";
 import { AudioContext } from "../providers/AudioProvider";
 import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
-
-const IdButtonTheme = styled("span")(({ theme, isClipable }) => ({
-    cursor: "pointer",
-    "&": {
-        color: isClipable ? theme.palette.id.clip : theme.palette.id.main,
-    },
-    "&:hover": {
-        backgroundColor: theme.palette.id.background,
-    },
-}));
+import { MoreHoriz } from "@mui/icons-material";
 
 const TimestampTheme = styled("span")(({ theme }) => ({
     "&": {
@@ -25,7 +16,7 @@ const TimestampTheme = styled("span")(({ theme }) => ({
     },
 }));
 
-export default function Line({ id, segments, timeFormat, startTime }) {
+export default function Line({ id, segments, timeFormat, startTime, density }) {
     const theme = useTheme();
     const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
     const { lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
@@ -37,6 +28,9 @@ export default function Line({ id, segments, timeFormat, startTime }) {
         setTimestamp(timestamp);
         setOpen(true);
     };
+
+    const isClipable = clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize;
+    const iconColor = isClipable ? theme.palette.id.clip : theme.palette.id.main;
 
     const onIdClick = (event) => {
         setLineMenuId(id);
@@ -85,6 +79,9 @@ export default function Line({ id, segments, timeFormat, startTime }) {
     };
 
     const firstTime = segments?.[0]?.timestamp ?? 0;
+    const iconSize = density === "comfortable" ? "medium" : "small";
+    const iconSx = density === "compact" ? { padding: 0 } : {};
+
     // Menu item: https://mui.com/material-ui/react-menu/#positioned-menu
     // Should have a separate component for the menu, and pass the anchorEl as a context
     return (
@@ -100,16 +97,16 @@ export default function Line({ id, segments, timeFormat, startTime }) {
                 wordBreak: "break-word",
             }}
         >
-            <IdButtonTheme
-                theme={theme}
+            <IconButton
+                size={iconSize}
+                sx={iconSx}
                 onClick={onIdClick}
                 onMouseEnter={() => setIdOver(true)}
                 onMouseLeave={() => setIdOver(false)}
-                isClipable={clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize}
             >
-                {id}
-            </IdButtonTheme>
-            : [<TimestampTheme theme={theme}>{convertTime(firstTime)}</TimestampTheme>]{" "}
+                <MoreHoriz style={{ color: iconColor }} />
+            </IconButton>{" "}
+            [<TimestampTheme theme={theme}>{convertTime(firstTime)}</TimestampTheme>]{" "}
             {segments.map((segment, index) => (
                 <Fragment key={`${index}_${segment?.timestamp}_${segment?.text}`}>
                     <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onSegmentClick} />

@@ -23,12 +23,14 @@ const setCookie = (key, value) => {
 
 export const SettingContext = createContext({
     theme: "",
+    density: "",
     timeFormat: "",
     newAtTop: false,
     enableTagHelper: false,
     defaultOffset: "-20",
     sidebarOpen: true,
     setTheme: () => {},
+    setDensity: () => {},
     setTimeFormat: () => {},
     setNewAtTop: () => {},
     setEnableTagHelper: () => {},
@@ -38,6 +40,7 @@ export const SettingContext = createContext({
 
 export const SettingProvider = ({ children }) => {
     const [theme, setTheme] = useState(getCookie("theme", "system"));
+    const [density, setDensity] = useState(getCookie("density", "standard"));
     const [timeFormat, setTimeFormat] = useState(getCookie("timeFormat", "relative"));
     const [newAtTop, setNewAtTop] = useState(getCookie("newAtTop", true));
     const [enableTagHelper, setEnableTagHelper] = useState(getCookie("enableTagHelper", false));
@@ -47,25 +50,30 @@ export const SettingProvider = ({ children }) => {
     const settingValue = useMemo(
         () => ({
             theme,
+            density,
             timeFormat,
             newAtTop,
             enableTagHelper,
             defaultOffset,
             sidebarOpen,
             setTheme,
+            setDensity,
             setTimeFormat,
             setNewAtTop,
             setEnableTagHelper,
             setDefaultOffset,
             setSidebarOpen,
         }),
-        [theme, timeFormat, newAtTop, enableTagHelper, defaultOffset, sidebarOpen],
+        [theme, density, timeFormat, newAtTop, enableTagHelper, defaultOffset, sidebarOpen],
     );
 
     // Saves current settings to cookie when any value changes
     useEffect(() => {
         setCookie("theme", theme);
     }, [theme]);
+    useEffect(() => {
+        setCookie("density", density);
+    }, [density]);
     useEffect(() => {
         setCookie("timeFormat", timeFormat);
     }, [timeFormat]);
