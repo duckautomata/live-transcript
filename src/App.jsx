@@ -20,6 +20,7 @@ import { LineMenuProvider } from "./providers/LineMenuProvider";
 import { AudioContext, AudioProvider } from "./providers/AudioProvider";
 import { ClipperPopupProvider } from "./providers/ClipperPopupProvider";
 import ClipperPopup from "./components/ClipperPopup";
+import { keys } from "./config";
 
 function App() {
     const location = useLocation();
@@ -35,14 +36,9 @@ function App() {
         colorTheme = darkTheme;
     }
 
-    const keys = ["doki", "mint", "juna"];
-    if (import.meta.env.DEV) {
-        keys.push("test");
-    }
-
     useEffect(() => {
         let key;
-        keys.map((value) => {
+        keys().map((value) => {
             if (location.pathname.split("/").at(1) === value) {
                 key = value;
             }

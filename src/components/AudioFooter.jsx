@@ -6,6 +6,7 @@ import { AudioContext } from "../providers/AudioProvider";
 import { TranscriptContext } from "../providers/TranscriptProvider";
 import { AppBar, Box, IconButton, Toolbar, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { Close, Download } from "@mui/icons-material";
+import { server } from "../config";
 
 export default function AudioFooter({ wsKey, offset, width }) {
     const { audioId, setAudioId } = useContext(AudioContext);
@@ -13,8 +14,8 @@ export default function AudioFooter({ wsKey, offset, width }) {
     const theme = useTheme();
     const isMobile = useMediaQuery("(max-width:768px)");
 
-    const playUrl = `https://dokiscripts.com/${wsKey}/audio?id=${audioId}&stream=true`;
-    const downloadUrl = `https://dokiscripts.com/${wsKey}/audio?id=${audioId}`;
+    const playUrl = `${server}/${wsKey}/audio?id=${audioId}&stream=true`;
+    const downloadUrl = `${server}/${wsKey}/audio?id=${audioId}`;
     const desktopWidth = 400;
 
     const handleClose = () => {

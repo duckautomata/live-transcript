@@ -13,15 +13,13 @@ import AssessmentIcon from "@mui/icons-material/Assessment";
 import HelpPopup from "./HelpPopup";
 import SettingsPopup from "./SettingsPopup";
 import { Construction, GitHub, Help, Home } from "@mui/icons-material";
-import { Avatar, Tooltip, useMediaQuery } from "@mui/material";
+import { Tooltip, useMediaQuery } from "@mui/material";
 import { SettingContext } from "../providers/SettingProvider";
 import { useLocation, useNavigate } from "react-router-dom";
-import dokiIcon from "../assets/icons/doki.jpg";
-import mintIcon from "../assets/icons/mint.jpg";
-import junaIcon from "../assets/icons/juna.jpg";
 import AudioFooter from "./AudioFooter";
 import { AudioContext } from "../providers/AudioProvider";
 import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
+import { keyIcons } from "../config";
 
 export default function Sidebar({ wsKey, children }) {
     const location = useLocation();
@@ -36,22 +34,6 @@ export default function Sidebar({ wsKey, children }) {
     const drawerWidth = isMobile ? 160 : 200;
     const drawerWidthCollapsed = 60;
 
-    const streamers = [
-        { name: "Doki", icon: <Avatar src={dokiIcon} alt="doki" sx={{ width: 32, height: 32 }} />, value: "doki" },
-        { name: "Mint", icon: <Avatar src={mintIcon} alt="mint" sx={{ width: 32, height: 32 }} />, value: "mint" },
-        { name: "Juna", icon: <Avatar src={junaIcon} alt="juna" sx={{ width: 32, height: 32 }} />, value: "juna" },
-    ];
-    if (import.meta.env.DEV) {
-        streamers.push({
-            name: "Test",
-            icon: (
-                <Avatar alt="test" sx={{ width: 32, height: 32 }}>
-                    T
-                </Avatar>
-            ),
-            value: "test",
-        });
-    }
     const pages = [
         { name: "View", icon: <LiveTvIcon />, value: "" },
         { name: "Graph", icon: <AssessmentIcon />, value: "graph" },
@@ -166,7 +148,7 @@ export default function Sidebar({ wsKey, children }) {
                         {!sidebarOpen && <ListItem sx={{ height: 16 }} />}
                         {/* Streamers List */}
                         <ListItemText primary="Transcripts" sx={{ ml: 1, display: sidebarOpen ? "block" : "none" }} />
-                        {streamers.map((streamer) => (
+                        {keyIcons(32).map((streamer) => (
                             <ListItem key={streamer.value} disablePadding>
                                 <Tooltip title={sidebarOpen ? "" : streamer.name} placement="right">
                                     <ListItemButton

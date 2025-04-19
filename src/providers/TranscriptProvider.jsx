@@ -8,11 +8,13 @@ export const TranscriptContext = createContext({
     activeId: "",
     activeTitle: "",
     startTime: 0,
+    mediaType: "none",
     isLive: false,
     transcript: [],
     setActiveId: () => {},
     setActiveTitle: () => {},
     setStartTime: () => {},
+    setMediaType: () => {},
     setIsLive: () => {},
     setTranscript: () => {},
 });
@@ -21,6 +23,7 @@ export const TranscriptProvider = ({ children }) => {
     const [activeId, setActiveId] = useState("");
     const [activeTitle, setActiveTitle] = useState("");
     const [startTime, setStartTime] = useState(0);
+    const [mediaType, setMediaType] = useState("none");
     const [isLive, setIsLive] = useState(false);
     const [transcript, setTranscript] = useState([]);
 
@@ -29,15 +32,17 @@ export const TranscriptProvider = ({ children }) => {
             activeId,
             activeTitle,
             startTime,
+            mediaType,
             isLive,
             transcript,
             setActiveId,
             setActiveTitle,
             setStartTime,
+            setMediaType,
             setIsLive,
             setTranscript,
         }),
-        [activeId, activeTitle, startTime, isLive, transcript],
+        [activeId, activeTitle, startTime, mediaType, isLive, transcript],
     );
 
     return <TranscriptContext.Provider value={transcriptValue}>{children}</TranscriptContext.Provider>;

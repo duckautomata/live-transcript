@@ -3,10 +3,12 @@
 import { useContext, useEffect } from "react";
 import useWebSocket from "react-use-websocket";
 import { TranscriptContext } from "./providers/TranscriptProvider";
+import { LOG_MSG, LOG_WARN, LOG_ERROR } from "./logic/debug";
+import { wsServer } from "./config";
 
 export const Websocket = ({ wsKey }) => {
-    const WS_URL = `wss://dokiscripts.com/ws/${wsKey}`;
-    const { transcript, setActiveId, setActiveTitle, setStartTime, setIsLive, setTranscript } =
+    const WS_URL = `${wsServer}/ws/${wsKey}`;
+    const { transcript, setActiveId, setActiveTitle, setStartTime, setMediaType, setIsLive, setTranscript } =
         useContext(TranscriptContext);
 
     const { lastMessage, lastJsonMessage } = useWebSocket(WS_URL, {
@@ -25,39 +27,39 @@ export const Websocket = ({ wsKey }) => {
 
     useEffect(() => {
         if (lastMessage === null) {
-            // console.log("lastMessage is null");
+            LOG_WARN("lastMessage is null");
             return;
         }
         const message = lastMessage.data;
         if (typeof message !== typeof "") {
-            // console.log("message is not a string", typeof(message), message);
+            LOG_WARN("message is not a string", typeof message, message);
             return;
         }
         if (message.length < 4 || message.substring(0, 3) !== "![]") {
-            // console.log("message is too small or doesn't have the starting key", message.length, message.substring(0, 3));
+            LOG_WARN("message is too small or doesn't have the starting key", message.length, message.substring(0, 3));
             return;
         }
         const parts = message.split("\n");
         const event = parts?.[0];
         switch (event) {
             case "![]refresh":
-                // console.log("addNewLine event", parts);
+                LOG_MSG("addNewLine event", parts);
                 addNewLine(parts);
                 break;
             case "![]newstream":
-                // console.log("setNewActiveStream event", parts);
+                LOG_MSG("setNewActiveStream event", parts);
                 setNewActiveStream(parts);
                 break;
             case "![]status":
-                // console.log("setStreamStatus event", parts);
+                LOG_MSG("setStreamStatus event", parts);
                 setStreamStatus(parts);
                 break;
             case "![]error":
-                // console.log("handleError event", parts);
+                LOG_MSG("handleError event", parts);
                 handleError(parts);
                 break;
             default:
-                // console.log("Error: unknown event from relay:", event);
+                LOG_ERROR("unknown event from relay:", event);
                 break;
         }
     }, [lastMessage]);
@@ -65,15 +67,16 @@ export const Websocket = ({ wsKey }) => {
     // {activeId, activeTitle, isLive, transcript}
     const resetState = (clientData) => {
         if (clientData === null) {
-            // console.log("Error: resetState clientData is null");
+            LOG_ERROR("resetState clientData is null");
             return;
         }
 
-        // console.log("resetState clientData", clientData);
+        LOG_MSG("resetState clientData", clientData);
 
         setActiveId(clientData.activeId ?? "");
         setActiveTitle(clientData.activeTitle ?? "");
         setStartTime(clientData.startTime ? +clientData.startTime : 0);
+        setMediaType(clientData.mediaType ?? "none");
         setIsLive(clientData.isLive ?? false);
 
         let newTranscript = [];
@@ -84,10 +87,9 @@ export const Websocket = ({ wsKey }) => {
     };
 
     // [event, id, ts1, text1, ts2, text2, ..."]
-    //
     const addNewLine = (parts) => {
         if (typeof parts !== typeof [] || parts.length % 2 !== 0) {
-            // console.log("Error: addNewLine parts is not a valid array:", typeof(parts), parts.length);
+            LOG_ERROR("addNewLine parts is not a valid array:", typeof parts, parts.length);
             return;
         }
 
@@ -107,24 +109,25 @@ export const Websocket = ({ wsKey }) => {
         setTranscript([...transcript, newLine]);
     };
 
-    // [event, activeId, activeTitle, startTime, isLive]
+    // [event, activeId, activeTitle, startTime, mediaType, isLive]
     const setNewActiveStream = (parts) => {
-        if (typeof parts !== typeof [] || parts.length !== 5) {
-            // console.log("Error: setNewActiveStream parts is not a valid array:", typeof(parts), parts.length);
+        if (typeof parts !== typeof [] || parts.length !== 6) {
+            LOG_ERROR("setNewActiveStream parts is not a valid array:", typeof parts, parts.length);
             return;
         }
 
         setActiveId(parts[1]);
         setActiveTitle(parts[2]);
         setStartTime(+parts[3]);
-        setIsLive(parts[4] === "true");
+        setMediaType(parts[4]);
+        setIsLive(parts[5] === "true");
         setTranscript([]);
     };
 
     // [event, activeId, activeTitle, isLive]
     const setStreamStatus = (parts) => {
         if (typeof parts !== typeof [] || parts.length !== 4) {
-            // console.log("Error: setStreamStatus parts is not a valid array:", typeof(parts), parts.length);
+            LOG_ERROR("setStreamStatus parts is not a valid array:", typeof parts, parts.length);
             return;
         }
 
@@ -136,10 +139,10 @@ export const Websocket = ({ wsKey }) => {
     // [event, errorType, errorMessage]
     const handleError = (parts) => {
         if (typeof parts !== typeof [] || parts.length !== 3) {
-            // console.log("Error: handleError parts is not a valid array:", typeof(parts), parts.length);
+            LOG_ERROR("handleError parts is not a valid array:", typeof parts, parts.length);
             return;
         }
 
-        // console.log(`Error from relay. type: '${parts[1]}' message: '${parts[2]}'`);
+        LOG_ERROR(`Error from relay. type: '${parts[1]}' message: '${parts[2]}'`);
     };
 };

@@ -5,16 +5,17 @@ import { TranscriptContext } from "../providers/TranscriptProvider";
 import { unixToRelative } from "../logic/dateTime";
 import { AudioContext } from "../providers/AudioProvider";
 import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
+import { server } from "../config";
 
 export default function LineMenu({ wsKey, jumpToLine }) {
     const { anchorEl, lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
-    const { activeId, transcript, startTime } = useContext(TranscriptContext);
+    const { activeId, transcript, startTime, mediaType } = useContext(TranscriptContext);
     const { setAudioId } = useContext(AudioContext);
     const { clipStartIndex, maxClipSize, setClipStartIndex, setClipEndIndex, setClipPopupOpen } =
         useContext(ClipperPopupContext);
     const open = Boolean(anchorEl);
 
-    const downloadUrl = `https://dokiscripts.com/${wsKey}/audio?id=${lineMenuId}`;
+    const downloadUrl = `${server}/${wsKey}/audio?id=${lineMenuId}`;
 
     const lines = transcript.filter((line) => line.id === lineMenuId);
     const ts = lines?.[0]?.segments?.[0]?.timestamp;
@@ -68,10 +69,14 @@ export default function LineMenu({ wsKey, jumpToLine }) {
         navigator.clipboard.writeText(ts);
     };
 
-    const shouldRenderStartClip = clipStartIndex < 0;
+    const hasAudio = mediaType === "audio" || mediaType === "video";
+    const shouldRenderStartClip = hasAudio && clipStartIndex < 0;
     const shouldRenderDownloadClip =
-        !shouldRenderStartClip && lineMenuId !== clipStartIndex && Math.abs(clipStartIndex - lineMenuId) < maxClipSize;
-    const shouldRenderResetClip = !shouldRenderStartClip;
+        hasAudio &&
+        !shouldRenderStartClip &&
+        lineMenuId !== clipStartIndex &&
+        Math.abs(clipStartIndex - lineMenuId) < maxClipSize;
+    const shouldRenderResetClip = hasAudio && !shouldRenderStartClip;
 
     let anchorOrigin = {
         vertical: "bottom",
@@ -106,8 +111,8 @@ export default function LineMenu({ wsKey, jumpToLine }) {
             {shouldRenderStartClip && <MenuItem onClick={handleStartClip}>Start Clip</MenuItem>}
             {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Process Clip</MenuItem>}
             {shouldRenderResetClip && <MenuItem onClick={handleResetClip}>Reset Clip</MenuItem>}
-            <MenuItem onClick={handleDownload}>Download Audio</MenuItem>
-            <MenuItem onClick={handlePlay}>Play Audio</MenuItem>
+            {hasAudio && <MenuItem onClick={handleDownload}>Download Audio</MenuItem>}
+            {hasAudio && <MenuItem onClick={handlePlay}>Play Audio</MenuItem>}
             <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>
             <MenuItem onClick={handleCopyTimestamp}>Copy Timestamp</MenuItem>
             <MenuItem onClick={handleJumpToLine}>Jump to line</MenuItem>

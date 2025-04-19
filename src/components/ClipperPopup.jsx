@@ -1,17 +1,35 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField } from "@mui/material";
 import { useContext, useState } from "react";
 import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
+import { TranscriptContext } from "../providers/TranscriptProvider";
+import { server } from "../config";
 
 const ClipperPopup = ({ wsKey }) => {
     const { clipPopupOpen, clipStartIndex, clipEndIndex, setClipPopupOpen, setClipStartIndex, setClipEndIndex } =
         useContext(ClipperPopupContext);
+    const { mediaType } = useContext(TranscriptContext);
     const [clipName, setClipName] = useState("");
 
-    const handleDownload = () => {
+    const hasAudio = mediaType === "audio" || mediaType === "video";
+    const hasVideo = mediaType === "video";
+
+    const handleDownloadMp3 = () => {
         const start = Math.min(clipStartIndex, clipEndIndex);
         const end = Math.max(clipStartIndex, clipEndIndex);
-        const downloadUrl = `https://dokiscripts.com/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}`;
-        window.open(downloadUrl, "_blank");
+        const downloadUrl = `${server}/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}&type=mp3`;
+        if (hasAudio) {
+            window.open(downloadUrl, "_blank");
+        }
+        handleReset();
+    };
+
+    const handleDownloadMp4 = () => {
+        const start = Math.min(clipStartIndex, clipEndIndex);
+        const end = Math.max(clipStartIndex, clipEndIndex);
+        const downloadUrl = `${server}/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}&type=mp4`;
+        if (hasVideo) {
+            window.open(downloadUrl, "_blank");
+        }
         handleReset();
     };
 
@@ -47,16 +65,23 @@ const ClipperPopup = ({ wsKey }) => {
                     inputRef={(input) => input && input.focus()}
                     onChange={handleNameChange}
                     onKeyDown={(e) => {
-                        e.key === "Enter" && handleDownload();
+                        e.key === "Enter" && handleDownloadMp3();
                     }}
                     fullWidth
                     margin="normal"
                 />
             </DialogContent>
             <DialogActions sx={{ justifyContent: "space-between" }}>
-                <Button onClick={handleDownload} color="primary">
-                    Download mp3
-                </Button>
+                {hasAudio && (
+                    <Button onClick={handleDownloadMp3} color="primary">
+                        Download mp3
+                    </Button>
+                )}
+                {hasVideo && (
+                    <Button onClick={handleDownloadMp4} color="primary">
+                        Download mp4
+                    </Button>
+                )}
                 <Button onClick={handleReset} color="primary">
                     Reset Clip
                 </Button>

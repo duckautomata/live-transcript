@@ -6,26 +6,14 @@ import {
     Box,
     ListItemButton,
     ListItemIcon,
-    Avatar,
     useMediaQuery,
 } from "@mui/material";
-
-import dokiIcon from "../assets/icons/doki.jpg";
-import mintIcon from "../assets/icons/mint.jpg";
-import junaIcon from "../assets/icons/juna.jpg";
 import { useNavigate } from "react-router-dom";
+import { keyIcons } from "../config";
 
 export default function Home() {
     const navigate = useNavigate();
     const isMobile = useMediaQuery("(max-width:768px)");
-    const streamers = [
-        { name: "Doki", icon: <Avatar src={dokiIcon} alt="doki" />, value: "doki" },
-        { name: "Mint", icon: <Avatar src={mintIcon} alt="mint" />, value: "mint" },
-        { name: "Juna", icon: <Avatar src={junaIcon} alt="juna" />, value: "juna" },
-    ];
-    if (import.meta.env.DEV) {
-        streamers.push({ name: "Test", icon: <Avatar alt="test">T</Avatar>, value: "test" });
-    }
 
     const handleStreamerChange = (value) => {
         navigate(`${value}/`);
@@ -45,7 +33,7 @@ export default function Home() {
 
             <List sx={{ width: "100%" }}>
                 <ListItemText primary="Available Transcripts" sx={{ ml: 1, display: "block" }} />
-                {streamers.map((streamer) => (
+                {keyIcons().map((streamer) => (
                     <ListItem key={streamer.value} disablePadding>
                         <ListItemButton
                             onClick={() => handleStreamerChange(streamer.value)}
