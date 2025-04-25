@@ -123,8 +123,8 @@ export default function HelpPopup({ open, setOpen }) {
                                     <li>
                                         Transcripts
                                         <blockquote>
-                                            Select which transcripts you wish to load. Currently there is: Doki, Mint,
-                                            Juna.
+                                            Select which transcripts you wish to load. Currently there are: Doki and
+                                            Mint.
                                         </blockquote>
                                     </li>
                                     <li>
