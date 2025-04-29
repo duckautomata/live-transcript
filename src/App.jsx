@@ -26,7 +26,7 @@ function App() {
     const location = useLocation();
     const [wsKey, setWsKey] = useState(undefined);
     const { theme } = useContext(SettingContext);
-    const { setActiveId, setActiveTitle, setStartTime, setIsLive, setTranscript } = useContext(TranscriptContext);
+    const { setActiveId, setActiveTitle, setStartTime, setMediaType, setIsLive, setTranscript } = useContext(TranscriptContext);
     const { setAudioId } = useContext(AudioContext);
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
     let colorTheme = prefersDarkMode ? darkTheme : lightTheme;
@@ -48,6 +48,7 @@ function App() {
             setActiveId("");
             setActiveTitle("");
             setStartTime(0);
+            setMediaType("none")
             setIsLive(false);
             setTranscript([]);
             setAudioId(-1);
