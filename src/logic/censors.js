@@ -48,10 +48,15 @@ const replacements = [
     [/(c)o(vid)/gi, "$1*$2"], //covid -> c*vid
     [/((\b|"|'|\(|\[|-|_)b)o(ob)/gi, "$1*$3"], //boob -> b*ob
     [/\\/g, ""], // \ -> nothing
-    [/^(\d )/, "00:0$1"], //adds 00:0 to any tags that do not have it
-    [/^(\d+ )/, "00:$1"], //adds 00: to any tags that do not have it
-    [/^00:00/, "00:01"], //00:00 -> 00:01
-    [/^[0-9:]+ (!adjust|!t)\b.*/, ""], //removes any accidental tags
+    [/^\s*\[([\dhms]+)\] /, "$1 "], //[00:11:22] -> 00:11:22
+    [/^\s*(\d )/, "00:0$1"], //adds 00:0 to any tags that do not have it
+    [/^\s*(\d+ )/, "00:$1"], //adds 00: to any tags that do not have it
+    [/^\s*(\d\d)s /, "00:$1 "], //34s -> 00:34
+    [/^\s*(\d\d)m(\d\d)s /, "$1:$2 "], //12m34s -> 12:34
+    [/^\s*(\d\d)h(\d\d)m(\d\d)s /, "$1:$2:$3 "], //01h12m34s -> 01:12:34
+    [/^\s*00:00:00 /, "00:00:01 "], //00:00:00 -> 00:00:01
+    [/^\s*00:00 /, "00:01 "], //00:00 -> 00:01
+    [/^\s*[0-9:]+ (!adjust|!t)\b.*/, ""], //removes any accidental tags
 ];
 
 const mintReplacements = [[/:memboo/gi, ":_"]];
