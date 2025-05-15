@@ -8,9 +8,8 @@ import { darkTheme, lightTheme } from "./theme";
 import { TranscriptContext, TranscriptProvider } from "./providers/TranscriptProvider";
 import { Websocket } from "./Websocket";
 import { SettingContext } from "./providers/SettingProvider";
-import StreamLogs from "./components/StreamLogs";
+import TranscriptViewer from "./components/TranscriptViewer";
 import { TagOffsetPopupProvider } from "./providers/TagOffsetPopupProvider";
-import StreamWordCount from "./components/StreamWordCount";
 import Maintenance from "./components/Maintenance";
 import Sidebar from "./components/Sidebar";
 import { Route, Routes, useLocation } from "react-router-dom";
@@ -78,9 +77,8 @@ function App() {
                                                     <Routes>
                                                         <Route
                                                             path={`${wsKey}/*`}
-                                                            element={<StreamLogs wsKey={wsKey} />}
+                                                            element={<TranscriptViewer wsKey={wsKey} />}
                                                         />
-                                                        <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
                                                         <Route
                                                             path={`${wsKey}/tagFixer/`}
                                                             element={<TagFixer wsKey={wsKey} />}
