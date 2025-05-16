@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import { genericCensor, mintCensor } from "../logic/censors";
+import { chapter_formatting, collection_formatting, HBD_formatting } from "../logic/formatting";
 
 const TagFixer = ({ wsKey }) => {
     const [leftText, setLeftText] = useState("");
@@ -28,17 +29,18 @@ const TagFixer = ({ wsKey }) => {
                 return newLine;
             })
             ?.join("\n");
+
+        let formatted = HBD_formatting(fixed);
+        formatted = chapter_formatting(formatted);
+        formatted = collection_formatting(formatted);
+
         setLeftText(text);
-        setRightText(fixed);
+        setRightText(formatted);
         setNumFixedLines(numFixed);
     };
 
     const handleCopy = () => {
-        const copyText = rightText
-            .split("\n")
-            .filter((line) => line.length > 0)
-            .join("\n");
-        navigator.clipboard.writeText(copyText); // Copy left text to clipboard
+        navigator.clipboard.writeText(rightText); // Copy left text to clipboard
     };
 
     return (
