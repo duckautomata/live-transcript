@@ -65,13 +65,67 @@ export const chapter_formatting = (tags) => {
         .join("\n");
 };
 
+// ignores case, space, and returns the percentage of match between the keys. From 0 [no match] - 100 [full match]
+export const compareKeys = (key1, key2) => {
+    const preprocessKey = (key) => {
+        if (typeof key !== "string") {
+            return "";
+        }
+        return key.toLowerCase().replace(/\s/g, "");
+    };
+
+    const processedKey1 = preprocessKey(key1);
+    const processedKey2 = preprocessKey(key2);
+    const len1 = processedKey1.length;
+    const len2 = processedKey2.length;
+
+    // if both keys are empty, then they match, if only one is empty, then they do not match
+    if (processedKey1 === "" && processedKey2 === "") {
+        return 100;
+    }
+    if (processedKey1 === "" || processedKey2 === "") {
+        return 0;
+    }
+
+    // Calculate Longest Common Subsequence (LCS)
+    const dp = Array(len1 + 1)
+        .fill(null)
+        .map(() => Array(len2 + 1).fill(0));
+
+    for (let i = 1; i <= len1; i++) {
+        for (let j = 1; j <= len2; j++) {
+            if (processedKey1[i - 1] === processedKey2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    const lcsLength = dp[len1][len2];
+
+    // Determine the reference length for the calculation.
+    // Using the length of the longer string seems reasonable for "overall similarity".
+    const referenceLength = Math.max(len1, len2);
+
+    // If referenceLength is 0 (both strings were empty after processing and not caught above),
+    // it implies a match.
+    if (referenceLength === 0) {
+        return 100;
+    }
+
+    const matchPercentage = (lcsLength / referenceLength) * 100;
+
+    return Math.floor(matchPercentage);
+};
+
 export const collection_formatting = (tags) => {
     if (!tags || tags.trim().length === 0) {
         return tags ?? "";
     }
 
     const groups = new Map();
-    const collectionRegex = /([\d:]+)\s+(.*?)\s*\|\s*(.*)/i;
+    const collectionRegex = /([\d:]+)\s+(.*?)\s*::\s*(.*)/i;
     const lines = tags.split("\n");
 
     // Extract and group tags
@@ -83,7 +137,7 @@ export const collection_formatting = (tags) => {
             const text = match[3];
 
             // Use case-insensitive key lookup. The first occurrence of a collection will determine it's name capitalization.
-            const key = [...groups.keys()].find((k) => k.toLowerCase() === name.toLowerCase()) || name;
+            const key = [...groups.keys()].find((k) => compareKeys(k, name) >= 80) || name;
 
             if (!groups.has(key)) {
                 groups.set(key, []);

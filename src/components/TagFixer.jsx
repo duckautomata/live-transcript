@@ -28,6 +28,7 @@ const TagFixer = ({ wsKey }) => {
                 }
                 return newLine;
             })
+            ?.filter((line) => line.length > 0)
             ?.join("\n");
 
         let formatted = HBD_formatting(fixed);
@@ -40,7 +41,12 @@ const TagFixer = ({ wsKey }) => {
     };
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(rightText); // Copy left text to clipboard
+        navigator.clipboard.writeText(rightText);
+        const copyButton = document.getElementById("copyButton");
+        copyButton.innerText = "Copied";
+        setTimeout(() => {
+            copyButton.innerText = "Copy";
+        }, 2000);
     };
 
     return (
@@ -48,7 +54,7 @@ const TagFixer = ({ wsKey }) => {
             sx={{
                 display: "flex",
                 flexDirection: "column",
-                height: "97vh", // removing this will expand the full page instead of only the middle part
+                height: "97vh",
                 padding: 2,
             }}
         >
@@ -97,7 +103,13 @@ const TagFixer = ({ wsKey }) => {
                     Clear
                 </Button>
                 <Typography>Lines fixed: {numFixedLines}</Typography>
-                <Button variant="outlined" color="primary" disabled={rightText.length === 0} onClick={handleCopy}>
+                <Button
+                    id="copyButton"
+                    variant="outlined"
+                    color="primary"
+                    disabled={rightText.length === 0}
+                    onClick={handleCopy}
+                >
                     Copy
                 </Button>
             </Box>

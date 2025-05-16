@@ -1,7 +1,36 @@
 import { describe, expect, test } from "vitest";
-import { chapter_formatting, collection_formatting, HBD_formatting } from "./formatting";
+import { chapter_formatting, collection_formatting, compareKeys, HBD_formatting } from "./formatting";
 
 const hbdHeader = "*Dragoon Birthdays*";
+
+describe("compareKeys", () => {
+    test.each([
+        ["", "", 100],
+        [" ", "", 100],
+        ["", " ", 100],
+        ["a", "a", 100],
+        ["a Bc", "Ab c", 100],
+        ["a", "", 0],
+        ["0123456789", "0123456789", 100],
+        ["0123456789", "_123456789", 90],
+        ["01234_6789", "0123456789", 90],
+        ["01234__789", "0123456789", 80],
+        ["0123456789", "0_23456_89", 80],
+        ["0123456__c", "0123456789", 70],
+        ["0123456789", "0_2_4c6789", 70],
+        ["012345____", "0123456789", 60],
+        ["0123456789", "01_34__78_", 60],
+        ["01", "00", 50],
+        ["012345678", "0012345678", 90],
+        ["Life Update", "lifeupdates", 90],
+        ["update", "updates", 85],
+        ["hbd", "HBD's", 60],
+        ["boss", "bosses", 66],
+        ["Chapter", "Chapter's", 77],
+    ])("compareKeys(%s, %s) -> %s", (key1, key2, expected) => {
+        expect(compareKeys(key1, key2)).toBe(expected);
+    });
+});
 
 describe("HBD_formatting", () => {
     test.each([
@@ -70,23 +99,23 @@ describe("collection_formatting", () => {
         ["\n preserve \n\n\tformatting\n", "\n preserve \n\n\tformatting\n"],
         ["test", "test"],
         ["00:01 example", "00:01 example"],
-        ["00:01 ab|", "*ab*\n00:01"],
-        ["00:01 ab |", "*ab*\n00:01"],
-        ["00:01 ab|text", "*ab*\n00:01 text"],
-        ["00:01 ab |text", "*ab*\n00:01 text"],
-        ["00:01 ab | text", "*ab*\n00:01 text"],
-        ["00:01 Ab|text", "*Ab*\n00:01 text"],
-        ["00:01 AB|text\n00:02 ab|text2\n00:03 aB|text3", "*AB*\n00:01 text\n00:02 text2\n00:03 text3"],
-        ["00:01 ab|multi space text", "*ab*\n00:01 multi space text"],
+        ["00:01 ab::", "*ab*\n00:01"],
+        ["00:01 ab ::", "*ab*\n00:01"],
+        ["00:01 ab::text", "*ab*\n00:01 text"],
+        ["00:01 ab ::text", "*ab*\n00:01 text"],
+        ["00:01 ab :: text", "*ab*\n00:01 text"],
+        ["00:01 Ab::text", "*Ab*\n00:01 text"],
+        ["00:01 AB::text\n00:02 ab::text2\n00:03 aB::text3", "*AB*\n00:01 text\n00:02 text2\n00:03 text3"],
+        ["00:01 ab::multi space text", "*ab*\n00:01 multi space text"],
         [
-            "00:01 ab|multi space text | with more than one | bracket",
-            "*ab*\n00:01 multi space text | with more than one | bracket",
+            "00:01 ab : ::multi space text :: with more than one :: bracket",
+            "*ab :*\n00:01 multi space text :: with more than one :: bracket",
         ],
-        ["00:01 normal\n00:02 ab|text", "*ab*\n00:02 text\n\n00:01 normal"],
-        ["00:01 normal\n00:02 ab|text\n00:03 ab|text2", "*ab*\n00:02 text\n00:03 text2\n\n00:01 normal"],
-        ["00:01 normal\n00:02 ab|text\n00:03 text2", "*ab*\n00:02 text\n\n00:01 normal\n00:03 text2"],
+        ["00:01 normal\n00:02 ab::text", "*ab*\n00:02 text\n\n00:01 normal"],
+        ["00:01 normal\n00:02 ab::text\n00:03 ab::text2", "*ab*\n00:02 text\n00:03 text2\n\n00:01 normal"],
+        ["00:01 normal\n00:02 ab::text\n00:03 text2", "*ab*\n00:02 text\n\n00:01 normal\n00:03 text2"],
         [
-            "00:01 normal\n00:02 ab|text\n00:03 ab|text2\n00:04 normal2\n00:05 ac|textC1\n00:06 ac|textC2\n00:07 normal3",
+            "00:01 normal\n00:02 ab::text\n00:03 ab::text2\n00:04 normal2\n00:05 ac::textC1\n00:06 ac::textC2\n00:07 normal3",
             "*ab*\n00:02 text\n00:03 text2\n\n*ac*\n00:05 textC1\n00:06 textC2\n\n00:01 normal\n00:04 normal2\n00:07 normal3",
         ],
     ])("collection_formatting(%s) -> %s", (tags, expected) => {
@@ -133,23 +162,23 @@ describe("Formatting is commutative", () => {
             "00:01 first tag\n00:02 [start]\n00:03 third\n00:04 example tag\n00:05 [Next chapter] this is a chapter tag",
             "00:01 first tag\n\n*start*\n00:03 third\n00:04 example tag\n\n*Next chapter*\n00:05 this is a chapter tag",
         ],
-        ["00:01 ab|", "*ab*\n00:01"],
-        ["00:01 ab |", "*ab*\n00:01"],
-        ["00:01 ab|text", "*ab*\n00:01 text"],
-        ["00:01 ab |text", "*ab*\n00:01 text"],
-        ["00:01 ab | text", "*ab*\n00:01 text"],
-        ["00:01 Ab|text", "*Ab*\n00:01 text"],
-        ["00:01 AB|text\n00:02 ab|text2\n00:03 aB|text3", "*AB*\n00:01 text\n00:02 text2\n00:03 text3"],
-        ["00:01 ab|multi space text", "*ab*\n00:01 multi space text"],
+        ["00:01 ab::", "*ab*\n00:01"],
+        ["00:01 ab ::", "*ab*\n00:01"],
+        ["00:01 ab::text", "*ab*\n00:01 text"],
+        ["00:01 ab ::text", "*ab*\n00:01 text"],
+        ["00:01 ab :: text", "*ab*\n00:01 text"],
+        ["00:01 Ab::text", "*Ab*\n00:01 text"],
+        ["00:01 AB::text\n00:02 ab::text2\n00:03 aB::text3", "*AB*\n00:01 text\n00:02 text2\n00:03 text3"],
+        ["00:01 ab::multi space text", "*ab*\n00:01 multi space text"],
         [
-            "00:01 ab|multi space text | with more than one | bracket",
-            "*ab*\n00:01 multi space text | with more than one | bracket",
+            "00:01 ab : ::multi space text :: with more than one :: bracket",
+            "*ab :*\n00:01 multi space text :: with more than one :: bracket",
         ],
-        ["00:01 normal\n00:02 ab|text", "*ab*\n00:02 text\n\n00:01 normal"],
-        ["00:01 normal\n00:02 ab|text\n00:03 ab|text2", "*ab*\n00:02 text\n00:03 text2\n\n00:01 normal"],
-        ["00:01 normal\n00:02 ab|text\n00:03 text2", "*ab*\n00:02 text\n\n00:01 normal\n00:03 text2"],
+        ["00:01 normal\n00:02 ab::text", "*ab*\n00:02 text\n\n00:01 normal"],
+        ["00:01 normal\n00:02 ab::text\n00:03 ab::text2", "*ab*\n00:02 text\n00:03 text2\n\n00:01 normal"],
+        ["00:01 normal\n00:02 ab::text\n00:03 text2", "*ab*\n00:02 text\n\n00:01 normal\n00:03 text2"],
         [
-            "00:01 normal\n00:02 ab|text\n00:03 ab|text2\n00:04 normal2\n00:05 ac|textC1\n00:06 ac|textC2\n00:07 normal3",
+            "00:01 normal\n00:02 ab::text\n00:03 ab::text2\n00:04 normal2\n00:05 ac::textC1\n00:06 ac::textC2\n00:07 normal3",
             "*ab*\n00:02 text\n00:03 text2\n\n*ac*\n00:05 textC1\n00:06 textC2\n\n00:01 normal\n00:04 normal2\n00:07 normal3",
         ],
     ];
