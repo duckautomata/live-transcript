@@ -16,7 +16,7 @@ const TimestampTheme = styled("span")(({ theme }) => ({
     },
 }));
 
-export default function Line({ id, segments, timeFormat, startTime, density }) {
+export default function Line({ id, lineTimestamp, segments, timeFormat, startTime, density }) {
     const theme = useTheme();
     const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
     const { lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
@@ -78,7 +78,7 @@ export default function Line({ id, segments, timeFormat, startTime, density }) {
         return "none";
     };
 
-    const firstTime = segments?.[0]?.timestamp ?? 0;
+    const hasSegments = segments.length > 0;
     const iconSize = density === "comfortable" ? "medium" : "small";
     const iconSx = density === "compact" ? { padding: 0 } : {};
 
@@ -106,13 +106,17 @@ export default function Line({ id, segments, timeFormat, startTime, density }) {
             >
                 <MoreHoriz style={{ color: iconColor }} />
             </IconButton>{" "}
-            [<TimestampTheme theme={theme}>{convertTime(firstTime)}</TimestampTheme>]{" "}
-            {segments.map((segment, index) => (
-                <Fragment key={`${index}_${segment?.timestamp}_${segment?.text}`}>
-                    <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onSegmentClick} />
-                    {index < segments.length - 1 && " "}
-                </Fragment>
-            ))}
+            [<TimestampTheme theme={theme}>{convertTime(lineTimestamp)}</TimestampTheme>]{" "}
+            {hasSegments ? (
+                segments.map((segment, index) => (
+                    <Fragment key={`${index}_${segment?.timestamp}_${segment?.text}`}>
+                        <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onSegmentClick} />
+                        {index < segments.length - 1 && " "}
+                    </Fragment>
+                ))
+            ) : (
+                <Segment timestamp={lineTimestamp} text={"          "} onClick={onSegmentClick} fullWidth={true} />
+            )}
         </Typography>
     );
 }

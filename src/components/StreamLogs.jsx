@@ -147,6 +147,7 @@ export default function StreamLogs({ wsKey }) {
                             <Line
                                 key={line?.id}
                                 id={line?.id}
+                                lineTimestamp={line?.timestamp}
                                 segments={line?.segments}
                                 timeFormat={timeFormat}
                                 startTime={startTime}

@@ -17,8 +17,8 @@ export default function LineMenu({ wsKey, jumpToLine }) {
 
     const downloadUrl = `${server}/${wsKey}/audio?id=${lineMenuId}`;
 
-    const lines = transcript.filter((line) => line.id === lineMenuId);
-    const ts = lines?.[0]?.segments?.[0]?.timestamp;
+    const selectedLine = transcript.filter((line) => line.id === lineMenuId)[0];
+    const ts = selectedLine?.timestamp;
     const formattedTime = unixToRelative(ts, startTime);
 
     let openUrl = "";

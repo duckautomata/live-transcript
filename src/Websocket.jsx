@@ -86,15 +86,15 @@ export const Websocket = ({ wsKey }) => {
         setTranscript(newTranscript);
     };
 
-    // [event, id, ts1, text1, ts2, text2, ..."]
+    // [event, id, lineTimestamp, ts1, text1, ts2, text2, ..."]
     const addNewLine = (parts) => {
-        if (typeof parts !== typeof [] || parts.length % 2 !== 0) {
+        if (typeof parts !== typeof [] || parts.length % 2 !== 1) {
             LOG_ERROR("addNewLine parts is not a valid array:", typeof parts, parts.length);
             return;
         }
 
         const segments = [];
-        for (let i = 2; i < parts.length; i += 2) {
+        for (let i = 3; i < parts.length; i += 2) {
             const newSegment = {
                 timestamp: +parts[i],
                 text: parts[i + 1],
@@ -103,6 +103,7 @@ export const Websocket = ({ wsKey }) => {
         }
         const newLine = {
             id: +parts[1],
+            timestamp: +parts[2],
             segments: segments,
         };
 

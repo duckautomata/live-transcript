@@ -38,7 +38,7 @@ export default function StreamWordCount() {
 
         let count = 0;
         transcript?.forEach((line, index) => {
-            const timestamp = line?.segments?.[0]?.timestamp ?? 0;
+            const timestamp = line?.timestamp ?? 0;
             line?.segments?.forEach((segment) => {
                 count += countWord(segment?.text, word);
             });
