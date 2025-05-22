@@ -18,14 +18,15 @@ const TimestampTheme = styled("span")(({ theme }) => ({
 
 export default function Line({ id, lineTimestamp, segments, timeFormat, startTime, density }) {
     const theme = useTheme();
-    const { setOpen, setTimestamp } = useContext(TagOffsetPopupContext);
+    const { setOpen, setTimestamp, setText } = useContext(TagOffsetPopupContext);
     const { lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
     const { audioId } = useContext(AudioContext);
     const { clipStartIndex, clipEndIndex, maxClipSize } = useContext(ClipperPopupContext);
     const [idOver, setIdOver] = useState(false);
 
-    const onSegmentClick = (timestamp) => {
+    const onSegmentClick = (timestamp, text) => {
         setTimestamp(timestamp);
+        setText(text);
         setOpen(true);
     };
 

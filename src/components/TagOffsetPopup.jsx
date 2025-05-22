@@ -1,13 +1,17 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Paper } from "@mui/material";
 import { useContext, useState } from "react";
 import { calculateOffset, offsetToCommand, snowflakeToUnix } from "../logic/timestamp";
 import { SettingContext } from "../providers/SettingProvider";
+import { unixToRelative } from "../logic/dateTime";
+import { TranscriptContext } from "../providers/TranscriptProvider";
 
-const TagOffsetPopup = ({ open, setOpen, timestamp }) => {
+const TagOffsetPopup = ({ open, setOpen, timestamp, text }) => {
     const { defaultOffset, setDefaultOffset } = useContext(SettingContext);
+    const { startTime } = useContext(TranscriptContext);
     const [tempDefaultOffset, setTempDefaultOffset] = useState(defaultOffset);
     const [snowflakeId, setSnowflakeId] = useState("");
     const [command, setCommand] = useState(null);
+    const formattedTimestamp = unixToRelative(timestamp, startTime);
 
     const handleSnowflakeIdChange = (event) => {
         setSnowflakeId(event.target.value);
@@ -56,7 +60,12 @@ const TagOffsetPopup = ({ open, setOpen, timestamp }) => {
         <Dialog open={open} onClose={handleClose}>
             <DialogTitle>Tag Offset Calculator</DialogTitle>
             <DialogContent>
-                <Typography>Enter the Message ID of the tag you want to offset.</Typography>
+                <Paper elevation={6} sx={{ padding: 1.3 }}>
+                    <Typography>
+                        [{formattedTimestamp}] {text}
+                    </Typography>
+                </Paper>
+                <Typography paddingTop={2}>Enter the Message ID of the tag you want to offset.</Typography>
                 <TextField
                     label="Message ID"
                     type="text"

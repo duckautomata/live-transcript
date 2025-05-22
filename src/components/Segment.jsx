@@ -17,7 +17,7 @@ export default function Segment({ timestamp, text, onClick }) {
     return (
         <>
             {enableTagHelper ? (
-                <SegmentTheme theme={theme} onClick={() => onClick(timestamp)}>
+                <SegmentTheme theme={theme} onClick={() => onClick(timestamp, text)}>
                     {text}
                 </SegmentTheme>
             ) : (
