@@ -79,7 +79,7 @@ export default function Line({ id, lineTimestamp, segments, timeFormat, startTim
         return "none";
     };
 
-    const hasSegments = segments.length > 0;
+    const hasSegments = segments?.length > 0;
     const iconSize = density === "comfortable" ? "medium" : "small";
     const iconSx = density === "compact" ? { padding: 0 } : {};
 
