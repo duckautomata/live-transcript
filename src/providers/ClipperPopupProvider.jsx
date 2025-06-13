@@ -6,7 +6,7 @@ export const ClipperPopupContext = createContext({
     clipPopupOpen: false,
     clipStartIndex: -1,
     clipEndIndex: -1,
-    maxClipSize: 10,
+    maxClipSize: 20,
     setClipPopupOpen: () => {},
     setClipStartIndex: () => {},
     setClipEndIndex: () => {},
@@ -16,7 +16,7 @@ export const ClipperPopupProvider = ({ children }) => {
     const [clipPopupOpen, setClipPopupOpen] = useState(false);
     const [clipStartIndex, setClipStartIndex] = useState(-1);
     const [clipEndIndex, setClipEndIndex] = useState(-1);
-    const maxClipSize = 10;
+    const maxClipSize = 20;
     const popupValue = useMemo(
         () => ({
             clipPopupOpen,
