@@ -137,7 +137,7 @@ export const collection_formatting = (tags) => {
             const text = match[3];
 
             // Use case-insensitive key lookup. The first occurrence of a collection will determine it's name capitalization.
-            const key = [...groups.keys()].find((k) => compareKeys(k, name) >= 80) || name;
+            const key = [...groups.keys()].find((k) => compareKeys(k, name) >= 90) || name;
 
             if (!groups.has(key)) {
                 groups.set(key, []);
