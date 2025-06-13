@@ -7,7 +7,6 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
-    Link,
     Typography,
 } from "@mui/material";
 import settings_img from "../assets/helpguide/settings.png";
@@ -41,13 +40,6 @@ export default function HelpPopup({ open, setOpen }) {
                 <DialogTitle id="alert-dialog-title">How to Use Live Transcript</DialogTitle>
                 <DialogContent>
                     <div>
-                        <p>
-                            A guide can also be found here:{" "}
-                            <Link href="https://github.com/duckautomata/live-transcript/blob/master/README.md#how-to-use">
-                                Live Transcript GitHub
-                            </Link>
-                        </p>
-
                         {/* Settings */}
                         <Accordion>
                             <AccordionSummary
@@ -74,6 +66,10 @@ export default function HelpPopup({ open, setOpen }) {
                                             System default will use whatever you set in your operating system. This is
                                             set by default.
                                         </blockquote>
+                                    </li>
+                                    <li>
+                                        Density: How much space should be between lines.
+                                        <blockquote>Select whichever makes it easier to read.</blockquote>
                                     </li>
                                     <li>
                                         Time Format: How you want the timestamp for each line to be formatted.
@@ -242,13 +238,17 @@ export default function HelpPopup({ open, setOpen }) {
                                 transcript. The benefits with using this instead of downloading each line separately is
                                 <ul>
                                     <li>Significantly faster since you do not have to combine them manually</li>
-                                    <li>No audio artifacts or missed audio between lines due to encoding issues</li>
+                                    <li>No artifacts or missed media between lines due to encoding issues</li>
                                     <li>Clearly see what you are clipping</li>
                                 </ul>
-                                As of now, only audio clipping is available.
+                                The type of clipping (mp3, mp4, or disabled) is determined by the server on what the
+                                server is storing. Depending on this, you will be able to see &#34;download mp3&#34;,
+                                &#34;download mp4&#34;, or nothing at all. The type of clipping can be changed when
+                                needed.
+                                <Typography variant="body1" gutterBottom />
                                 <Typography variant="body1" gutterBottom>
-                                    To start clipping, click on a line id and select &#34;Start Clipping&#34;. This will
-                                    do the following:
+                                    To start clipping, click on the triple dots on the line you want to clip; and select
+                                    &#34;Start Clip&#34;. This will do the following:
                                 </Typography>
                                 <ul>
                                     <li>
@@ -256,14 +256,14 @@ export default function HelpPopup({ open, setOpen }) {
                                         on the next id you pick)
                                     </li>
                                     <li>
-                                        Highlight all ids next to it in red to depict the range of the clip. Clips are
-                                        limited in how large they can get.
+                                        Highlight all triple dots next to it in orange to depict the range of the clip.
+                                        Clips are limited in how large they can get.
                                     </li>
                                     <li>Any lines that will be in the clip will now be highlighted in purple.</li>
                                 </ul>
                                 <img src={clippingStarted_img} width="100%" />
-                                To mark the second end of the clip, click on one of the red ids and click &#34;Download
-                                Clip&#34;.
+                                To mark the second end of the clip, click on one of the orange triple dots and click
+                                &#34;Process Clip&#34;.
                                 <img src={clippingMenuDownload_img} width="100%" />
                                 <Typography variant="caption">
                                     Caption: as you can see, the lines between 631 (the id I started with) and 634 (the
@@ -271,15 +271,19 @@ export default function HelpPopup({ open, setOpen }) {
                                     included in the clip.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
-                                    When you click on the download button, a popup will appear. From here, give the clip
+                                    When you click on the process button, a popup will appear. From here, give the clip
                                     a name and click download to finish the clipping process.
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    Depending on what media type the server is storing, you will be able to download
+                                    mp3, mp4, or nothing.
                                 </Typography>
                                 <img src={clippingPopup_img} width="100%" />
                                 Important notes:
                                 <ul>
                                     <li>At any point, you can click Reset Clip to get out of the clipping process</li>
                                     <li>
-                                        If one of the lines in a clip does not have any audio (either it did not get
+                                        If one of the lines in a clip does not have any media (either it did not get
                                         saved or it was deleted), then the whole clip will get rejected and you will
                                         land on a Sever Error page.
                                     </li>

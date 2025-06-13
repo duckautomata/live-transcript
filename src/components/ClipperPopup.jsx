@@ -51,11 +51,11 @@ const ClipperPopup = ({ wsKey }) => {
 
     return (
         <Dialog open={clipPopupOpen} onClose={handleClose}>
-            <DialogTitle>Clip Saver</DialogTitle>
+            <DialogTitle>Clip Downloader</DialogTitle>
             <DialogContent>
                 <Typography>
-                    This will download an audio clip between (and including) the ids [{clipStartIndex}, {clipEndIndex}
-                    ].
+                    This will download a clip containing (and including) the {1 + clipEndIndex - clipStartIndex}{" "}
+                    selected lines.
                 </Typography>
                 <Typography>Enter the name of the clip:</Typography>
                 <TextField
