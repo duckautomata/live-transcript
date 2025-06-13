@@ -4,6 +4,10 @@ Transcribes a live stream near real-time with a live latency of 4-6 seconds.
 
 ## Overview
 
+_System_
+
+- **[Live Transcript System](#live-transcript-system)**
+
 _General_
 
 - **[Settings](#settings)**
@@ -19,6 +23,19 @@ _Development_
 - **[Contributing Ideas](#contrubiting-ideas)**
 - **[Building a Release](#building-a-new-release)**
 - **[Release Process](#release-process)**
+
+## System
+
+### Live Transcript System
+Live Transcript is a system that contains three programs:
+- Worker: [live-transcript-worker](https://github.com/duckautomata/live-transcript-worker)
+- Server: [live-transcript-server](https://github.com/duckautomata/live-transcript-server)
+- Client: [live-transcript](https://github.com/duckautomata/live-transcript)
+
+All three programs work together to transcribe a livestream for us to use in real-time.
+- Worker will process a livestream, transcribe the audio, and then upload the results to the server.
+- Server acts as a cache layer between Worker and Client. It will store the current transcript. Once it receives a new transcript line, it will be broadcast to all connected clients.
+- Client (this) is the UI that renders the transcript for us to use.
 
 ## How To Use
 
