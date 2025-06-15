@@ -41,7 +41,7 @@ export const chapter_formatting = (tags) => {
         .split("\n")
         .map((line, index) => {
             const match = line.match(chapterRegex);
-            if (!match || match.length != 4) {
+            if (!match || match.length !== 4) {
                 return line;
             }
             const timestamp = match[1];
@@ -56,7 +56,7 @@ export const chapter_formatting = (tags) => {
                 newLine = `*${chapter}*\n${timestamp} ${firstTag}`;
             }
 
-            if (index != 0) {
+            if (index !== 0) {
                 newLine = `\n${newLine}`;
             }
 

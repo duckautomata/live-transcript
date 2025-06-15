@@ -1,14 +1,13 @@
 import { IconButton, Typography } from "@mui/material";
-import { Fragment, useContext, useState } from "react";
+import { Fragment, memo, useState } from "react";
 import Segment from "./Segment";
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { TagOffsetPopupContext } from "../providers/TagOffsetPopupProvider";
 import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
-import { LineMenuContext } from "../providers/LineMenuProvider";
-import { AudioContext } from "../providers/AudioProvider";
-import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
 import { MoreHoriz } from "@mui/icons-material";
+import { maxClipSize } from "../config";
+import { useAppStore } from "../store/store";
+import { useShallow } from "zustand/shallow";
 
 const TimestampTheme = styled("span")(({ theme }) => ({
     "&": {
@@ -16,26 +15,51 @@ const TimestampTheme = styled("span")(({ theme }) => ({
     },
 }));
 
-export default function Line({ id, lineTimestamp, segments, timeFormat, startTime, density }) {
+function Line({ id, lineTimestamp, segments }) {
     const theme = useTheme();
-    const { setOpen, setTimestamp, setText } = useContext(TagOffsetPopupContext);
-    const { lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
-    const { audioId } = useContext(AudioContext);
-    const { clipStartIndex, clipEndIndex, maxClipSize } = useContext(ClipperPopupContext);
+
     const [idOver, setIdOver] = useState(false);
 
-    const onSegmentClick = (timestamp, text) => {
-        setTimestamp(timestamp);
-        setText(text);
-        setOpen(true);
-    };
+    const setTagPopupOpen = useAppStore((state) => state.setTagPopupOpen);
+    const setTagPopupTimestamp = useAppStore((state) => state.setTagPopupTimestamp);
+    const setTagPopupText = useAppStore((state) => state.setTagPopupText);
+    const setLineAnchorEl = useAppStore((state) => state.setLineAnchorEl);
+    const setLineMenuId = useAppStore((state) => state.setLineMenuId);
 
-    const isClipable = clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize;
-    const iconColor = isClipable ? theme.palette.id.clip : theme.palette.id.main;
+    const startTime = useAppStore((state) => state.startTime);
+    const timeFormat = useAppStore((state) => state.timeFormat);
+    const density = useAppStore((state) => state.density);
+
+    const { isSelected, isInClipRange, isPlaying, isClipable, isClipStart } = useAppStore(
+        useShallow((state) => {
+            const { lineMenuId, clipStartIndex, clipEndIndex, audioId } = state;
+
+            const isBetween = (start, end, current) =>
+                (start <= current && current <= end) || (end <= current && current <= start);
+
+            const inMenuClipRange = lineMenuId >= 0 && clipStartIndex >= 0 && isBetween(clipStartIndex, lineMenuId, id);
+            const inFinalClipRange =
+                clipEndIndex >= 0 && clipStartIndex >= 0 && isBetween(clipStartIndex, clipEndIndex, id);
+
+            return {
+                isSelected: lineMenuId === id,
+                isClipStart: clipStartIndex === id,
+                isInClipRange: (inMenuClipRange || inFinalClipRange) && Math.abs(clipStartIndex - id) < maxClipSize,
+                isPlaying: audioId === id,
+                isClipable: clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize,
+            };
+        }),
+    );
+
+    const onSegmentClick = (timestamp, text) => {
+        setTagPopupTimestamp(timestamp);
+        setTagPopupText(text);
+        setTagPopupOpen(true);
+    };
 
     const onIdClick = (event) => {
         setLineMenuId(id);
-        setAnchorEl(event.currentTarget);
+        setLineAnchorEl(event.currentTarget);
     };
 
     const convertTime = (time) => {
@@ -51,34 +75,16 @@ export default function Line({ id, lineTimestamp, segments, timeFormat, startTim
     };
 
     const colorBackground = () => {
-        if (clipStartIndex === id) {
+        if (isClipStart || isInClipRange) {
             return theme.palette.lineground.clip;
         }
-
-        if (
-            lineMenuId >= 0 &&
-            clipStartIndex >= 0 &&
-            Math.abs(clipStartIndex - id) < maxClipSize &&
-            ((clipStartIndex <= id && id <= lineMenuId) || (lineMenuId <= id && id <= clipStartIndex))
-        ) {
-            return theme.palette.lineground.clip;
-        }
-
-        if (
-            clipEndIndex >= 0 &&
-            clipStartIndex >= 0 &&
-            Math.abs(clipStartIndex - id) < maxClipSize &&
-            ((clipStartIndex <= id && id <= clipEndIndex) || (clipEndIndex <= id && id <= clipStartIndex))
-        ) {
-            return theme.palette.lineground.clip;
-        }
-
-        if (idOver || lineMenuId === id || audioId === id) {
+        if (idOver || isSelected || isPlaying) {
             return theme.palette.lineground.main;
         }
         return "none";
     };
 
+    const iconColor = isClipable ? theme.palette.id.clip : theme.palette.id.main;
     const hasSegments = segments?.length > 0;
     const iconSize = density === "comfortable" ? "medium" : "small";
     const iconSx = density === "compact" ? { padding: 0 } : {};
@@ -110,7 +116,7 @@ export default function Line({ id, lineTimestamp, segments, timeFormat, startTim
             [<TimestampTheme theme={theme}>{convertTime(lineTimestamp)}</TimestampTheme>]{" "}
             {hasSegments ? (
                 segments.map((segment, index) => (
-                    <Fragment key={`${index}_${segment?.timestamp}_${segment?.text}`}>
+                    <Fragment key={`line-${id}-segment-${index}`}>
                         <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onSegmentClick} />
                         {index < segments.length - 1 && " "}
                     </Fragment>
@@ -121,3 +127,5 @@ export default function Line({ id, lineTimestamp, segments, timeFormat, startTim
         </Typography>
     );
 }
+
+export default memo(Line);

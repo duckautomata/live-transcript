@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import {
     Dialog,
     DialogTitle,
@@ -13,21 +12,19 @@ import {
     Box,
     MenuItem, // Import Box for better layout
 } from "@mui/material";
-import { SettingContext } from "../providers/SettingProvider";
+import { useAppStore } from "../store/store";
 
 const SettingsPopup = ({ open, setOpen }) => {
-    const {
-        theme,
-        density,
-        timeFormat,
-        newAtTop,
-        enableTagHelper,
-        setTheme,
-        setDensity,
-        setTimeFormat,
-        setNewAtTop,
-        setEnableTagHelper,
-    } = useContext(SettingContext);
+    const theme = useAppStore((state) => state.theme);
+    const density = useAppStore((state) => state.density);
+    const timeFormat = useAppStore((state) => state.timeFormat);
+    const newAtTop = useAppStore((state) => state.newAtTop);
+    const enableTagHelper = useAppStore((state) => state.enableTagHelper);
+    const setTheme = useAppStore((state) => state.setTheme);
+    const setDensity = useAppStore((state) => state.setDensity);
+    const setTimeFormat = useAppStore((state) => state.setTimeFormat);
+    const setNewAtTop = useAppStore((state) => state.setNewAtTop);
+    const setEnableTagHelper = useAppStore((state) => state.setEnableTagHelper);
 
     const handleClose = () => {
         setOpen(false);

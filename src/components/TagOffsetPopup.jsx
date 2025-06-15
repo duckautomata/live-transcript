@@ -1,17 +1,22 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField, Paper } from "@mui/material";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { calculateOffset, offsetToCommand, snowflakeToUnix } from "../logic/timestamp";
-import { SettingContext } from "../providers/SettingProvider";
 import { unixToRelative } from "../logic/dateTime";
-import { TranscriptContext } from "../providers/TranscriptProvider";
+import { useAppStore } from "../store/store";
 
-const TagOffsetPopup = ({ open, setOpen, timestamp, text }) => {
-    const { defaultOffset, setDefaultOffset } = useContext(SettingContext);
-    const { startTime } = useContext(TranscriptContext);
+const TagOffsetPopup = () => {
+    const tagPopupOpen = useAppStore((state) => state.tagPopupOpen);
+    const setTagPopupOpen = useAppStore((state) => state.setTagPopupOpen);
+    const tagPopupTimestamp = useAppStore((state) => state.tagPopupTimestamp);
+    const tagPopupText = useAppStore((state) => state.tagPopupText);
+    const defaultOffset = useAppStore((state) => state.defaultOffset);
+    const setDefaultOffset = useAppStore((state) => state.setDefaultOffset);
+    const startTime = useAppStore((state) => state.startTime);
+
     const [tempDefaultOffset, setTempDefaultOffset] = useState(defaultOffset);
     const [snowflakeId, setSnowflakeId] = useState("");
     const [command, setCommand] = useState(null);
-    const formattedTimestamp = unixToRelative(timestamp, startTime);
+    const formattedTimestamp = unixToRelative(tagPopupTimestamp, startTime);
 
     const handleSnowflakeIdChange = (event) => {
         setSnowflakeId(event.target.value);
@@ -20,7 +25,7 @@ const TagOffsetPopup = ({ open, setOpen, timestamp, text }) => {
         let tagOffsetCommand = null;
         try {
             snowflakeUnix = snowflakeToUnix(event.target.value);
-            tagOffset = calculateOffset(timestamp, snowflakeUnix, tempDefaultOffset);
+            tagOffset = calculateOffset(tagPopupTimestamp, snowflakeUnix, tempDefaultOffset);
             tagOffsetCommand = offsetToCommand(tagOffset);
         } catch {
             tagOffsetCommand = null;
@@ -35,7 +40,7 @@ const TagOffsetPopup = ({ open, setOpen, timestamp, text }) => {
         let tagOffsetCommand = null;
         try {
             snowflakeUnix = snowflakeToUnix(snowflakeId);
-            tagOffset = calculateOffset(timestamp, snowflakeUnix, event.target.value);
+            tagOffset = calculateOffset(tagPopupTimestamp, snowflakeUnix, event.target.value);
             tagOffsetCommand = offsetToCommand(tagOffset);
         } catch {
             tagOffsetCommand = null;
@@ -50,19 +55,19 @@ const TagOffsetPopup = ({ open, setOpen, timestamp, text }) => {
     };
 
     const handleClose = () => {
-        setOpen(false);
+        setTagPopupOpen(false);
         setDefaultOffset(tempDefaultOffset);
         setSnowflakeId("");
         setCommand(null);
     };
 
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={tagPopupOpen} onClose={handleClose}>
             <DialogTitle>Tag Offset Calculator</DialogTitle>
             <DialogContent>
                 <Paper elevation={6} sx={{ padding: 1.3 }}>
                     <Typography>
-                        [{formattedTimestamp}] {text}
+                        [{formattedTimestamp}] {tagPopupText}
                     </Typography>
                 </Paper>
                 <Typography paddingTop={2}>Enter the Message ID of the tag you want to offset.</Typography>

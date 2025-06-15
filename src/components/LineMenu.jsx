@@ -1,19 +1,23 @@
-import { useContext } from "react";
-import { LineMenuContext } from "../providers/LineMenuProvider";
 import { Menu, MenuItem } from "@mui/material";
-import { TranscriptContext } from "../providers/TranscriptProvider";
 import { unixToRelative } from "../logic/dateTime";
-import { AudioContext } from "../providers/AudioProvider";
-import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
-import { server } from "../config";
+import { maxClipSize, server } from "../config";
+import { useAppStore } from "../store/store";
 
 export default function LineMenu({ wsKey, jumpToLine }) {
-    const { anchorEl, lineMenuId, setAnchorEl, setLineMenuId } = useContext(LineMenuContext);
-    const { activeId, transcript, startTime, mediaType } = useContext(TranscriptContext);
-    const { setAudioId } = useContext(AudioContext);
-    const { clipStartIndex, maxClipSize, setClipStartIndex, setClipEndIndex, setClipPopupOpen } =
-        useContext(ClipperPopupContext);
-    const open = Boolean(anchorEl);
+    const lineAnchorEl = useAppStore((state) => state.lineAnchorEl);
+    const lineMenuId = useAppStore((state) => state.lineMenuId);
+    const activeId = useAppStore((state) => state.activeId);
+    const transcript = useAppStore((state) => state.transcript);
+    const startTime = useAppStore((state) => state.startTime);
+    const mediaType = useAppStore((state) => state.mediaType);
+    const clipStartIndex = useAppStore((state) => state.clipStartIndex);
+    const setLineAnchorEl = useAppStore((state) => state.setLineAnchorEl);
+    const setLineMenuId = useAppStore((state) => state.setLineMenuId);
+    const setAudioId = useAppStore((state) => state.setAudioId);
+    const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
+    const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
+    const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
+    const open = Boolean(lineAnchorEl);
 
     const downloadUrl = `${server}/${wsKey}/audio?id=${lineMenuId}`;
 
@@ -31,12 +35,12 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     }
 
     const handleClose = () => {
-        setAnchorEl(null);
+        setLineAnchorEl(null);
         setLineMenuId(-1);
     };
     const handleJumpToLine = () => {
         jumpToLine(lineMenuId);
-        setAnchorEl(null);
+        setLineAnchorEl(null);
     };
     const handleStartClip = () => {
         setClipStartIndex(lineMenuId);
@@ -101,7 +105,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     return (
         <Menu
             id="line-menu"
-            anchorEl={anchorEl}
+            anchorEl={lineAnchorEl}
             open={open}
             onClose={handleClose}
             anchorOrigin={anchorOrigin}

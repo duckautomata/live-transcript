@@ -1,16 +1,15 @@
-import { useContext } from "react";
 import AudioPlayer from "react-h5-audio-player";
 import "react-h5-audio-player/lib/styles.css";
 import "./AudioFooter.css";
-import { AudioContext } from "../providers/AudioProvider";
-import { TranscriptContext } from "../providers/TranscriptProvider";
 import { AppBar, Box, IconButton, Toolbar, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { Close, Download } from "@mui/icons-material";
 import { server } from "../config";
+import { useAppStore } from "../store/store";
 
 export default function AudioFooter({ wsKey, offset, width }) {
-    const { audioId, setAudioId } = useContext(AudioContext);
-    const { transcript } = useContext(TranscriptContext);
+    const audioId = useAppStore((state) => state.audioId);
+    const setAudioId = useAppStore((state) => state.setAudioId);
+    const transcript = useAppStore((state) => state.transcript);
     const theme = useTheme();
     const isMobile = useMediaQuery("(max-width:768px)");
 
