@@ -1,21 +1,31 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import useWebSocket from "react-use-websocket";
-import { TranscriptContext } from "./providers/TranscriptProvider";
 import { LOG_MSG, LOG_WARN, LOG_ERROR } from "./logic/debug";
 import { wsServer } from "./config";
+import { useAppStore } from "./store/store";
 
 export const Websocket = ({ wsKey }) => {
     const WS_URL = `${wsServer}/ws/${wsKey}`;
-    const { transcript, setActiveId, setActiveTitle, setStartTime, setMediaType, setIsLive, setTranscript } =
-        useContext(TranscriptContext);
+    const setServerStatus = useAppStore((state) => state.setServerStatus);
+    const setActiveId = useAppStore((state) => state.setActiveId);
+    const setActiveTitle = useAppStore((state) => state.setActiveTitle);
+    const setStartTime = useAppStore((state) => state.setStartTime);
+    const setMediaType = useAppStore((state) => state.setMediaType);
+    const setIsLive = useAppStore((state) => state.setIsLive);
+    const setTranscript = useAppStore((state) => state.setTranscript);
+    const addTranscriptLine = useAppStore((state) => state.addTranscriptLine);
 
     const { lastMessage, lastJsonMessage } = useWebSocket(WS_URL, {
         share: false,
         shouldReconnect: () => true,
         reconnectAttempts: 10,
         reconnectInterval: 3000,
+        onOpen: () => setServerStatus("loading"),
+        onClose: () => setServerStatus("connecting"),
+        onError: () => setServerStatus("connecting"),
+        onReconnectStop: () => setServerStatus("offline"),
     });
 
     useEffect(() => {
@@ -23,6 +33,7 @@ export const Websocket = ({ wsKey }) => {
             return;
         }
         resetState(lastJsonMessage?.clientData);
+        setServerStatus("online");
     }, [lastJsonMessage]);
 
     useEffect(() => {
@@ -107,7 +118,7 @@ export const Websocket = ({ wsKey }) => {
             segments: segments,
         };
 
-        setTranscript([...transcript, newLine]);
+        addTranscriptLine(newLine);
     };
 
     // [event, activeId, activeTitle, startTime, mediaType, isLive]

@@ -1,13 +1,16 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField } from "@mui/material";
-import { useContext, useState } from "react";
-import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
-import { TranscriptContext } from "../providers/TranscriptProvider";
+import { useState } from "react";
 import { server } from "../config";
+import { useAppStore } from "../store/store";
 
 const ClipperPopup = ({ wsKey }) => {
-    const { clipPopupOpen, clipStartIndex, clipEndIndex, setClipPopupOpen, setClipStartIndex, setClipEndIndex } =
-        useContext(ClipperPopupContext);
-    const { mediaType } = useContext(TranscriptContext);
+    const clipPopupOpen = useAppStore((state) => state.clipPopupOpen);
+    const clipStartIndex = useAppStore((state) => state.clipStartIndex);
+    const clipEndIndex = useAppStore((state) => state.clipEndIndex);
+    const mediaType = useAppStore((state) => state.mediaType);
+    const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
+    const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
+    const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
     const [clipName, setClipName] = useState("");
 
     const hasAudio = mediaType === "audio" || mediaType === "video";
@@ -54,8 +57,8 @@ const ClipperPopup = ({ wsKey }) => {
             <DialogTitle>Clip Downloader</DialogTitle>
             <DialogContent>
                 <Typography>
-                    This will download a clip containing (and including) the {1 + clipEndIndex - clipStartIndex}{" "}
-                    selected lines.
+                    This will download a clip containing (and including) the{" "}
+                    {1 + Math.abs(clipEndIndex - clipStartIndex)} selected lines.
                 </Typography>
                 <Typography>Enter the name of the clip:</Typography>
                 <TextField

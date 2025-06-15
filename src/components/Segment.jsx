@@ -1,7 +1,6 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { useContext } from "react";
-import { SettingContext } from "../providers/SettingProvider";
+import { useAppStore } from "../store/store";
 
 const SegmentTheme = styled("span")(({ theme }) => ({
     cursor: "pointer",
@@ -12,7 +11,7 @@ const SegmentTheme = styled("span")(({ theme }) => ({
 
 export default function Segment({ timestamp, text, onClick }) {
     const theme = useTheme();
-    const { enableTagHelper } = useContext(SettingContext);
+    const enableTagHelper = useAppStore((state) => state.enableTagHelper);
 
     return (
         <>

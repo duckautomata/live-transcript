@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -14,19 +14,21 @@ import HelpPopup from "./HelpPopup";
 import SettingsPopup from "./SettingsPopup";
 import { Construction, GitHub, Help, Home } from "@mui/icons-material";
 import { Tooltip, useMediaQuery } from "@mui/material";
-import { SettingContext } from "../providers/SettingProvider";
 import { useLocation, useNavigate } from "react-router-dom";
 import AudioFooter from "./AudioFooter";
-import { AudioContext } from "../providers/AudioProvider";
-import { ClipperPopupContext } from "../providers/ClipperPopupProvider";
 import { keyIcons } from "../config";
+import { useAppStore } from "../store/store";
 
 export default function Sidebar({ wsKey, children }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const { sidebarOpen, setSidebarOpen } = useContext(SettingContext);
-    const { setAudioId } = useContext(AudioContext);
-    const { setClipStartIndex, setClipEndIndex } = useContext(ClipperPopupContext);
+
+    const sidebarOpen = useAppStore((state) => state.sidebarOpen);
+    const setSidebarOpen = useAppStore((state) => state.setSidebarOpen);
+    const setAudioId = useAppStore((state) => state.setAudioId);
+    const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
+    const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
+
     const [helpOpen, setHelpOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [width, setWidth] = useState(window.innerWidth);

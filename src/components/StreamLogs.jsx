@@ -1,14 +1,18 @@
 import { Box, IconButton, InputAdornment, Pagination, TextField, Typography, useMediaQuery } from "@mui/material";
-import { useContext, useState } from "react";
-import { TranscriptContext } from "../providers/TranscriptProvider";
+import { useState } from "react";
 import Line from "./Line";
-import { SettingContext } from "../providers/SettingProvider";
-import { Clear, Search } from "@mui/icons-material";
+import { Clear, Info, Search } from "@mui/icons-material";
 import LineMenu from "./LineMenu";
+import { useAppStore } from "../store/store";
+import StreamLogsSkeleton from "./StreamLogsSkeleton";
 
 export default function StreamLogs({ wsKey }) {
-    const { activeTitle, startTime, isLive, transcript } = useContext(TranscriptContext);
-    const { newAtTop, timeFormat, density } = useContext(SettingContext);
+    const activeTitle = useAppStore((state) => state.activeTitle);
+    const isLive = useAppStore((state) => state.isLive);
+    const transcript = useAppStore((state) => state.transcript);
+    const serverStatus = useAppStore((state) => state.serverStatus);
+    const newAtTop = useAppStore((state) => state.newAtTop);
+
     const [page, setPage] = useState(1);
     const [jumpId, setJumpId] = useState(-1);
     const [searchTerm, setSearchTerm] = useState("");
@@ -77,95 +81,144 @@ export default function StreamLogs({ wsKey }) {
         setSearchTerm("");
     };
 
+    const isOnline = serverStatus === "online";
+    const isEmpty = transcript.length === 0 && activeTitle === "";
+
     return (
         <>
-            <LineMenu wsKey={wsKey} jumpToLine={jumpToLine} />
-            {isMobile ? (
-                <Typography color="primary" variant="h5" component="h5" sx={{ mb: 2, wordBreak: "break-word" }}>
-                    {activeTitle}
-                </Typography>
-            ) : (
-                <Typography color="primary" variant="h4" component="h4" sx={{ mb: 2, wordBreak: "break-word" }}>
-                    {activeTitle}
-                </Typography>
-            )}
-
-            <Typography color="secondary" variant="h6" component="h6" sx={{ mb: 2 }} id={liveText}>
-                {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}&#39;s Stream is {liveText}.
-            </Typography>
-            {transcript.length > 0 && (
-                <Box sx={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "center" }}>
-                    <TextField
-                        label="Search Transcript"
-                        variant="outlined"
-                        size="small"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <Search />
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                        sx={{ width: isMobile ? "100%" : "50%" }}
-                    />
-                    {searchTerm && ( // Conditionally render clear button
-                        <IconButton
-                            onClick={() => {
-                                setSearchTerm("");
+            {isOnline ? (
+                <>
+                    {isEmpty ? (
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                textAlign: "center",
+                                height: "50vh",
                             }}
-                            aria-label="clear search"
                         >
-                            <Clear />
-                        </IconButton>
-                    )}
-                </Box>
-            )}
-            <hr />
-            <div className="transcript">
-                {displayedLines.length === 0 ? (
-                    transcript.length === 0 ? (
-                        <Typography>No transcripts at this time.</Typography>
+                            <Info color="primary" sx={{ fontSize: 60, mb: 2 }} />
+                            <Typography variant="h5" component="h2" sx={{ mb: 1 }}>
+                                No Data Available for {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}
+                            </Typography>
+                            <Typography color="text.secondary">No transcript data was found.</Typography>
+                            <Typography color="text.secondary">
+                                This usually happens when the server data is reset.
+                            </Typography>
+                        </Box>
                     ) : (
-                        <Typography>Nothing found.</Typography>
-                    )
-                ) : (
-                    <>
-                        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
-                            <Pagination
-                                count={totalPages}
-                                page={page}
-                                onChange={handleChange}
-                                showFirstButton
-                                showLastButton
-                            />
-                        </div>
-                        {displayedLines.map((line) => (
-                            <Line
-                                key={line?.id}
-                                id={line?.id}
-                                lineTimestamp={line?.timestamp}
-                                segments={line?.segments}
-                                timeFormat={timeFormat}
-                                startTime={startTime}
-                                density={density}
-                            />
-                        ))}
-                        <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
-                            <Pagination
-                                count={totalPages}
-                                page={page}
-                                onChange={handleChange}
-                                showFirstButton
-                                showLastButton
-                            />
-                        </div>
-                    </>
-                )}
-            </div>
+                        <>
+                            <LineMenu wsKey={wsKey} jumpToLine={jumpToLine} />
+                            {isMobile ? (
+                                <Typography
+                                    color="primary"
+                                    variant="h5"
+                                    component="h5"
+                                    sx={{ mb: 2, wordBreak: "break-word" }}
+                                >
+                                    {activeTitle}
+                                </Typography>
+                            ) : (
+                                <Typography
+                                    color="primary"
+                                    variant="h4"
+                                    component="h4"
+                                    sx={{ mb: 2, wordBreak: "break-word" }}
+                                >
+                                    {activeTitle}
+                                </Typography>
+                            )}
+
+                            <Typography color="secondary" variant="h6" component="h6" sx={{ mb: 2 }} id={liveText}>
+                                {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}&#39;s Stream is {liveText}.
+                            </Typography>
+                            {transcript.length > 0 && (
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        width: "100%",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <TextField
+                                        label="Search Transcript"
+                                        variant="outlined"
+                                        size="small"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        slotProps={{
+                                            input: {
+                                                startAdornment: (
+                                                    <InputAdornment position="start">
+                                                        <Search />
+                                                    </InputAdornment>
+                                                ),
+                                            },
+                                        }}
+                                        sx={{ width: isMobile ? "100%" : "50%" }}
+                                    />
+                                    {searchTerm && ( // Conditionally render clear button
+                                        <IconButton
+                                            onClick={() => {
+                                                setSearchTerm("");
+                                            }}
+                                            aria-label="clear search"
+                                        >
+                                            <Clear />
+                                        </IconButton>
+                                    )}
+                                </Box>
+                            )}
+                            <hr />
+                            <div className="transcript">
+                                {displayedLines.length === 0 ? (
+                                    transcript.length === 0 ? (
+                                        <Typography>No transcripts at this time.</Typography>
+                                    ) : (
+                                        <Typography>Nothing found.</Typography>
+                                    )
+                                ) : (
+                                    <>
+                                        <div
+                                            style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}
+                                        >
+                                            <Pagination
+                                                count={totalPages}
+                                                page={page}
+                                                onChange={handleChange}
+                                                showFirstButton
+                                                showLastButton
+                                            />
+                                        </div>
+                                        {displayedLines.map((line) => (
+                                            <Line
+                                                key={`streamLogsLine-${line?.id}`}
+                                                id={line?.id}
+                                                lineTimestamp={line?.timestamp}
+                                                segments={line?.segments}
+                                            />
+                                        ))}
+                                        <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+                                            <Pagination
+                                                count={totalPages}
+                                                page={page}
+                                                onChange={handleChange}
+                                                showFirstButton
+                                                showLastButton
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </>
+            ) : (
+                <StreamLogsSkeleton serverStatus={serverStatus} />
+            )}
         </>
     );
 }

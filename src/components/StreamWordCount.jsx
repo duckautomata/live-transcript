@@ -1,15 +1,17 @@
 import { Box, Stack, TextField, Typography, useMediaQuery } from "@mui/material";
-import { useCallback, useContext, useState } from "react";
-import { TranscriptContext } from "../providers/TranscriptProvider";
+import { useCallback, useState } from "react";
 import { LineChart } from "@mui/x-charts";
 import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
 import "./StreamWordCount.css";
 import { countWord } from "../logic/wordCount";
-import { SettingContext } from "../providers/SettingProvider";
+import { useAppStore } from "../store/store";
 
 export default function StreamWordCount() {
-    const { activeTitle, transcript, startTime } = useContext(TranscriptContext);
-    const { timeFormat } = useContext(SettingContext);
+    const activeTitle = useAppStore((state) => state.activeTitle);
+    const transcript = useAppStore((state) => state.transcript);
+    const startTime = useAppStore((state) => state.startTime);
+    const timeFormat = useAppStore((state) => state.timeFormat);
+
     const [word, setWord] = useState("");
     const isMobile = useMediaQuery("(max-width:768px)");
 
