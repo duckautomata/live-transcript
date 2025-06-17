@@ -58,16 +58,16 @@ A guide on how to use the website can be found by clicking the `Help` question m
 
 Every time you save, Vite will automatically refresh the cache and the site should refresh with the new changes.
 
-To mock the transcript, go to the `src/providers/TranscriptProvider.jsx` and change
+To mock the transcript, go to the `src/store/transcriptSlice.ts` and change
 
 ```js
-const [transcript, setTranscript] = useState([]);
+transcript: [],
 ```
 
 to
 
 ```js
-const [transcript, setTranscript] = useState(examples.generateTranscript(100, 3, 4));
+transcript: examples.generateTranscript(100, 3, 4);
 ```
 
 where you can use anything from the examples file. generateTranscript is just the easiest to generate large amounts of data.

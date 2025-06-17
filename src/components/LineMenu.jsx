@@ -4,20 +4,20 @@ import { maxClipSize, server } from "../config";
 import { useAppStore } from "../store/store";
 
 export default function LineMenu({ wsKey, jumpToLine }) {
-    const lineAnchorEl = useAppStore((state) => state.lineAnchorEl);
     const lineMenuId = useAppStore((state) => state.lineMenuId);
     const activeId = useAppStore((state) => state.activeId);
     const transcript = useAppStore((state) => state.transcript);
     const startTime = useAppStore((state) => state.startTime);
     const mediaType = useAppStore((state) => state.mediaType);
     const clipStartIndex = useAppStore((state) => state.clipStartIndex);
-    const setLineAnchorEl = useAppStore((state) => state.setLineAnchorEl);
     const setLineMenuId = useAppStore((state) => state.setLineMenuId);
     const setAudioId = useAppStore((state) => state.setAudioId);
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
     const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
     const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
-    const open = Boolean(lineAnchorEl);
+
+    const lineAnchorEl = document.getElementById(`line-button-${lineMenuId}`);
+    const open = lineMenuId > -1 ? Boolean(lineAnchorEl) : false;
 
     const downloadUrl = `${server}/${wsKey}/audio?id=${lineMenuId}`;
 
@@ -35,12 +35,11 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     }
 
     const handleClose = () => {
-        setLineAnchorEl(null);
         setLineMenuId(-1);
     };
     const handleJumpToLine = () => {
         jumpToLine(lineMenuId);
-        setLineAnchorEl(null);
+        setLineMenuId(-1);
     };
     const handleStartClip = () => {
         setClipStartIndex(lineMenuId);
@@ -111,7 +110,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
             anchorOrigin={anchorOrigin}
             transformOrigin={transformOrigin}
         >
-            <MenuItem disabled>id: {lineMenuId}</MenuItem>
+            <MenuItem disabled>id: {lineMenuId > -1 ? lineMenuId : ""}</MenuItem>
             {shouldRenderStartClip && <MenuItem onClick={handleStartClip}>Start Clip</MenuItem>}
             {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Process Clip</MenuItem>}
             {shouldRenderResetClip && <MenuItem onClick={handleResetClip}>Reset Clip</MenuItem>}

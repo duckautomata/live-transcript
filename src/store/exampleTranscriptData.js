@@ -193,6 +193,7 @@ export const generateTranscript = (numLines, numSegPerLine, numWordsPerSeg) => {
         }
         const line = {
             id: i,
+            timestamp: 1729305500 + i * 10,
             segments: segments,
         };
         transcript.push(line);

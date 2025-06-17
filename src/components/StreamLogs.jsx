@@ -1,5 +1,5 @@
 import { Box, IconButton, InputAdornment, Pagination, TextField, Typography, useMediaQuery } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Line from "./Line";
 import { Clear, Info, Search } from "@mui/icons-material";
 import LineMenu from "./LineMenu";
@@ -17,9 +17,11 @@ export default function StreamLogs({ wsKey }) {
     const [jumpId, setJumpId] = useState(-1);
     const [searchTerm, setSearchTerm] = useState("");
     const isMobile = useMediaQuery("(max-width:768px)");
+    const lineRefs = useRef(new Map());
 
     const liveText = isLive ? "live" : "offline";
-
+    const isOnline = serverStatus === "online";
+    const isEmpty = transcript.length === 0 && activeTitle === "";
     const mapArray = transcript.filter((line) => {
         let text = "";
         line?.segments?.forEach((segment) => {
@@ -31,28 +33,7 @@ export default function StreamLogs({ wsKey }) {
     // 450 lines at 8 seconds per line is about 1 hour per page
     const linesPerPage = 450;
     const totalPages = Math.ceil(mapArray.length / linesPerPage);
-    let actualJumpPage = -1;
     let actualPage = Math.max(Math.min(totalPages, page), 1);
-
-    if (jumpId >= 0 && transcript?.length > 0 && jumpId >= transcript.at(0).id && jumpId <= transcript.at(-1).id) {
-        let actualJumpId = jumpId;
-        if (newAtTop) {
-            actualJumpId = transcript.at(-1).id - jumpId;
-        }
-
-        const totalNumberUnfilteredPages = Math.ceil(transcript.length / linesPerPage);
-        const jumpToPage = Math.ceil((actualJumpId + 1) / linesPerPage);
-        const jumpToActualPage = Math.max(Math.min(totalNumberUnfilteredPages, jumpToPage), 1);
-
-        actualJumpPage = jumpToActualPage;
-        actualPage = actualJumpPage;
-    }
-
-    if (actualJumpPage === page) {
-        // we are now on the page with the line we want to jump to. Change hash so the browser goes to the line.
-        window.location.hash = "#" + jumpId;
-        setJumpId(-1);
-    }
 
     if (actualPage !== page) {
         setPage(actualPage);
@@ -77,12 +58,43 @@ export default function StreamLogs({ wsKey }) {
     }
 
     const jumpToLine = (id) => {
-        setJumpId(id);
+        // Find the index of the line in the full, unfiltered transcript
+        const lineIndex = transcript.findIndex((line) => line.id === id);
+        if (lineIndex === -1) return; // Line not found
+
+        // Calculate the page this line will be on
+        let actualJumpId = id;
+        if (newAtTop) {
+            actualJumpId = transcript.at(-1).id - id;
+        }
+        const totalNumberUnfilteredPages = Math.ceil(transcript.length / linesPerPage);
+        const jumpToPage = Math.ceil((actualJumpId + 1) / linesPerPage);
+        const jumpToActualPage = Math.max(Math.min(totalNumberUnfilteredPages, jumpToPage), 1);
+
         setSearchTerm("");
+        setPage(jumpToActualPage);
+        setJumpId(id);
     };
 
-    const isOnline = serverStatus === "online";
-    const isEmpty = transcript.length === 0 && activeTitle === "";
+    useEffect(() => {
+        if (jumpId === -1) return;
+
+        const node = lineRefs.current.get(jumpId);
+        if (node) {
+            setTimeout(() => {
+                node.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+
+                node.classList.add("highlight");
+                setTimeout(() => {
+                    node.classList.remove("highlight");
+                }, 2000);
+            }, 100);
+            setJumpId(-1);
+        }
+    }, [jumpId]);
 
     return (
         <>
@@ -195,10 +207,17 @@ export default function StreamLogs({ wsKey }) {
                                         </div>
                                         {displayedLines.map((line) => (
                                             <Line
-                                                key={`streamLogsLine-${line?.id}`}
-                                                id={line?.id}
-                                                lineTimestamp={line?.timestamp}
-                                                segments={line?.segments}
+                                                ref={(node) => {
+                                                    if (node) {
+                                                        lineRefs.current.set(line.id, node);
+                                                    } else {
+                                                        lineRefs.current.delete(line.id);
+                                                    }
+                                                }}
+                                                key={`streamLogsLine-${line.id}`}
+                                                id={line.id}
+                                                lineTimestamp={line.timestamp}
+                                                segments={line.segments}
                                             />
                                         ))}
                                         <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
