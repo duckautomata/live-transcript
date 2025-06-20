@@ -7,6 +7,7 @@ const TagFixer = ({ wsKey }) => {
     const [leftText, setLeftText] = useState("");
     const [rightText, setRightText] = useState("");
     const [numFixedLines, setNumFixedLines] = useState(0);
+    const [copied, setCopied] = useState(false);
 
     const handleClear = () => {
         setLeftText("");
@@ -42,11 +43,8 @@ const TagFixer = ({ wsKey }) => {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(rightText);
-        const copyButton = document.getElementById("copyButton");
-        copyButton.innerText = "Copied";
-        setTimeout(() => {
-            copyButton.innerText = "Copy";
-        }, 2000);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     return (
@@ -58,7 +56,6 @@ const TagFixer = ({ wsKey }) => {
                 padding: 2,
             }}
         >
-            {/* Top section: two text fields taking left and right sides of the screen */}
             <Box
                 sx={{
                     display: "flex",
@@ -110,7 +107,7 @@ const TagFixer = ({ wsKey }) => {
                     disabled={rightText.length === 0}
                     onClick={handleCopy}
                 >
-                    Copy
+                    {copied ? "Copied" : "Copy"}
                 </Button>
             </Box>
         </Box>

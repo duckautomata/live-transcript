@@ -4,7 +4,7 @@ import { Avatar } from "@mui/material";
 
 export const server = "https://dokiscripts.com";
 export const wsServer = "wss://dokiscripts.com";
-export const maxClipSize = 20;
+export const maxClipSize = 30;
 export const keys = () => {
     const keys = ["doki", "mint"];
     if (import.meta.env.DEV) {

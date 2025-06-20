@@ -1,14 +1,26 @@
-import { Box, IconButton, InputAdornment, Pagination, TextField, Typography, useMediaQuery } from "@mui/material";
+import {
+    Box,
+    IconButton,
+    InputAdornment,
+    Pagination,
+    TextField,
+    Tooltip,
+    Typography,
+    useMediaQuery,
+} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Line from "./Line";
 import { Clear, Info, Search } from "@mui/icons-material";
 import LineMenu from "./LineMenu";
 import { useAppStore } from "../store/store";
 import StreamLogsSkeleton from "./StreamLogsSkeleton";
+import { unixToLocal } from "../logic/dateTime";
 
 export default function StreamLogs({ wsKey }) {
     const activeTitle = useAppStore((state) => state.activeTitle);
     const isLive = useAppStore((state) => state.isLive);
+    const startTime = useAppStore((state) => state.startTime);
+    const mediaType = useAppStore((state) => state.mediaType);
     const transcript = useAppStore((state) => state.transcript);
     const serverStatus = useAppStore((state) => state.serverStatus);
     const newAtTop = useAppStore((state) => state.newAtTop);
@@ -30,8 +42,8 @@ export default function StreamLogs({ wsKey }) {
         return text.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
-    // 450 lines at 8 seconds per line is about 1 hour per page
-    const linesPerPage = 450;
+    // 300 lines at 6 seconds per line is about 30 minutes per page
+    const linesPerPage = 300;
     const totalPages = Math.ceil(mapArray.length / linesPerPage);
     let actualPage = Math.max(Math.min(totalPages, page), 1);
 
@@ -96,9 +108,26 @@ export default function StreamLogs({ wsKey }) {
         }
     }, [jumpId]);
 
+    const streamInfoTooltip = (
+        <div>
+            <p style={{ margin: 0 }}>
+                <strong>Stream status:</strong> {liveText}
+            </p>
+            <p style={{ margin: "4px 0 0" }}>
+                <strong>Start Time:</strong> {unixToLocal(startTime)}
+            </p>
+            <p style={{ margin: "4px 0 0" }}>
+                <strong>Media Available:</strong>{" "}
+                {mediaType === "video" ? "Video and Audio" : mediaType === "audio" ? "Audio Only" : "None"}
+            </p>
+        </div>
+    );
+
     return (
         <>
-            {isOnline ? (
+            {!isOnline ? (
+                <StreamLogsSkeleton serverStatus={serverStatus} />
+            ) : (
                 <>
                     {isEmpty ? (
                         <Box
@@ -123,7 +152,7 @@ export default function StreamLogs({ wsKey }) {
                     ) : (
                         <>
                             <LineMenu wsKey={wsKey} jumpToLine={jumpToLine} />
-                            {isMobile ? (
+                            <Tooltip title={streamInfoTooltip}>
                                 <Typography
                                     color="primary"
                                     variant="h5"
@@ -132,20 +161,7 @@ export default function StreamLogs({ wsKey }) {
                                 >
                                     {activeTitle}
                                 </Typography>
-                            ) : (
-                                <Typography
-                                    color="primary"
-                                    variant="h4"
-                                    component="h4"
-                                    sx={{ mb: 2, wordBreak: "break-word" }}
-                                >
-                                    {activeTitle}
-                                </Typography>
-                            )}
-
-                            <Typography color="secondary" variant="h6" component="h6" sx={{ mb: 2 }} id={liveText}>
-                                {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}&#39;s Stream is {liveText}.
-                            </Typography>
+                            </Tooltip>
                             {transcript.length > 0 && (
                                 <Box
                                     sx={{
@@ -235,8 +251,6 @@ export default function StreamLogs({ wsKey }) {
                         </>
                     )}
                 </>
-            ) : (
-                <StreamLogsSkeleton serverStatus={serverStatus} />
             )}
         </>
     );
