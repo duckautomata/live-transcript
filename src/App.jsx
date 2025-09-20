@@ -54,7 +54,10 @@ function App() {
         <ThemeProvider theme={colorTheme}>
             <CssBaseline />
             {window.maintenance ? (
-                <Maintenance />
+                <Routes>
+                    <Route path={`*`} element={<Maintenance />} />
+                    <Route path={`tagFixer/`} element={<TagFixer wsKey={undefined} />} />
+                </Routes>
             ) : (
                 <>
                     <ClipperPopup wsKey={wsKey} />
