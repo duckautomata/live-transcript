@@ -103,8 +103,8 @@ export default function StreamLogs({ wsKey }) {
                 setTimeout(() => {
                     node.classList.remove("highlight");
                 }, 2000);
+                setJumpId(-1);
             }, 100);
-            setJumpId(-1);
         }
     }, [jumpId]);
 
