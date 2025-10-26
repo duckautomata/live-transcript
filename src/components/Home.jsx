@@ -7,6 +7,7 @@ import {
     ListItemButton,
     ListItemIcon,
     useMediaQuery,
+    Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { keyIcons } from "../config";
@@ -45,6 +46,11 @@ export default function Home() {
                     </ListItem>
                 ))}
             </List>
+
+            <Typography paddingTop={10}>Looking for the transcript of a past stream instead?</Typography>
+            <Button href="/archived-transcript" variant="outlined">
+                Go to Archived-Transcript
+            </Button>
         </Box>
     );
 }
