@@ -2,8 +2,8 @@ import dokiIcon from "./assets/icons/doki.jpg";
 import mintIcon from "./assets/icons/mint.jpg";
 import { Avatar } from "@mui/material";
 
-export const server = "https://dokiscripts.com";
-export const wsServer = "wss://dokiscripts.com";
+export const server = "https://api.dokiscripts.com";
+export const wsServer = "wss://api.dokiscripts.com";
 export const maxClipSize = 30;
 export const keys = () => {
     const keys = ["doki", "mint"];
