@@ -767,6 +767,27 @@ describe("genericCensor", () => {
     });
 
     test.each([
+        ["goo", "goo"],
+        ["goon", "g*on"],
+        ["oon", "oon"],
+        ["dragoon", "dragoon"],
+        ["GOON", "G*ON"],
+        ["Goon", "G*on"],
+        ["goon a goon", "g*on a g*on"],
+        ["goon'd", "g*on'd"],
+        ["gooned", "g*oned"],
+        ["gooning", "g*oning"],
+        ['"goon"', '"g*on"'],
+        ["'goon'", "'g*on'"],
+        ["(goon)", "(g*on)"],
+        ["[goon]", "[g*on]"],
+        ["-goon-", "-g*on-"],
+        ["_goon_", "_g*on_"],
+    ])("goon genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
         ["boo", "boo"],
         ["boob", "b*ob"],
         ["oob", "oob"],

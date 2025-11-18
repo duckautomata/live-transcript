@@ -47,6 +47,7 @@ const replacements = [
     [/((\b|"|'|\(|\[|-|_)d)u(mbass)/gi, "$1*$3"], //dumbass -> d*mbass
     [/(c)o(vid)/gi, "$1*$2"], //covid -> c*vid
     [/((\b|"|'|\(|\[|-|_)b)o(ob)/gi, "$1*$3"], //boob -> b*ob
+    [/((\b|"|'|\(|\[|-|_)g)o(on)/gi, "$1*$3"], //goon -> g*on
     [/\\/g, ""], // \ -> nothing
     [/^\s*\[([\dhms]+)\] /i, "$1 "], //[00:11:22] -> 00:11:22
     [/^\s*(\d )/, "00:0$1"], //adds 00:0 to any tags that do not have it
