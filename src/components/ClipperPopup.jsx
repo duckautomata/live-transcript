@@ -16,10 +16,10 @@ const ClipperPopup = ({ wsKey }) => {
     const hasAudio = mediaType === "audio" || mediaType === "video";
     const hasVideo = mediaType === "video";
 
-    const handleDownloadMp3 = () => {
+    const handleDownloadM4a = () => {
         const start = Math.min(clipStartIndex, clipEndIndex);
         const end = Math.max(clipStartIndex, clipEndIndex);
-        const downloadUrl = `${server}/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}&type=mp3`;
+        const downloadUrl = `${server}/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}&type=m4a`;
         if (hasAudio) {
             window.open(downloadUrl, "_blank");
         }
@@ -68,7 +68,7 @@ const ClipperPopup = ({ wsKey }) => {
                     inputRef={(input) => input && input.focus()}
                     onChange={handleNameChange}
                     onKeyDown={(e) => {
-                        e.key === "Enter" && handleDownloadMp3();
+                        e.key === "Enter" && handleDownloadM4a();
                     }}
                     fullWidth
                     margin="normal"
@@ -76,8 +76,8 @@ const ClipperPopup = ({ wsKey }) => {
             </DialogContent>
             <DialogActions sx={{ justifyContent: "space-between" }}>
                 {hasAudio && (
-                    <Button onClick={handleDownloadMp3} color="primary">
-                        Download mp3
+                    <Button onClick={handleDownloadM4a} color="primary">
+                        Download Audio
                     </Button>
                 )}
                 {hasVideo && (

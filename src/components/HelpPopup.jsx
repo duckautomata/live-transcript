@@ -241,8 +241,8 @@ export default function HelpPopup({ open, setOpen }) {
                                     <li>No artifacts or missed media between lines due to encoding issues</li>
                                     <li>Clearly see what you are clipping</li>
                                 </ul>
-                                The type of clipping (mp3, mp4, or disabled) is determined by the server on what the
-                                server is storing. Depending on this, you will be able to see &#34;download mp3&#34;,
+                                The type of clipping (m4a, mp4, or disabled) is determined by the server on what the
+                                server is storing. Depending on this, you will be able to see &#34;download m4a&#34;,
                                 &#34;download mp4&#34;, or nothing at all. The type of clipping can be changed when
                                 needed.
                                 <Typography variant="body1" gutterBottom />
@@ -276,7 +276,7 @@ export default function HelpPopup({ open, setOpen }) {
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
                                     Depending on what media type the server is storing, you will be able to download
-                                    mp3, mp4, or nothing.
+                                    m4a, mp4, or nothing.
                                 </Typography>
                                 <img src={clippingPopup_img} width="100%" />
                                 Important notes:
