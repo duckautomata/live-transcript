@@ -1,4 +1,17 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, TextField } from "@mui/material";
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Typography,
+    TextField,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    FormHelperText,
+} from "@mui/material";
 import { useState } from "react";
 import { server } from "../config";
 import { useAppStore } from "../store/store";
@@ -11,33 +24,37 @@ const ClipperPopup = ({ wsKey }) => {
     const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
     const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
-    const [clipName, setClipName] = useState("");
 
-    const hasAudio = mediaType === "audio" || mediaType === "video";
+    const [clipName, setClipName] = useState("");
+    const [fileFormat, setFileFormat] = useState("");
+    const [formatError, setFormatError] = useState(false);
+
     const hasVideo = mediaType === "video";
 
-    const handleDownloadM4a = () => {
-        const start = Math.min(clipStartIndex, clipEndIndex);
-        const end = Math.max(clipStartIndex, clipEndIndex);
-        const downloadUrl = `${server}/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}&type=m4a`;
-        if (hasAudio) {
-            window.open(downloadUrl, "_blank");
+    const handleDownload = () => {
+        if (fileFormat === "") {
+            setFormatError(true);
+            return;
         }
-        handleReset();
-    };
 
-    const handleDownloadMp4 = () => {
         const start = Math.min(clipStartIndex, clipEndIndex);
         const end = Math.max(clipStartIndex, clipEndIndex);
-        const downloadUrl = `${server}/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}&type=mp4`;
-        if (hasVideo) {
-            window.open(downloadUrl, "_blank");
-        }
+
+        const downloadUrl = `${server}/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}&type=${fileFormat}`;
+
+        window.open(downloadUrl, "_blank");
         handleReset();
     };
 
     const handleNameChange = (event) => {
         setClipName(event.target.value);
+    };
+
+    const handleFormatChange = (event) => {
+        setFileFormat(event.target.value);
+        if (event.target.value !== "") {
+            setFormatError(false);
+        }
     };
 
     const handleReset = () => {
@@ -48,6 +65,8 @@ const ClipperPopup = ({ wsKey }) => {
 
     const handleClose = () => {
         setClipName("");
+        setFileFormat("");
+        setFormatError(false);
         setClipEndIndex(-1);
         setClipPopupOpen(false);
     };
@@ -60,7 +79,7 @@ const ClipperPopup = ({ wsKey }) => {
                     This will download a clip containing (and including) the{" "}
                     {1 + Math.abs(clipEndIndex - clipStartIndex)} selected lines.
                 </Typography>
-                <Typography>Enter the name of the clip:</Typography>
+
                 <TextField
                     label="Clip Name"
                     type="text"
@@ -68,28 +87,47 @@ const ClipperPopup = ({ wsKey }) => {
                     inputRef={(input) => input && input.focus()}
                     onChange={handleNameChange}
                     onKeyDown={(e) => {
-                        e.key === "Enter" && handleDownloadM4a();
+                        e.key === "Enter" && handleDownload();
                     }}
                     fullWidth
                     margin="normal"
                 />
+
+                <FormControl fullWidth margin="normal" error={formatError}>
+                    <InputLabel id="format-select-label" shrink>
+                        File Format
+                    </InputLabel>
+                    <Select
+                        labelId="format-select-label"
+                        value={fileFormat}
+                        onChange={handleFormatChange}
+                        displayEmpty
+                        label="File Format"
+                    >
+                        <MenuItem value="" disabled>
+                            Select Download Format
+                        </MenuItem>
+                        <MenuItem value="mp3">MP3 (Audio)</MenuItem>
+                        <MenuItem value="m4a">M4A (Audio)</MenuItem>
+                        <MenuItem value="mp4" disabled={!hasVideo}>
+                            MP4 (Multimedia)
+                        </MenuItem>
+                    </Select>
+                    {formatError && <FormHelperText>Please select a file format</FormHelperText>}
+                </FormControl>
             </DialogContent>
+
             <DialogActions sx={{ justifyContent: "space-between" }}>
-                {hasAudio && (
-                    <Button onClick={handleDownloadM4a} color="primary">
-                        Download Audio
+                <div style={{ display: "flex", gap: "8px" }}>
+                    <Button onClick={handleReset} color="primary">
+                        Reset Clip
                     </Button>
-                )}
-                {hasVideo && (
-                    <Button onClick={handleDownloadMp4} color="primary">
-                        Download mp4
+                    <Button onClick={handleClose} color="primary">
+                        Close
                     </Button>
-                )}
-                <Button onClick={handleReset} color="primary">
-                    Reset Clip
-                </Button>
-                <Button onClick={handleClose} color="primary">
-                    Close
+                </div>
+                <Button onClick={handleDownload} variant="contained" color="primary">
+                    Download
                 </Button>
             </DialogActions>
         </Dialog>
