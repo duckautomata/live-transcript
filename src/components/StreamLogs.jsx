@@ -14,7 +14,8 @@ import { Clear, Info, Search } from "@mui/icons-material";
 import LineMenu from "./LineMenu";
 import { useAppStore } from "../store/store";
 import StreamLogsSkeleton from "./StreamLogsSkeleton";
-import { unixToLocal, unixToRelative } from "../logic/dateTime";
+import { unixToLocal } from "../logic/dateTime";
+import LiveTimer from "./Timer";
 
 export default function StreamLogs({ wsKey }) {
     const activeTitle = useAppStore((state) => state.activeTitle);
@@ -28,7 +29,6 @@ export default function StreamLogs({ wsKey }) {
     const [page, setPage] = useState(1);
     const [jumpId, setJumpId] = useState(-1);
     const [searchTerm, setSearchTerm] = useState("");
-    const [currentTime, setCurrentTime] = useState(Math.floor(Date.now() / 1000));
     const isMobile = useMediaQuery("(max-width:768px)");
     const lineRefs = useRef(new Map());
 
@@ -88,17 +88,6 @@ export default function StreamLogs({ wsKey }) {
         setPage(jumpToActualPage);
         setJumpId(id);
     };
-
-    useEffect(() => {
-        let interval;
-        if (isLive) {
-            setCurrentTime(Math.floor(Date.now() / 1000));
-            interval = setInterval(() => {
-                setCurrentTime(Math.floor(Date.now() / 1000));
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [isLive]);
 
     useEffect(() => {
         if (jumpId === -1) return;
@@ -174,11 +163,7 @@ export default function StreamLogs({ wsKey }) {
                                     {activeTitle}
                                 </Typography>
                             </Tooltip>
-                            {isLive && (
-                                <Typography variant="subtitle1" component="div" sx={{ mb: 2 }}>
-                                    Stream Duration: {unixToRelative(currentTime, startTime)}
-                                </Typography>
-                            )}
+                            {isLive && <LiveTimer startTime={startTime} />}
                             {transcript.length > 0 && (
                                 <Box
                                     sx={{
