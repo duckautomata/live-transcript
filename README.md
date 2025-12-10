@@ -79,7 +79,7 @@ You can also change the initial values for the other variables to whatever you w
 2. Run `npm run test`, `npm run format`, `npm run lint` and make sure everything is all good.
 3. Push, raise pr, I'll approve.
 
-### Contrubiting ideas
+### Contributing ideas
 
 Raise an issue and detail what idea you have or would like to see.
 
