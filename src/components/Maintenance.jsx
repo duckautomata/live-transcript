@@ -2,6 +2,9 @@ import { Engineering } from "@mui/icons-material";
 import { Box, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 
+/**
+ * A fallback component shown when the application is in maintenance mode.
+ */
 export default function Maintenance() {
     return (
         <Box

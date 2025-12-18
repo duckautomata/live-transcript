@@ -3,6 +3,12 @@ import { unixToRelative } from "../logic/dateTime";
 import { maxClipSize, server } from "../config";
 import { useAppStore } from "../store/store";
 
+/**
+ * A context menu for a specific line in the transcript.
+ * @param {object} props
+ * @param {string} props.wsKey - The WebSocket channel key.
+ * @param {function(number): void} props.jumpToLine - Callback to scroll to a specific line id.
+ */
 export default function LineMenu({ wsKey, jumpToLine }) {
     const lineMenuId = useAppStore((state) => state.lineMenuId);
     const activeId = useAppStore((state) => state.activeId);

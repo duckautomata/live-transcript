@@ -6,6 +6,9 @@ import "./StreamWordCount.css";
 import { countWord } from "../logic/wordCount";
 import { useAppStore } from "../store/store";
 
+/**
+ * Component providing word usage analysis and visualization via a LineChart.
+ */
 export default function StreamWordCount() {
     const activeTitle = useAppStore((state) => state.activeTitle);
     const transcript = useAppStore((state) => state.transcript);
@@ -15,7 +18,7 @@ export default function StreamWordCount() {
     const [word, setWord] = useState("");
     const isMobile = useMediaQuery("(max-width:768px)");
 
-    const convertTime = (time) => {
+    const convertTime = (/** @type {number} */ time) => {
         if (timeFormat === "relative") {
             return unixToRelative(time, startTime);
         } else if (timeFormat === "local") {
@@ -23,7 +26,7 @@ export default function StreamWordCount() {
         } else if (timeFormat === "UTC") {
             return unixToUTC(time);
         } else {
-            return time;
+            return `${time}`;
         }
     };
 
@@ -31,7 +34,9 @@ export default function StreamWordCount() {
         // Each index in the data array is a specific line in the transcript.
         // id 0 = first line
         // The value is equal to the sum up to and including that line. So it would be data[i-1] + lineSum
+        /** @type {number[]} */
         const data = [];
+        /** @type {number[]} */
         const timestamps = [];
 
         if (word === "") {

@@ -6,6 +6,13 @@ import { Close, Download } from "@mui/icons-material";
 import { server } from "../config";
 import { useAppStore } from "../store/store";
 
+/**
+ * A floating footer providing audio controls and playback.
+ * @param {object} props
+ * @param {string} props.wsKey - The WebSocket channel key.
+ * @param {number} props.offset - The X offset for positioning.
+ * @param {number} props.width - The available width.
+ */
 export default function AudioFooter({ wsKey, offset, width }) {
     const audioId = useAppStore((state) => state.audioId);
     const setAudioId = useAppStore((state) => state.setAudioId);

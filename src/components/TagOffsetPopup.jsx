@@ -4,6 +4,9 @@ import { calculateOffset, offsetToCommand, snowflakeToUnix } from "../logic/time
 import { unixToRelative } from "../logic/dateTime";
 import { useAppStore } from "../store/store";
 
+/**
+ * A dialog for calculating the offset of a transcript tag relative to a Discord message ID.
+ */
 const TagOffsetPopup = () => {
     const tagPopupOpen = useAppStore((state) => state.tagPopupOpen);
     const setTagPopupOpen = useAppStore((state) => state.setTagPopupOpen);

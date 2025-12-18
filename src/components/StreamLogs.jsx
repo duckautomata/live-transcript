@@ -17,6 +17,11 @@ import StreamLogsSkeleton from "./StreamLogsSkeleton";
 import { unixToLocal } from "../logic/dateTime";
 import LiveTimer from "./Timer";
 
+/**
+ * Component for displaying and searching the transcript logs.
+ * @param {object} props
+ * @param {string} props.wsKey - The WebSocket channel key.
+ */
 export default function StreamLogs({ wsKey }) {
     const activeTitle = useAppStore((state) => state.activeTitle);
     const isLive = useAppStore((state) => state.isLive);
@@ -52,12 +57,13 @@ export default function StreamLogs({ wsKey }) {
         setPage(actualPage);
     }
 
-    const handleChange = (event, value) => {
+    const handleChange = (event, /** @type {number} */ value) => {
         setPage(value);
     };
 
     let start = 0;
     let end = 0;
+    /** @type {import("../store/types").TranscriptLine[]} */
     let displayedLines = [];
 
     if (mapArray.length > 0 && newAtTop) {
@@ -70,7 +76,7 @@ export default function StreamLogs({ wsKey }) {
         displayedLines = mapArray.slice(start, end);
     }
 
-    const jumpToLine = (id) => {
+    const jumpToLine = (/** @type {number} */ id) => {
         // Find the index of the line in the full, unfiltered transcript
         const lineIndex = transcript.findIndex((line) => line.id === id);
         if (lineIndex === -1) return; // Line not found
@@ -225,7 +231,7 @@ export default function StreamLogs({ wsKey }) {
                                         </div>
                                         {displayedLines.map((line) => (
                                             <Line
-                                                ref={(node) => {
+                                                ref={(/** @type {HTMLDivElement | null} */ node) => {
                                                     if (node) {
                                                         lineRefs.current.set(line.id, node);
                                                     } else {

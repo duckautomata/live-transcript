@@ -16,6 +16,11 @@ import { useState } from "react";
 import { server } from "../config";
 import { useAppStore } from "../store/store";
 
+/**
+ * A popup dialog for configuring and downloading media clips.
+ * @param {object} props
+ * @param {string} props.wsKey - The WebSocket channel key.
+ */
 const ClipperPopup = ({ wsKey }) => {
     const clipPopupOpen = useAppStore((state) => state.clipPopupOpen);
     const clipStartIndex = useAppStore((state) => state.clipStartIndex);

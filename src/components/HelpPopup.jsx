@@ -24,6 +24,12 @@ import clippingMenuDownload_img from "../assets/helpguide/clipping-menu-download
 import clippingPopup_img from "../assets/helpguide/clipping-popup.png";
 import { ExpandMore } from "@mui/icons-material";
 
+/**
+ * A dialog displaying help information and guides for the application.
+ * @param {object} props
+ * @param {boolean} props.open - Whether the dialog is open.
+ * @param {function(boolean): void} props.setOpen - Callback to change the open state.
+ */
 export default function HelpPopup({ open, setOpen }) {
     const handleClose = () => {
         setOpen(false);

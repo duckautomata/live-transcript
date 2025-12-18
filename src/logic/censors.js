@@ -1,6 +1,7 @@
 // Uses the js .replace() api. Supports either string or regex
 // [search, replacement]
 // case insensitive. It will automatically match the replacement with the source format.
+/** @type {[string|RegExp, string][]} */
 const replacements = [
     [/((\b|"|'|\(|\[|-|_)n)t(r)/gi, "$1*$3"], //ntr -> n*r
     [/((\b|"|'|\(|\[|-|_)d)i(ck)/gi, "$1*$3"], //dick -> d*ck
@@ -60,8 +61,14 @@ const replacements = [
     [/^\s*[0-9:]+ (!adjust|!t)\b.*/i, ""], //removes any accidental tags
 ];
 
+/** @type {[string|RegExp, string][]} */
 const mintReplacements = [[/:memboo/gi, ":_"]];
 
+/**
+ * Generic text censorship based on a list of predefined replacements.
+ * @param {string} text - The input text to censor.
+ * @returns {string} The censored text.
+ */
 export const genericCensor = (text) => {
     replacements.forEach((replacement) => {
         text = text.replace(replacement[0], replacement[1]);
@@ -70,6 +77,11 @@ export const genericCensor = (text) => {
     return text;
 };
 
+/**
+ * Censors specific keywords for "mint" context.
+ * @param {string} text - The input text to censor.
+ * @returns {string} The censored text.
+ */
 export const mintCensor = (text) => {
     mintReplacements.forEach((replacement) => {
         text = text.replace(replacement[0], replacement[1]);

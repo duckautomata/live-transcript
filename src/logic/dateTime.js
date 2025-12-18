@@ -1,3 +1,8 @@
+/**
+ * Converts a Unix timestamp (seconds) to a local time string.
+ * @param {number} unix - Unix timestamp in seconds.
+ * @returns {string} Local time string.
+ */
 export const unixToLocal = (unix) => {
     // Convert to milliseconds
     const date = new Date(unix * 1000);
@@ -8,6 +13,12 @@ export const unixToLocal = (unix) => {
     return localTime;
 };
 
+/**
+ * Converts a Unix timestamp (seconds) to a relative time string format (e.g., "01h02m03s").
+ * @param {number} unix - The current Unix timestamp in seconds.
+ * @param {number} startTime - The start Unix timestamp in seconds.
+ * @returns {string} Formatted relative time string.
+ */
 export const unixToRelative = (unix, startTime) => {
     if (!startTime || !unix || startTime <= 0 || unix <= 0) {
         return "00:00:00";
@@ -32,6 +43,11 @@ export const unixToRelative = (unix, startTime) => {
     return isNegative ? "-" + timeString : timeString;
 };
 
+/**
+ * Converts a Unix timestamp (seconds) to a UTC time string.
+ * @param {number} unix - Unix timestamp in seconds.
+ * @returns {string} UTC time string in HH:MM:SS format.
+ */
 export const unixToUTC = (unix) => {
     // Convert to milliseconds
     const date = new Date(unix * 1000);

@@ -1,4 +1,9 @@
 // takes in a string of every tag. Formats it so that every tag with hbd get moved to the bottom
+/**
+ * Formats tags such that entries starting with "HBD" are moved to a special section at the bottom.
+ * @param {string} tags - String containing all tags, separated by newlines.
+ * @returns {string} Formatted tags string.
+ */
 export const HBD_formatting = (tags) => {
     if (!tags || tags.trim().length === 0) {
         return tags ?? "";
@@ -31,6 +36,11 @@ export const HBD_formatting = (tags) => {
 };
 
 // takes in a string of every tag. Formats it so that chapter tags get converted
+/**
+ * Formats chapter tags in the format `[Chapter Name]` into `*Chapter Name*`.
+ * @param {string} tags - String containing all tags, separated by newlines.
+ * @returns {string} Formatted tags string.
+ */
 export const chapter_formatting = (tags) => {
     if (!tags || tags.trim().length === 0) {
         return tags ?? "";
@@ -66,6 +76,12 @@ export const chapter_formatting = (tags) => {
 };
 
 // ignores case, space, and returns the percentage of match between the keys. From 0 [no match] - 100 [full match]
+/**
+ * Compares two keys for similarity based on LCS, ignoring case and spaces.
+ * @param {string} key1 - First key to compare.
+ * @param {string} key2 - Second key to compare.
+ * @returns {number} Percentage of match from 0 to 100.
+ */
 export const compareKeys = (key1, key2) => {
     const preprocessKey = (key) => {
         if (typeof key !== "string") {
@@ -119,6 +135,11 @@ export const compareKeys = (key1, key2) => {
     return Math.floor(matchPercentage);
 };
 
+/**
+ * Groups tags into collections using the `::` delimiter.
+ * @param {string} tags - String containing all tags, separated by newlines.
+ * @returns {string} Formatted tags string with grouped collections.
+ */
 export const collection_formatting = (tags) => {
     if (!tags || tags.trim().length === 0) {
         return tags ?? "";

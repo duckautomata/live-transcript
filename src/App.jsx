@@ -18,6 +18,10 @@ import { keys } from "./config";
 import { useAppStore } from "./store/store";
 import TagOffsetPopup from "./components/TagOffsetPopup";
 
+/**
+ * The root application component.
+ * Manages theme, routing, and WebSocket key state based on the current URL.
+ */
 function App() {
     const location = useLocation();
     const [wsKey, setWsKey] = useState(undefined);

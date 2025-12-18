@@ -1,13 +1,24 @@
+/**
+ * Checks if a value is an integer or can be parsed as one.
+ * @param {any} num - The value to check.
+ * @returns {boolean} True if it's an integer.
+ */
 const isInt = (num) => {
     return num !== "" && num !== null && Number.isInteger(+num);
 };
 
+/**
+ * Converts a Discord snowflake (string or number) to a Unix timestamp (seconds).
+ * @param {string|number} snowflake - The Discord snowflake.
+ * @returns {number} Unix timestamp in seconds.
+ * @throws {Error} If snowflake is invalid or too small.
+ */
 export const snowflakeToUnix = (snowflake) => {
     if (!isInt(snowflake)) {
         throw Error("snowflake is not an int");
     }
 
-    if (snowflake < 4194304) {
+    if (Number(snowflake) < 4194304) {
         throw Error("Snowflake is too small");
     }
 
@@ -44,6 +55,11 @@ export const calculateOffset = (toUnix, fromUnix, defaultOffset) => {
     return offset;
 };
 
+/**
+ * Converts an offset value to a bot adjustment command.
+ * @param {number|string} offset - The offset in seconds.
+ * @returns {string} The adjustment command (e.g., "!adjust -10").
+ */
 export const offsetToCommand = (offset) => {
     if (!isInt(offset)) {
         throw Error("offset need to be an int");

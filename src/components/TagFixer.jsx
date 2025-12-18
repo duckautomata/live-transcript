@@ -3,6 +3,11 @@ import { TextField, Button, Box, Typography } from "@mui/material";
 import { genericCensor, mintCensor } from "../logic/censors";
 import { chapter_formatting, collection_formatting, HBD_formatting } from "../logic/formatting";
 
+/**
+ * Component for manually fixing and formatting transcript tags.
+ * @param {object} props
+ * @param {string} props.wsKey - The WebSocket channel key.
+ */
 const TagFixer = ({ wsKey }) => {
     const [leftText, setLeftText] = useState("");
     const [rightText, setRightText] = useState("");

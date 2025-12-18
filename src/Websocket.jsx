@@ -6,6 +6,33 @@ import { LOG_MSG, LOG_WARN, LOG_ERROR } from "./logic/debug";
 import { wsServer } from "./config";
 import { useAppStore } from "./store/store";
 
+/**
+ * @typedef {import('./store/types').TranscriptLine} TranscriptLine
+ * @typedef {import('./store/types').TranscriptSlice['mediaType']} MediaType
+ * @typedef {import('./store/types').ServerSlice['serverStatus']} ServerStatus
+ */
+
+/**
+ * @typedef {object} ClientData
+ * @property {string} [activeId]
+ * @property {string} [activeTitle]
+ * @property {number} [startTime]
+ * @property {MediaType} [mediaType]
+ * @property {boolean} [isLive]
+ * @property {TranscriptLine[]} [transcript]
+ */
+
+/**
+ * @typedef {object} WebSocketMessage
+ * @property {string} event
+ * @property {ClientData} [clientData]
+ */
+
+/**
+ * Component for managing the WebSocket connection and state synchronization with the server.
+ * @param {object} props
+ * @param {string} props.wsKey - The WebSocket channel key.
+ */
 export const Websocket = ({ wsKey }) => {
     const WS_URL = `${wsServer}/ws/${wsKey}`;
     const setServerStatus = useAppStore((state) => state.setServerStatus);
@@ -42,7 +69,7 @@ export const Websocket = ({ wsKey }) => {
             return;
         }
         const message = lastMessage.data;
-        if (typeof message !== typeof "") {
+        if (typeof message !== "string") {
             LOG_WARN("message is not a string", typeof message, message);
             return;
         }
@@ -75,9 +102,12 @@ export const Websocket = ({ wsKey }) => {
         }
     }, [lastMessage]);
 
-    // {activeId, activeTitle, isLive, transcript}
+    /**
+     * Resets the application state with the provided client data.
+     * @param {ClientData} [clientData]
+     */
     const resetState = (clientData) => {
-        if (clientData === null) {
+        if (!clientData) {
             LOG_ERROR("resetState clientData is null");
             return;
         }
@@ -90,16 +120,19 @@ export const Websocket = ({ wsKey }) => {
         setMediaType(clientData.mediaType ?? "none");
         setIsLive(clientData.isLive ?? false);
 
+        /** @type {TranscriptLine[]} */
         let newTranscript = [];
-        if (clientData.transcript !== null && clientData.transcript !== undefined) {
+        if (clientData.transcript) {
             newTranscript = [...clientData.transcript];
         }
         setTranscript(newTranscript);
     };
 
-    // [event, id, lineTimestamp, ts1, text1, ts2, text2, ..."]
+    /**
+     * @param {string[]} parts
+     */
     const addNewLine = (parts) => {
-        if (typeof parts !== typeof [] || parts.length % 2 !== 1) {
+        if (!Array.isArray(parts) || parts.length % 2 !== 1) {
             LOG_ERROR("addNewLine parts is not a valid array:", typeof parts, parts.length);
             return;
         }
@@ -121,9 +154,11 @@ export const Websocket = ({ wsKey }) => {
         addTranscriptLine(newLine);
     };
 
-    // [event, activeId, activeTitle, startTime, mediaType, isLive]
+    /**
+     * @param {string[]} parts
+     */
     const setNewActiveStream = (parts) => {
-        if (typeof parts !== typeof [] || parts.length !== 6) {
+        if (!Array.isArray(parts) || parts.length !== 6) {
             LOG_ERROR("setNewActiveStream parts is not a valid array:", typeof parts, parts.length);
             return;
         }
@@ -136,9 +171,11 @@ export const Websocket = ({ wsKey }) => {
         setTranscript([]);
     };
 
-    // [event, activeId, activeTitle, isLive]
+    /**
+     * @param {string[]} parts
+     */
     const setStreamStatus = (parts) => {
-        if (typeof parts !== typeof [] || parts.length !== 4) {
+        if (!Array.isArray(parts) || parts.length !== 4) {
             LOG_ERROR("setStreamStatus parts is not a valid array:", typeof parts, parts.length);
             return;
         }
@@ -148,9 +185,11 @@ export const Websocket = ({ wsKey }) => {
         setIsLive(parts[3] === "true");
     };
 
-    // [event, errorType, errorMessage]
+    /**
+     * @param {string[]} parts
+     */
     const handleError = (parts) => {
-        if (typeof parts !== typeof [] || parts.length !== 3) {
+        if (!Array.isArray(parts) || parts.length !== 3) {
             LOG_ERROR("handleError parts is not a valid array:", typeof parts, parts.length);
             return;
         }

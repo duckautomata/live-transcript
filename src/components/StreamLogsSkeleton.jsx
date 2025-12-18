@@ -1,6 +1,11 @@
 import { Box, Skeleton, Typography, useMediaQuery } from "@mui/material";
 import { CloudOff } from "@mui/icons-material";
 
+/**
+ * Loading skeleton for the StreamLogs component.
+ * @param {object} props
+ * @param {'online' | 'loading' | 'connecting' | 'offline'} props.serverStatus - Current server connection status.
+ */
 export default function StreamLogsSkeleton({ serverStatus }) {
     const isMobile = useMediaQuery("(max-width:768px)");
     const isOffline = serverStatus === "offline";

@@ -19,6 +19,12 @@ import AudioFooter from "./AudioFooter";
 import { keyIcons } from "../config";
 import { useAppStore } from "../store/store";
 
+/**
+ * The main application sidebar containing navigation and streamers list.
+ * @param {object} props
+ * @param {string} props.wsKey - The current active WebSocket channel key.
+ * @param {React.ReactNode} props.children - The main content area children.
+ */
 export default function Sidebar({ wsKey, children }) {
     const location = useLocation();
     const navigate = useNavigate();

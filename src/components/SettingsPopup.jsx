@@ -14,6 +14,12 @@ import {
 } from "@mui/material";
 import { useAppStore } from "../store/store";
 
+/**
+ * A dialog for adjusting application settings like theme and density.
+ * @param {object} props
+ * @param {boolean} props.open - Whether the dialog is open.
+ * @param {function(boolean): void} props.setOpen - Callback to change the open state.
+ */
 const SettingsPopup = ({ open, setOpen }) => {
     const theme = useAppStore((state) => state.theme);
     const density = useAppStore((state) => state.density);
