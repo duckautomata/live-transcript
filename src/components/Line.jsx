@@ -58,7 +58,8 @@ const Line = memo(
                     return {
                         isSelected: lineMenuId === id,
                         isClipStart: clipStartIndex === id,
-                        isInClipRange: (inMenuClipRange || inFinalClipRange) && Math.abs(clipStartIndex - id) < maxClipSize,
+                        isInClipRange:
+                            (inMenuClipRange || inFinalClipRange) && Math.abs(clipStartIndex - id) < maxClipSize,
                         isPlaying: audioId === id,
                         isClipable: clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize,
                     };
@@ -139,7 +140,8 @@ const Line = memo(
                     )}
                 </Typography>
             );
-        }),
+        },
+    ),
 );
 
 export default Line;

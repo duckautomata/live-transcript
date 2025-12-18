@@ -17,7 +17,15 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
     setIsLive: (live) => set({ isLive: live }),
     setTranscript: (data) => set({ transcript: data }),
     addTranscriptLine: (newLine) => {
-        set((state) => ({ transcript: [...state.transcript, newLine] }));
+        set((state) => {
+            // Used to prevent duplicate lines if the same line is received multiple times.
+            // If we receive a line with the same id, we replace it and delete all lines after it.
+            const index = state.transcript.findIndex((t) => t.id === newLine.id);
+            if (index !== -1) {
+                return { transcript: [...state.transcript.slice(0, index), newLine] };
+            }
+            return { transcript: [...state.transcript, newLine] };
+        });
     },
     resetTranscript: () =>
         set({
