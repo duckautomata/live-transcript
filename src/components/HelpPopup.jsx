@@ -50,6 +50,42 @@ import { ExpandMore } from "@mui/icons-material";
 import { useAppStore } from "../store/store";
 
 /**
+ * Helper component to display guide images with a Paper background.
+ */
+const HelpImage = ({ src, width = "100%", alt = "" }) => (
+    <Paper
+        elevation={3}
+        sx={{
+            my: 2,
+            p: 0.5,
+            backgroundColor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 1,
+            width: "fit-content",
+            maxWidth: "100%",
+            mx: "auto",
+            overflow: "hidden",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+        }}
+    >
+        <img
+            src={src}
+            alt={alt}
+            style={{
+                width: width,
+                maxWidth: "100%",
+                height: "auto",
+                display: "block",
+                margin: "0 auto",
+            }}
+        />
+    </Paper>
+);
+
+/**
  * A dialog displaying help information and guides for the application.
  * @param {object} props
  * @param {boolean} props.open - Whether the dialog is open.
@@ -81,42 +117,6 @@ export default function HelpPopup({ open, setOpen }) {
     const handleClose = () => {
         setOpen(false);
     };
-
-    /**
-     * Helper component to display guide images with a Paper background.
-     */
-    const HelpImage = ({ src, width = "100%", alt = "" }) => (
-        <Paper
-            elevation={3}
-            sx={{
-                my: 2,
-                p: 0.5,
-                backgroundColor: "background.paper",
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: 1,
-                width: "fit-content",
-                maxWidth: "100%",
-                mx: "auto",
-                overflow: "hidden",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-            }}
-        >
-            <img
-                src={src}
-                alt={alt}
-                style={{
-                    width: width,
-                    maxWidth: "100%",
-                    height: "auto",
-                    display: "block",
-                    margin: "0 auto",
-                }}
-            />
-        </Paper>
-    );
 
     return (
         <div>
@@ -169,7 +169,10 @@ export default function HelpPopup({ open, setOpen }) {
                                     </li>
                                     <li>
                                         Transcript Height: How tall should the transcript be.
-                                        <blockquote>100% means it will go all the way to the bottom of the page. Select a smaller value if you want the bottom to be higher up on the page.</blockquote>
+                                        <blockquote>
+                                            100% means it will go all the way to the bottom of the page. Select a
+                                            smaller value if you want the bottom to be higher up on the page.
+                                        </blockquote>
                                     </li>
                                     <li>
                                         Enable Tag Helper
@@ -254,7 +257,6 @@ export default function HelpPopup({ open, setOpen }) {
                                     NOTE: The transcripts are not guaranteed to be accurate to what was said on stream,
                                     or if the streamer said it, or it was said in game or by someone else.
                                 </Typography>
-
                                 <HelpImage src={images.transcript} />
                                 There are 4 parts to the transcript page.
                                 <ol>
@@ -277,7 +279,6 @@ export default function HelpPopup({ open, setOpen }) {
                                     <li>Copy the unix timestamp of when the line starts</li>
                                 </ul>
                                 <HelpImage src={images.linemenu} />
-
                                 <Typography variant="h6" gutterBottom>
                                     Live vs Paused vs Offline
                                 </Typography>
@@ -285,20 +286,26 @@ export default function HelpPopup({ open, setOpen }) {
                                     <strong>Live:</strong> The transcript auto-scrolls to show the newest messages.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
-                                    <strong>Paused:</strong> Auto-scroll stops. This happens automatically when you scroll up, jump to the top, or use the search bar.
+                                    <strong>Paused:</strong> Auto-scroll stops. This happens automatically when you
+                                    scroll up, jump to the top, or use the search bar.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
-                                    <strong>Offline:</strong> Same as Paused, but is forced when the stream goes offline. This means you can't go to live mode since there is no stream to scroll to.
+                                    <strong>Offline:</strong> Same as Paused, but is forced when the stream goes
+                                    offline. This means you can&apos;t go to live mode since there is no stream to
+                                    scroll to.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
-                                    To resume Live mode, scroll to the bottom, click the play button, or the "Jump to Bottom" arrow. If you are searching, you will need to click "Searching" or clear the search bar and go to the bottom.
+                                    To resume Live mode, scroll to the bottom, click the play button, or the &quot;Jump
+                                    to Bottom&quot; arrow. If you are searching, you will need to click
+                                    &quot;Searching&quot; or clear the search bar and go to the bottom.
                                 </Typography>
                                 <br />
                                 <Typography variant="h6" gutterBottom>
                                     Log Height
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
-                                    You can adjust how much of the screen the transcript takes up in the Settings menu (Full, 90%, 75%, 50%).
+                                    You can adjust how much of the screen the transcript takes up in the Settings menu
+                                    (Full, 90%, 75%, 50%).
                                 </Typography>
                             </AccordionDetails>
                         </Accordion>
@@ -314,14 +321,14 @@ export default function HelpPopup({ open, setOpen }) {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography variant="body1" gutterBottom>
-                                    When you click on a line id and select &#34;Play Audio&#34;, it will open the audio
-                                    player and start playing the audio of that line.
+                                    When you click on a line id and select &quot;Play Audio&quot;, it will open the
+                                    audio player and start playing the audio of that line.
                                 </Typography>
                                 <HelpImage src={images.audioplayerDesktop} />
-                                To keep track of the line it is playing, it will highlight that line in purple. You
-                                can do the following with the audio player:
+                                To keep track of the line it is playing, it will highlight that line in purple. You can
+                                do the following with the audio player:
                                 <ol>
-                                    <li>Close it by clicking the &#9587; button</li>
+                                    <li>Close it by clicking the &quot;X&quot; button</li>
                                     <li>Download the audio by clicking the download button</li>
                                     <li>Jump forward/backward one line</li>
                                     <li>Play, pause, mute, seek</li>
@@ -356,13 +363,13 @@ export default function HelpPopup({ open, setOpen }) {
                                     <li>Clearly see what you are clipping</li>
                                 </ul>
                                 The type of clipping (m4a, mp4, or disabled) is determined by the server on what the
-                                server is storing. Depending on this, you will be able to see &#34;download m4a&#34;,
-                                &#34;download mp4&#34;, or nothing at all. The type of clipping can be changed when
+                                server is storing. Depending on this, you will be able to see &quot;download m4a&quot;,
+                                &quot;download mp4&quot;, or nothing at all. The type of clipping can be changed when
                                 needed.
                                 <Typography variant="body1" gutterBottom />
                                 <Typography variant="body1" gutterBottom>
                                     To start clipping, click on the triple dots on the line you want to clip; and select
-                                    &#34;Start Clip&#34;. This will do the following:
+                                    &quot;Start Clip&quot;. This will do the following:
                                 </Typography>
                                 <ul>
                                     <li>
@@ -377,7 +384,7 @@ export default function HelpPopup({ open, setOpen }) {
                                 </ul>
                                 <HelpImage src={images.clippingStarted} />
                                 To mark the second end of the clip, click on one of the orange triple dots and click
-                                &#34;Process Clip&#34;.
+                                &quot;Process Clip&quot;.
                                 <HelpImage src={images.clippingMenuDownload} />
                                 <Typography variant="caption">
                                     Caption: as you can see, the lines between 631 (the id I started with) and 634 (the
@@ -471,7 +478,8 @@ export default function HelpPopup({ open, setOpen }) {
                                 If you do not know how to get the message ID of your tag:
                                 <ol>
                                     <li>
-                                        Enable <strong>Discord</strong> developer mode. User Settings {"->"} Advanced {"->"} Enable Developer Mode
+                                        Enable <strong>Discord</strong> developer mode. User Settings {"->"} Advanced{" "}
+                                        {"->"} Enable Developer Mode
                                     </li>
                                     <li>Right-click on your message and click Copy Message ID</li>
                                 </ol>
@@ -491,9 +499,9 @@ export default function HelpPopup({ open, setOpen }) {
                                 <ol>
                                     <li>
                                         As said above, this will time the tag to the beginning of the section you
-                                        clicked. This means that if an entire line is one section, it will time it to
-                                        go at the beginning of that line. The only way to make it start in the middle of
-                                        a section is to guess how long a section is and change the offset accordingly.
+                                        clicked. This means that if an entire line is one section, it will time it to go
+                                        at the beginning of that line. The only way to make it start in the middle of a
+                                        section is to guess how long a section is and change the offset accordingly.
                                     </li>
                                     <li>
                                         The timings seem to be very accurate. When you want to start at the beginning of
@@ -515,17 +523,25 @@ export default function HelpPopup({ open, setOpen }) {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography variant="body1" gutterBottom>
-                                    Developer Mode enables technical details primarily used for debugging and performance monitoring.
+                                    Developer Mode enables technical details primarily used for debugging and
+                                    performance monitoring.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
-                                    To open the Dev Tools, enable Developer Mode in Settings and click on the Dev Tools icon that appears below the Tag Fixer icon and above the GitHub icon.
+                                    To open the Dev Tools, enable Developer Mode in Settings and click on the Dev Tools
+                                    icon that appears below the Tag Fixer icon and above the GitHub icon.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
                                     In the Dev Tools, there are two pages:
                                 </Typography>
                                 <ul>
-                                    <li><strong>Controls:</strong> Allows you to control the transcripts and simulate live streams to help debug.</li>
-                                    <li><strong>Performance:</strong> Detailed performance metrics used to show if there are any network or processing issues.</li>
+                                    <li>
+                                        <strong>Controls:</strong> Allows you to control the transcripts and simulate
+                                        live streams to help debug.
+                                    </li>
+                                    <li>
+                                        <strong>Performance:</strong> Detailed performance metrics used to show if there
+                                        are any network or processing issues.
+                                    </li>
                                 </ul>
                                 <Typography variant="h6" gutterBottom>
                                     <strong>Controls</strong>
@@ -533,11 +549,25 @@ export default function HelpPopup({ open, setOpen }) {
                                 <Typography variant="body1" gutterBottom>
                                     Broken up into 5 tabs:
                                     <ul>
-                                        <li><strong>Clear Transcript:</strong> Deletes all transcript data for the key you are on.</li>
-                                        <li><strong>Stream State:</strong> Allows you to change the stream data such as title, start time, media type, and live status.</li>
-                                        <li><strong>Add Line:</strong> Allows you to add a line to the transcript.</li>
-                                        <li><strong>Simulation:</strong> Allows you to repeatedly add lines to the transcript every interval.</li>
-                                        <li><strong>Delete Line:</strong> Allows you to delete a specific line from the transcript.</li>
+                                        <li>
+                                            <strong>Clear Transcript:</strong> Deletes all transcript data for the key
+                                            you are on.
+                                        </li>
+                                        <li>
+                                            <strong>Stream State:</strong> Allows you to change the stream data such as
+                                            title, start time, media type, and live status.
+                                        </li>
+                                        <li>
+                                            <strong>Add Line:</strong> Allows you to add a line to the transcript.
+                                        </li>
+                                        <li>
+                                            <strong>Simulation:</strong> Allows you to repeatedly add lines to the
+                                            transcript every interval.
+                                        </li>
+                                        <li>
+                                            <strong>Delete Line:</strong> Allows you to delete a specific line from the
+                                            transcript.
+                                        </li>
                                     </ul>
                                 </Typography>
                                 <HelpImage src={images.devtoolsControls} />
@@ -547,10 +577,23 @@ export default function HelpPopup({ open, setOpen }) {
                                 <Typography variant="body1" gutterBottom>
                                     Broken up into 4 tabs:
                                     <ul>
-                                        <li><strong>Metrics:</strong> Shows the metrics of the website and the current stream.</li>
-                                        <li><strong>Server Upload Time (s):</strong> Graph of the time it takes to upload to the server.</li>
-                                        <li><strong>Server-Client Latency (s):</strong> Graph of the latency between when the server received the message and when the client received the message.</li>
-                                        <li><strong>Message Inter-arrival Time (s):</strong> Graph of the time between when a message was received and when the next message was received.</li>
+                                        <li>
+                                            <strong>Metrics:</strong> Shows the metrics of the website and the current
+                                            stream.
+                                        </li>
+                                        <li>
+                                            <strong>Server Upload Time (s):</strong> Graph of the time it takes to
+                                            upload to the server.
+                                        </li>
+                                        <li>
+                                            <strong>Server-Client Latency (s):</strong> Graph of the latency between
+                                            when the server received the message and when the client received the
+                                            message.
+                                        </li>
+                                        <li>
+                                            <strong>Message Inter-arrival Time (s):</strong> Graph of the time between
+                                            when a message was received and when the next message was received.
+                                        </li>
                                     </ul>
                                 </Typography>
                                 <HelpImage src={images.devtoolsPerformance} />

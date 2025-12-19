@@ -129,7 +129,6 @@ export default function Sidebar({ wsKey, children }) {
         };
     }, []);
 
-
     return (
         <Box sx={{ display: "flex" }}>
             {/* Floating Hamburger for Mobile */}
@@ -156,10 +155,10 @@ export default function Sidebar({ wsKey, children }) {
                 variant={isMobile ? "temporary" : "persistent"}
                 onClose={isMobile ? () => setMobileOpen(false) : undefined}
                 sx={{
-                    width: isMobile ? drawerWidth : (sidebarOpen ? drawerWidth : drawerWidthCollapsed),
+                    width: isMobile ? drawerWidth : sidebarOpen ? drawerWidth : drawerWidthCollapsed,
                     flexShrink: 0,
                     "& .MuiDrawer-paper": {
-                        width: isMobile ? drawerWidth : (sidebarOpen ? drawerWidth : drawerWidthCollapsed),
+                        width: isMobile ? drawerWidth : sidebarOpen ? drawerWidth : drawerWidthCollapsed,
                         boxSizing: "border-box",
                         overflowX: "hidden",
                         transition: "width 0.3s ease-in-out",
@@ -174,14 +173,17 @@ export default function Sidebar({ wsKey, children }) {
                                 <ListItemIcon sx={{ minWidth: 0 }}>
                                     <MenuIcon />
                                 </ListItemIcon>
-                                {((!isMobile && sidebarOpen) || (isMobile)) && <ListItemText primary="" />}
+                                {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="" />}
                             </ListItemButton>
                         </ListItem>
                         <ListItem disablePadding>
-                            <Tooltip title={(!isMobile && !sidebarOpen) ? "Home" : ""} placement="right">
+                            <Tooltip title={!isMobile && !sidebarOpen ? "Home" : ""} placement="right">
                                 <ListItemButton
                                     onClick={handleHomeButton}
-                                    sx={{ paddingLeft: (!isMobile && !sidebarOpen) ? 2.4 : undefined, overflow: "hidden" }}
+                                    sx={{
+                                        paddingLeft: !isMobile && !sidebarOpen ? 2.4 : undefined,
+                                        overflow: "hidden",
+                                    }}
                                 >
                                     <ListItemIcon>
                                         <Home />
@@ -192,34 +194,50 @@ export default function Sidebar({ wsKey, children }) {
                         </ListItem>
                         {!isMobile && !sidebarOpen && <ListItem sx={{ height: 16 }} />}
                         {/* Streamers List */}
-                        <ListItemText primary="Transcripts" sx={{ ml: 1, display: ((!isMobile && sidebarOpen) || isMobile) ? "block" : "none" }} />
+                        <ListItemText
+                            primary="Transcripts"
+                            sx={{ ml: 1, display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none" }}
+                        />
                         {keyIcons(32).map((streamer) => (
                             <ListItem key={streamer.value} disablePadding>
-                                <Tooltip title={(!isMobile && !sidebarOpen) ? streamer.name : ""} placement="right">
+                                <Tooltip title={!isMobile && !sidebarOpen ? streamer.name : ""} placement="right">
                                     <ListItemButton
                                         selected={wsKey === streamer.value}
                                         onClick={() => handleStreamerChange(streamer.value)}
-                                        sx={{ paddingLeft: (!isMobile && !sidebarOpen) ? 2 : undefined, overflow: "hidden" }}
+                                        sx={{
+                                            paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
+                                            overflow: "hidden",
+                                        }}
                                     >
                                         <ListItemIcon>{streamer.icon}</ListItemIcon>
-                                        {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary={streamer.name} />}
+                                        {((!isMobile && sidebarOpen) || isMobile) && (
+                                            <ListItemText primary={streamer.name} />
+                                        )}
                                     </ListItemButton>
                                 </Tooltip>
                             </ListItem>
                         ))}
                         {!isMobile && !sidebarOpen && <ListItem sx={{ height: 16 }} />}
                         {/* Page Selection */}
-                        <ListItemText primary="Pages" sx={{ mt: 2, ml: 1, display: ((!isMobile && sidebarOpen) || isMobile) ? "block" : "none" }} />
+                        <ListItemText
+                            primary="Pages"
+                            sx={{ mt: 2, ml: 1, display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none" }}
+                        />
                         {pages.map((page) => (
                             <ListItem key={page.value} disablePadding>
-                                <Tooltip title={(!isMobile && !sidebarOpen) ? page.name : ""} placement="right">
+                                <Tooltip title={!isMobile && !sidebarOpen ? page.name : ""} placement="right">
                                     <ListItemButton
                                         selected={window.location.pathname.split("/")[3] === page.value}
                                         onClick={() => handlePageChange(page.value)}
-                                        sx={{ paddingLeft: (!isMobile && !sidebarOpen) ? 2 : undefined, overflow: "hidden" }}
+                                        sx={{
+                                            paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
+                                            overflow: "hidden",
+                                        }}
                                     >
                                         <ListItemIcon>{page.icon}</ListItemIcon>
-                                        {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary={page.name} />}
+                                        {((!isMobile && sidebarOpen) || isMobile) && (
+                                            <ListItemText primary={page.name} />
+                                        )}
                                     </ListItemButton>
                                 </Tooltip>
                             </ListItem>
@@ -229,18 +247,27 @@ export default function Sidebar({ wsKey, children }) {
                             <>
                                 <ListItemText
                                     primary="Developer"
-                                    sx={{ mt: 2, ml: 1, display: ((!isMobile && sidebarOpen) || isMobile) ? "block" : "none" }}
+                                    sx={{
+                                        mt: 2,
+                                        ml: 1,
+                                        display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none",
+                                    }}
                                 />
                                 <ListItem disablePadding>
-                                    <Tooltip title={(!isMobile && !sidebarOpen) ? "Dev Tools" : ""} placement="right">
+                                    <Tooltip title={!isMobile && !sidebarOpen ? "Dev Tools" : ""} placement="right">
                                         <ListItemButton
                                             onClick={() => setDevToolsOpen(true)}
-                                            sx={{ paddingLeft: (!isMobile && !sidebarOpen) ? 2 : undefined, overflow: "hidden" }}
+                                            sx={{
+                                                paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
+                                                overflow: "hidden",
+                                            }}
                                         >
                                             <ListItemIcon>
                                                 <DeveloperMode />
                                             </ListItemIcon>
-                                            {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Dev Tools" />}
+                                            {((!isMobile && sidebarOpen) || isMobile) && (
+                                                <ListItemText primary="Dev Tools" />
+                                            )}
                                         </ListItemButton>
                                     </Tooltip>
                                 </ListItem>
@@ -257,7 +284,7 @@ export default function Sidebar({ wsKey, children }) {
                                             "noopener noreferrer",
                                         );
                                     }}
-                                    sx={{ paddingLeft: (!isMobile && !sidebarOpen) ? 2 : undefined, overflow: "hidden" }}
+                                    sx={{ paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined, overflow: "hidden" }}
                                 >
                                     <ListItemIcon>
                                         <GitHub />
@@ -268,10 +295,10 @@ export default function Sidebar({ wsKey, children }) {
                         </ListItem>
                         {/* Help */}
                         <ListItem disablePadding>
-                            <Tooltip title={(!isMobile && !sidebarOpen) ? "Help" : ""} placement="right">
+                            <Tooltip title={!isMobile && !sidebarOpen ? "Help" : ""} placement="right">
                                 <ListItemButton
                                     onClick={() => setHelpOpen(true)}
-                                    sx={{ paddingLeft: (!isMobile && !sidebarOpen) ? 2 : undefined, overflow: "hidden" }}
+                                    sx={{ paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined, overflow: "hidden" }}
                                 >
                                     <ListItemIcon>
                                         <Help />
@@ -282,10 +309,10 @@ export default function Sidebar({ wsKey, children }) {
                         </ListItem>
                         {/* Settings */}
                         <ListItem disablePadding>
-                            <Tooltip title={(!isMobile && !sidebarOpen) ? "Settings" : ""} placement="right">
+                            <Tooltip title={!isMobile && !sidebarOpen ? "Settings" : ""} placement="right">
                                 <ListItemButton
                                     onClick={() => setSettingsOpen(true)}
-                                    sx={{ paddingLeft: (!isMobile && !sidebarOpen) ? 2 : undefined, overflow: "hidden" }}
+                                    sx={{ paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined, overflow: "hidden" }}
                                 >
                                     <ListItemIcon>
                                         <SettingsIcon />
@@ -305,14 +332,16 @@ export default function Sidebar({ wsKey, children }) {
                 sx={{
                     flexGrow: 1,
                     padding: 1,
-                    width: isMobile
-                        ? "100%"
-                        : `calc(97vw - ${sidebarOpen ? drawerWidth : drawerWidthCollapsed}px)`,
+                    width: isMobile ? "100%" : `calc(97vw - ${sidebarOpen ? drawerWidth : drawerWidthCollapsed}px)`,
                     transition: "width 0.3s ease-in-out, margin-left 0.3s ease-in-out",
                 }}
             >
                 {children}
-                <AudioFooter wsKey={wsKey} offset={isMobile ? 0 : (sidebarOpen ? drawerWidth : drawerWidthCollapsed)} width={width} />
+                <AudioFooter
+                    wsKey={wsKey}
+                    offset={isMobile ? 0 : sidebarOpen ? drawerWidth : drawerWidthCollapsed}
+                    width={width}
+                />
             </Box>
         </Box>
     );

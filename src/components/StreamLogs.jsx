@@ -8,8 +8,6 @@ import {
     useMediaQuery,
     Paper,
     Divider,
-    Switch,
-    FormControlLabel,
 } from "@mui/material";
 import { useEffect, useRef, useState, useMemo } from "react";
 import Line from "./Line";
@@ -361,8 +359,8 @@ export default function StreamLogs({ wsKey }) {
                                                 {searchTerm
                                                     ? `${displayData.length} / ${transcript.length} found`
                                                     : !atLiveEdge && visibleRange.endIndex < transcript.length - 1
-                                                        ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcript.length}`
-                                                        : `${transcript.length} lines`}
+                                                      ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcript.length}`
+                                                      : `${transcript.length} lines`}
                                             </Typography>
 
                                             <Divider orientation="vertical" flexItem sx={{ height: 20, my: "auto" }} />
@@ -375,8 +373,8 @@ export default function StreamLogs({ wsKey }) {
                                                 searchTerm
                                                     ? "Click to clear search and jump to live"
                                                     : atLiveEdge
-                                                        ? "Click to pause auto-scroll"
-                                                        : "Click to resume auto-scroll live updates"
+                                                      ? "Click to pause auto-scroll"
+                                                      : "Click to resume auto-scroll live updates"
                                             }
                                         >
                                             <Box
@@ -422,18 +420,16 @@ export default function StreamLogs({ wsKey }) {
                                                         whiteSpace: "nowrap",
                                                         fontWeight: "bold",
                                                         color:
-                                                            searchTerm || atLiveEdge
-                                                                ? "primary.main"
-                                                                : "warning.main",
+                                                            searchTerm || atLiveEdge ? "primary.main" : "warning.main",
                                                     }}
                                                 >
                                                     {searchTerm
                                                         ? "Searching"
                                                         : atLiveEdge
-                                                            ? "Live"
-                                                            : unreadCount > 0
-                                                                ? `Paused (${unreadCount})`
-                                                                : "Paused"}
+                                                          ? "Live"
+                                                          : unreadCount > 0
+                                                            ? `Paused (${unreadCount})`
+                                                            : "Paused"}
                                                 </Typography>
                                             </Box>
                                         </Tooltip>
