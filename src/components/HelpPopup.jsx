@@ -7,22 +7,47 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    Paper,
     Typography,
+    useMediaQuery,
 } from "@mui/material";
-import settings_img from "../assets/helpguide/settings.png";
-import wordCount_img from "../assets/helpguide/word-count.png";
-import transcript_img from "../assets/helpguide/transcript.png";
-import linemenu_img from "../assets/helpguide/linemenu-example.png";
-import audioplayerDesktop_img from "../assets/helpguide/audioplayer-desktop.png";
-import tagHighlightText_img from "../assets/helpguide/tag-highlihgt-text-light.png";
-import tagMenu_img from "../assets/helpguide/tag-menu.png";
-import messageId_img from "../assets/helpguide/message-ID.png";
-import filledOutTagMenu_img from "../assets/helpguide/filled-out-tag-menu.png";
-import sidebar_img from "../assets/helpguide/sidebar.png";
-import clippingStarted_img from "../assets/helpguide/clipping-started.png";
-import clippingMenuDownload_img from "../assets/helpguide/clipping-menu-download.png";
-import clippingPopup_img from "../assets/helpguide/clipping-popup.png";
+
+// Light images
+import settings_light from "../assets/helpguide/settings-light.png";
+import wordCount_light from "../assets/helpguide/word-count-light.png";
+import transcript_light from "../assets/helpguide/transcript-light.png";
+import linemenu_light from "../assets/helpguide/linemenu-example-light.png";
+import audioplayerDesktop_light from "../assets/helpguide/audioplayer-desktop-light.png";
+import tagHighlightText_light from "../assets/helpguide/tag-highlihgt-text-light.png";
+import tagMenu_light from "../assets/helpguide/tag-menu-light.png";
+import messageId_light from "../assets/helpguide/message-ID-light.png";
+import filledOutTagMenu_light from "../assets/helpguide/filled-out-tag-menu-light.png";
+import sidebar_light from "../assets/helpguide/sidebar-light.png";
+import clippingStarted_light from "../assets/helpguide/clipping-started-light.png";
+import clippingMenuDownload_light from "../assets/helpguide/clipping-menu-light.png";
+import clippingPopup_light from "../assets/helpguide/clipping-popup-light.png";
+import devtoolsControls_light from "../assets/helpguide/devtools-controls-light.png";
+import devtoolsPerformance_light from "../assets/helpguide/devtools-performance-light.png";
+
+// Dark images
+import settings_dark from "../assets/helpguide/settings-dark.png";
+import wordCount_dark from "../assets/helpguide/word-count-dark.png";
+import transcript_dark from "../assets/helpguide/transcript-dark.png";
+import linemenu_dark from "../assets/helpguide/linemenu-example-dark.png";
+import audioplayerDesktop_dark from "../assets/helpguide/audioplayer-desktop-dark.png";
+import tagHighlightText_dark from "../assets/helpguide/tag-highlihgt-text-dark.png";
+import tagMenu_dark from "../assets/helpguide/tag-menu-dark.png";
+import messageId_dark from "../assets/helpguide/message-ID-dark.png";
+import filledOutTagMenu_dark from "../assets/helpguide/filled-out-tag-menu-dark.png";
+import sidebar_dark from "../assets/helpguide/sidebar-dark.png";
+import clippingStarted_dark from "../assets/helpguide/clipping-started-dark.png";
+import clippingMenuDownload_dark from "../assets/helpguide/clipping-menu-dark.png";
+import clippingPopup_dark from "../assets/helpguide/clipping-popup-dark.png";
+import devtoolsControls_dark from "../assets/helpguide/devtools-controls-dark.png";
+import devtoolsPerformance_dark from "../assets/helpguide/devtools-performance-dark.png";
+
 import { ExpandMore } from "@mui/icons-material";
+import { useAppStore } from "../store/store";
 
 /**
  * A dialog displaying help information and guides for the application.
@@ -31,9 +56,67 @@ import { ExpandMore } from "@mui/icons-material";
  * @param {function(boolean): void} props.setOpen - Callback to change the open state.
  */
 export default function HelpPopup({ open, setOpen }) {
+    const theme = useAppStore((state) => state.theme);
+    const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+    const isDarkMode = theme === "dark" || (theme === "system" && prefersDarkMode);
+
+    const images = {
+        settings: isDarkMode ? settings_dark : settings_light,
+        wordCount: isDarkMode ? wordCount_dark : wordCount_light,
+        transcript: isDarkMode ? transcript_dark : transcript_light,
+        linemenu: isDarkMode ? linemenu_dark : linemenu_light,
+        audioplayerDesktop: isDarkMode ? audioplayerDesktop_dark : audioplayerDesktop_light,
+        tagHighlightText: isDarkMode ? tagHighlightText_dark : tagHighlightText_light,
+        tagMenu: isDarkMode ? tagMenu_dark : tagMenu_light,
+        messageId: isDarkMode ? messageId_dark : messageId_light,
+        filledOutTagMenu: isDarkMode ? filledOutTagMenu_dark : filledOutTagMenu_light,
+        sidebar: isDarkMode ? sidebar_dark : sidebar_light,
+        clippingStarted: isDarkMode ? clippingStarted_dark : clippingStarted_light,
+        clippingMenuDownload: isDarkMode ? clippingMenuDownload_dark : clippingMenuDownload_light,
+        clippingPopup: isDarkMode ? clippingPopup_dark : clippingPopup_light,
+        devtoolsControls: isDarkMode ? devtoolsControls_dark : devtoolsControls_light,
+        devtoolsPerformance: isDarkMode ? devtoolsPerformance_dark : devtoolsPerformance_light,
+    };
+
     const handleClose = () => {
         setOpen(false);
     };
+
+    /**
+     * Helper component to display guide images with a Paper background.
+     */
+    const HelpImage = ({ src, width = "100%", alt = "" }) => (
+        <Paper
+            elevation={3}
+            sx={{
+                my: 2,
+                p: 0.5,
+                backgroundColor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 1,
+                width: "fit-content",
+                maxWidth: "100%",
+                mx: "auto",
+                overflow: "hidden",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+            }}
+        >
+            <img
+                src={src}
+                alt={alt}
+                style={{
+                    width: width,
+                    maxWidth: "100%",
+                    height: "auto",
+                    display: "block",
+                    margin: "0 auto",
+                }}
+            />
+        </Paper>
+    );
 
     return (
         <div>
@@ -60,9 +143,9 @@ export default function HelpPopup({ open, setOpen }) {
                                     Settings are at the left of the page. Click the cogwheel icon to view the settings
                                     menu.
                                 </Typography>
-                                <img src={settings_img} width="75%" />
+                                <HelpImage src={images.settings} width="75%" />
                                 <Typography variant="body1" gutterBottom>
-                                    There are currently 4 settings. All settings are stored in a cookie and persist
+                                    There are currently 6 settings. All settings are stored in a cookie and persist
                                     across sessions.
                                 </Typography>
                                 <ul>
@@ -85,18 +168,21 @@ export default function HelpPopup({ open, setOpen }) {
                                         </blockquote>
                                     </li>
                                     <li>
-                                        New Lines at Top
-                                        <blockquote>
-                                            When enabled, new lines will appear at the top. When disabled, new lines
-                                            will appear at the bottom. When disabled, you will need to constantly scroll
-                                            down to see the newest lines.
-                                        </blockquote>
+                                        Transcript Height: How tall should the transcript be.
+                                        <blockquote>100% means it will go all the way to the bottom of the page. Select a smaller value if you want the bottom to be higher up on the page.</blockquote>
                                     </li>
                                     <li>
                                         Enable Tag Helper
                                         <blockquote>
                                             This enables a feature to help time a tag with the text that appears in the
                                             transcript. This will be explained further in Tagging Feature.
+                                        </blockquote>
+                                    </li>
+                                    <li>
+                                        Developer Mode
+                                        <blockquote>
+                                            Enables technical details for debugging, such as the Live Timer and server
+                                            status metrics.
                                         </blockquote>
                                     </li>
                                 </ul>
@@ -117,7 +203,7 @@ export default function HelpPopup({ open, setOpen }) {
                                     Allows you to easily jump between pages and streamers. Located on the left of your
                                     screen.
                                 </Typography>
-                                <img src={sidebar_img} width="50%" />
+                                <HelpImage src={images.sidebar} width="50%" />
                                 <Typography variant="body1" gutterBottom>
                                     Sidebar is broken up into 3 parts.
                                 </Typography>
@@ -161,37 +247,59 @@ export default function HelpPopup({ open, setOpen }) {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography variant="body1" gutterBottom>
-                                    Transcript allows you to view back what was said during the stream. This updates in
-                                    real time so there is no need to refresh.
+                                    The transcript viewer allows you to review what was said during the stream. This
+                                    updates in real time, so there is no need to refresh.
                                 </Typography>
                                 <Typography variant="body1" color="error" gutterBottom>
                                     NOTE: The transcripts are not guaranteed to be accurate to what was said on stream,
-                                    or if the streamer said it, or it was said in game or by someone else. Please use
-                                    this with caution.
+                                    or if the streamer said it, or it was said in game or by someone else.
                                 </Typography>
-                                <img src={transcript_img} width="100%" />
-                                There are 3 parts to the transcript page.
+
+                                <HelpImage src={images.transcript} />
+                                There are 4 parts to the transcript page.
                                 <ol>
                                     <li>The title</li>
-                                    <li>The stream status (live or offline)</li>
-                                    <li>The transcripts themselves</li>
+                                    <li>The search bar</li>
+                                    <li>The transcript</li>
+                                    <li>The live/pause/jump menu</li>
                                 </ol>
-                                The transcripts are broken up into 3 parts.
+                                The transcript is broken up into 3 parts.
                                 <ol>
-                                    <li>The id (in green)</li>
-                                    <li>The timestamp (in your local time)</li>
+                                    <li>Options (three dots in green)</li>
+                                    <li>The timestamp</li>
                                     <li>The text</li>
                                 </ol>
-                                The id is a clickable button. Click on it to open a menu. This is where you can
+                                Clicking on the options button will open a menu. This is where you can
                                 <ul>
                                     <li>Start a clip (explained more in the Clipping section)</li>
                                     <li>Play or download the audio</li>
                                     <li>Open the stream to this spot if DVR or Vod is available</li>
                                     <li>Copy the unix timestamp of when the line starts</li>
                                 </ul>
-                                <img src={linemenu_img} width="100%" />
-                                Do note that the &#34;Open Stream&#34; option is not 100% accurate since we do not know
-                                exactly when the stream started.
+                                <HelpImage src={images.linemenu} />
+
+                                <Typography variant="h6" gutterBottom>
+                                    Live vs Paused vs Offline
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Live:</strong> The transcript auto-scrolls to show the newest messages.
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Paused:</strong> Auto-scroll stops. This happens automatically when you scroll up, jump to the top, or use the search bar.
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    <strong>Offline:</strong> Same as Paused, but is forced when the stream goes offline. This means you can't go to live mode since there is no stream to scroll to.
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    To resume Live mode, scroll to the bottom, click the play button, or the "Jump to Bottom" arrow. If you are searching, you will need to click "Searching" or clear the search bar and go to the bottom.
+                                </Typography>
+                                <br />
+                                <Typography variant="h6" gutterBottom>
+                                    Log Height
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    You can adjust how much of the screen the transcript takes up in the Settings menu (Full, 90%, 75%, 50%).
+                                </Typography>
                             </AccordionDetails>
                         </Accordion>
 
@@ -209,9 +317,9 @@ export default function HelpPopup({ open, setOpen }) {
                                     When you click on a line id and select &#34;Play Audio&#34;, it will open the audio
                                     player and start playing the audio of that line.
                                 </Typography>
-                                <img src={audioplayerDesktop_img} width="100%" />
-                                To keep track of the line it is playing, it will highlight that line purple. You can do
-                                the following with the audio player:
+                                <HelpImage src={images.audioplayerDesktop} />
+                                To keep track of the line it is playing, it will highlight that line in purple. You
+                                can do the following with the audio player:
                                 <ol>
                                     <li>Close it by clicking the &#9587; button</li>
                                     <li>Download the audio by clicking the download button</li>
@@ -267,13 +375,13 @@ export default function HelpPopup({ open, setOpen }) {
                                     </li>
                                     <li>Any lines that will be in the clip will now be highlighted in purple.</li>
                                 </ul>
-                                <img src={clippingStarted_img} width="100%" />
+                                <HelpImage src={images.clippingStarted} />
                                 To mark the second end of the clip, click on one of the orange triple dots and click
                                 &#34;Process Clip&#34;.
-                                <img src={clippingMenuDownload_img} width="100%" />
+                                <HelpImage src={images.clippingMenuDownload} />
                                 <Typography variant="caption">
                                     Caption: as you can see, the lines between 631 (the id I started with) and 634 (the
-                                    id I just clicked on) is highlight. This visually shows you what lines will be
+                                    id I just clicked on) are highlighted. This visually shows you what lines will be
                                     included in the clip.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
@@ -284,14 +392,14 @@ export default function HelpPopup({ open, setOpen }) {
                                     Depending on what media type the server is storing, you will be able to download
                                     m4a, mp4, or nothing.
                                 </Typography>
-                                <img src={clippingPopup_img} width="100%" />
+                                <HelpImage src={images.clippingPopup} />
                                 Important notes:
                                 <ul>
                                     <li>At any point, you can click Reset Clip to get out of the clipping process</li>
                                     <li>
                                         If one of the lines in a clip does not have any media (either it did not get
                                         saved or it was deleted), then the whole clip will get rejected and you will
-                                        land on a Sever Error page.
+                                        land on a Server Error page.
                                     </li>
                                     <li>You cannot clip a single line. Just download the line audio instead</li>
                                     <li>
@@ -316,7 +424,7 @@ export default function HelpPopup({ open, setOpen }) {
                                     Word Count allows you to view the usage of a word or text in real time over the
                                     course of the stream. The graph and values will automatically update.
                                 </Typography>
-                                <img src={wordCount_img} width="100%" />
+                                <HelpImage src={images.wordCount} />
                                 <Typography variant="body1" gutterBottom>
                                     The only requirement is that the word is 3 or more characters long.
                                 </Typography>
@@ -343,9 +451,9 @@ export default function HelpPopup({ open, setOpen }) {
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
                                     Once enabled, you will be able to hover over the text in the transcript and click
-                                    specific sections (denoted by the color box that appears).
+                                    specific sections (denoted by the colored box that appears).
                                 </Typography>
-                                <img src={tagHighlightText_img} width="100%" />
+                                <HelpImage src={images.tagHighlightText} />
                                 <Typography variant="body1" gutterBottom>
                                     These sections denote a specific part where you can set the tag to (the tags will be
                                     set to the beginning of the section).
@@ -354,7 +462,7 @@ export default function HelpPopup({ open, setOpen }) {
                                     Once you find the section you want to time a tag to; click it and a menu will
                                     appear.
                                 </Typography>
-                                <img src={tagMenu_img} width="100%" />
+                                <HelpImage src={images.tagMenu} />
                                 <Typography variant="body1" gutterBottom>
                                     This is the tagging alignment menu. It takes the discord message ID of your tag, and
                                     calculates the offset you need for it to align with the beginning of the segment you
@@ -363,11 +471,11 @@ export default function HelpPopup({ open, setOpen }) {
                                 If you do not know how to get the message ID of your tag:
                                 <ol>
                                     <li>
-                                        Enable developer mode. Settings {"->"} Advanced {"->"} Enable developer mode
+                                        Enable <strong>Discord</strong> developer mode. User Settings {"->"} Advanced {"->"} Enable Developer Mode
                                     </li>
                                     <li>Right-click on your message and click Copy Message ID</li>
                                 </ol>
-                                <img src={messageId_img} />
+                                <HelpImage src={images.messageId} width="auto" />
                                 <Typography variant="body1" gutterBottom>
                                     The default offset is whatever your server&#39;s tagger bot is set to. For DPS, it
                                     is -20. This value is also stored in the cookie, so you will only have to change it
@@ -377,13 +485,13 @@ export default function HelpPopup({ open, setOpen }) {
                                     Once both values are set, it will display the adjust command to run. As well as
                                     enable the button Copy Command to copy the command to your clipboard.
                                 </Typography>
-                                <img src={filledOutTagMenu_img} width="100%" />
+                                <HelpImage src={images.filledOutTagMenu} />
                                 <br />
                                 Note:
                                 <ol>
                                     <li>
                                         As said above, this will time the tag to the beginning of the section you
-                                        clicked. Meaning, that if an entire line is one section, then it will time it to
+                                        clicked. This means that if an entire line is one section, it will time it to
                                         go at the beginning of that line. The only way to make it start in the middle of
                                         a section is to guess how long a section is and change the offset accordingly.
                                     </li>
@@ -394,6 +502,58 @@ export default function HelpPopup({ open, setOpen }) {
                                         testing it out for a few streams.
                                     </li>
                                 </ol>
+                            </AccordionDetails>
+                        </Accordion>
+                        {/* Developer Mode */}
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMore />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>Developer Mode</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="body1" gutterBottom>
+                                    Developer Mode enables technical details primarily used for debugging and performance monitoring.
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    To open the Dev Tools, enable Developer Mode in Settings and click on the Dev Tools icon that appears below the Tag Fixer icon and above the GitHub icon.
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    In the Dev Tools, there are two pages:
+                                </Typography>
+                                <ul>
+                                    <li><strong>Controls:</strong> Allows you to control the transcripts and simulate live streams to help debug.</li>
+                                    <li><strong>Performance:</strong> Detailed performance metrics used to show if there are any network or processing issues.</li>
+                                </ul>
+                                <Typography variant="h6" gutterBottom>
+                                    <strong>Controls</strong>
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    Broken up into 5 tabs:
+                                    <ul>
+                                        <li><strong>Clear Transcript:</strong> Deletes all transcript data for the key you are on.</li>
+                                        <li><strong>Stream State:</strong> Allows you to change the stream data such as title, start time, media type, and live status.</li>
+                                        <li><strong>Add Line:</strong> Allows you to add a line to the transcript.</li>
+                                        <li><strong>Simulation:</strong> Allows you to repeatedly add lines to the transcript every interval.</li>
+                                        <li><strong>Delete Line:</strong> Allows you to delete a specific line from the transcript.</li>
+                                    </ul>
+                                </Typography>
+                                <HelpImage src={images.devtoolsControls} />
+                                <Typography variant="h6" gutterBottom>
+                                    <strong>Performance</strong>
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    Broken up into 4 tabs:
+                                    <ul>
+                                        <li><strong>Metrics:</strong> Shows the metrics of the website and the current stream.</li>
+                                        <li><strong>Server Upload Time (s):</strong> Graph of the time it takes to upload to the server.</li>
+                                        <li><strong>Server-Client Latency (s):</strong> Graph of the latency between when the server received the message and when the client received the message.</li>
+                                        <li><strong>Message Inter-arrival Time (s):</strong> Graph of the time between when a message was received and when the next message was received.</li>
+                                    </ul>
+                                </Typography>
+                                <HelpImage src={images.devtoolsPerformance} />
                             </AccordionDetails>
                         </Accordion>
                     </div>

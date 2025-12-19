@@ -11,10 +11,12 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { keyIcons } from "../config";
+import { useAppStore } from "../store/store";
 
 export default function Home() {
     const navigate = useNavigate();
     const isMobile = useMediaQuery("(max-width:768px)");
+    const devMode = useAppStore((state) => state.devMode);
 
     const handleStreamerChange = (value) => {
         navigate(`${value}/`);
@@ -24,11 +26,11 @@ export default function Home() {
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", p: 4, gap: 2 }}>
             {isMobile ? (
                 <Typography color="primary" variant="h4" component="h4" gutterBottom>
-                    Live Transcripts
+                    Live Transcripts {devMode ? "(Dev Mode)" : ""}
                 </Typography>
             ) : (
                 <Typography color="primary" variant="h2" component="h2" gutterBottom>
-                    Live Transcripts
+                    Live Transcripts {devMode ? "(Dev Mode)" : ""}
                 </Typography>
             )}
 

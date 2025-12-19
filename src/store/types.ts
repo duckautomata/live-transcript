@@ -68,17 +68,34 @@ export interface SettingsSlice {
     theme: "light" | "system" | "dark";
     density: "compact" | "standard" | "comfortable";
     timeFormat: "relative" | "local" | "UTC";
-    newAtTop: boolean;
+    transcriptHeight: "100%" | "90%" | "75%" | "50%";
     enableTagHelper: boolean;
     defaultOffset: number;
     sidebarOpen: boolean;
+    devMode: boolean;
     setTheme: (theme: SettingsSlice["theme"]) => void;
     setDensity: (density: SettingsSlice["density"]) => void;
     setTimeFormat: (format: SettingsSlice["timeFormat"]) => void;
-    setNewAtTop: (value: boolean) => void;
+    setTranscriptHeight: (height: SettingsSlice["transcriptHeight"]) => void;
     setEnableTagHelper: (value: boolean) => void;
     setDefaultOffset: (offset: number) => void;
     setSidebarOpen: (isOpen: boolean) => void;
+    setDevMode: (value: boolean) => void;
+}
+
+export interface PerformanceMetric {
+    id: number;
+    receivedAt: number;
+    serverEmittedAt: number;
+    uploadTime: number;
+    latency: number;
+    interArrival: number;
+}
+
+export interface PerformanceSlice {
+    metrics: PerformanceMetric[];
+    addMetric: (metric: PerformanceMetric) => void;
+    clearMetrics: () => void;
 }
 
 // The combined store type
@@ -88,7 +105,8 @@ export type AppStore = AudioSlice &
     TagPopupSlice &
     ServerSlice &
     TranscriptSlice &
-    SettingsSlice;
+    SettingsSlice &
+    PerformanceSlice;
 
 // Helper type for creating slices
 export type AppSliceCreator<T> = StateCreator<AppStore, [], [], T>;

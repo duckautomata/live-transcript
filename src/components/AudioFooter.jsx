@@ -43,8 +43,8 @@ export default function AudioFooter({ wsKey, offset, width }) {
                 top: "auto",
                 bottom: 0,
                 background: "green",
-                left: isMobile ? `${offset - 24}px` : `${width - desktopWidth + 9}px`,
-                width: isMobile ? `${width - 27}px` : desktopWidth,
+                left: isMobile ? 0 : `${width - desktopWidth + 9}px`,
+                width: isMobile ? "100%" : desktopWidth,
             }}
         >
             <Toolbar>

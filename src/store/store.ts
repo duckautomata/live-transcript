@@ -9,6 +9,7 @@ import { createTagPopupSlice } from "./tagPopupSlice";
 import { createServerSlice } from "./serverSlice";
 import { createTranscriptSlice } from "./transcriptSlice";
 import { createSettingsSlice } from "./settingsSlice";
+import { createPerformanceSlice } from "./performanceSlice";
 
 export const useAppStore = create<AppStore>()(
     persist(
@@ -20,6 +21,7 @@ export const useAppStore = create<AppStore>()(
             ...createServerSlice(set, get, api),
             ...createTranscriptSlice(set, get, api),
             ...createSettingsSlice(set, get, api),
+            ...createPerformanceSlice(set, get, api),
         }),
         {
             name: "live-transcript-settings", // The key in localStorage
@@ -28,10 +30,11 @@ export const useAppStore = create<AppStore>()(
                 theme: state.theme,
                 density: state.density,
                 timeFormat: state.timeFormat,
-                newAtTop: state.newAtTop,
+                transcriptHeight: state.transcriptHeight,
                 enableTagHelper: state.enableTagHelper,
                 defaultOffset: state.defaultOffset,
                 sidebarOpen: state.sidebarOpen,
+                devMode: state.devMode,
             }),
         },
     ),

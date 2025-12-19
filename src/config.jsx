@@ -1,13 +1,14 @@
 import dokiIcon from "./assets/icons/doki.jpg";
 import mintIcon from "./assets/icons/mint.jpg";
 import { Avatar } from "@mui/material";
+import { useAppStore } from "./store/store";
 
 export const server = "https://api.dokiscripts.com";
 export const wsServer = "wss://api.dokiscripts.com";
 export const maxClipSize = 30;
 export const keys = () => {
     const keys = ["doki", "mint"];
-    if (import.meta.env.DEV) {
+    if (useAppStore.getState().devMode) {
         keys.push("test");
     }
 
@@ -27,7 +28,7 @@ export const keyIcons = (size) => {
                 value: "mint",
             },
         ];
-        if (import.meta.env.DEV) {
+        if (useAppStore.getState().devMode) {
             icons.push({
                 name: "Test",
                 icon: (
@@ -45,7 +46,7 @@ export const keyIcons = (size) => {
         { name: "Doki", icon: <Avatar src={dokiIcon} alt="doki" />, value: "doki" },
         { name: "Mint", icon: <Avatar src={mintIcon} alt="mint" />, value: "mint" },
     ];
-    if (import.meta.env.DEV) {
+    if (useAppStore.getState().devMode) {
         icons.push({ name: "Test", icon: <Avatar alt="test">T</Avatar>, value: "test" });
     }
 

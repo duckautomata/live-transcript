@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import useWebSocket from "react-use-websocket";
 import { LOG_MSG, LOG_WARN, LOG_ERROR } from "./logic/debug";
 import { wsServer } from "./config";
@@ -43,6 +43,9 @@ export const Websocket = ({ wsKey }) => {
     const setIsLive = useAppStore((state) => state.setIsLive);
     const setTranscript = useAppStore((state) => state.setTranscript);
     const addTranscriptLine = useAppStore((state) => state.addTranscriptLine);
+    const addMetric = useAppStore((state) => state.addMetric);
+
+    const lastReceiveTime = useRef(Date.now());
 
     const { lastMessage, lastJsonMessage } = useWebSocket(WS_URL, {
         share: false,
@@ -130,15 +133,35 @@ export const Websocket = ({ wsKey }) => {
 
     /**
      * @param {string[]} parts
+     * structure: [![]refresh, id, line_timestamp, upload_time, server_timestamp, segment1_timestamp, segment1_text, ...]
      */
     const addNewLine = (parts) => {
-        if (!Array.isArray(parts) || parts.length % 2 !== 1) {
+        if (!Array.isArray(parts) || parts.length < 5 || parts.length % 2 !== 1) {
             LOG_ERROR("addNewLine parts is not a valid array:", typeof parts, parts.length);
             return;
         }
 
+        const now = Date.now();
+        const interArrival = now - lastReceiveTime.current;
+        lastReceiveTime.current = now;
+
+        /** @type {number} Time in ms of how long it took to upload the line to the server */
+        const uploadTime = +parts[3];
+
+        /** @type {number} Unix timestamp in ms of when the line was emitted by the server */
+        const serverEmittedAt = +parts[4];
+
+        addMetric({
+            id: +parts[1],
+            receivedAt: now,
+            serverEmittedAt: serverEmittedAt,
+            uploadTime,
+            latency: now - serverEmittedAt,
+            interArrival,
+        });
+
         const segments = [];
-        for (let i = 3; i < parts.length; i += 2) {
+        for (let i = 5; i < parts.length; i += 2) {
             const newSegment = {
                 timestamp: +parts[i],
                 text: parts[i + 1],
@@ -156,6 +179,7 @@ export const Websocket = ({ wsKey }) => {
 
     /**
      * @param {string[]} parts
+     * structure: [![]newstream, id, title, start_time, media_type, is_live]
      */
     const setNewActiveStream = (parts) => {
         if (!Array.isArray(parts) || parts.length !== 6) {
@@ -173,6 +197,7 @@ export const Websocket = ({ wsKey }) => {
 
     /**
      * @param {string[]} parts
+     * structure: [![]status, id, title, is_live]
      */
     const setStreamStatus = (parts) => {
         if (!Array.isArray(parts) || parts.length !== 4) {
@@ -187,6 +212,7 @@ export const Websocket = ({ wsKey }) => {
 
     /**
      * @param {string[]} parts
+     * structure: [![]error, type, message]
      */
     const handleError = (parts) => {
         if (!Array.isArray(parts) || parts.length !== 3) {

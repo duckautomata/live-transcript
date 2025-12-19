@@ -22,14 +22,15 @@ const TimestampTheme = styled("span")(({ theme }) => ({
  * @param {number} props.id - The id of the line.
  * @param {number} props.lineTimestamp - The timestamp of the line.
  * @param {import("../store/types").Segment[]} props.segments - The segments of the line.
+ * @param {boolean} [props.highlight] - Whether to highlight the line.
  */
 const Line = memo(
     forwardRef(
         /**
-         * @param {{ id: number, lineTimestamp: number, segments: import("../store/types").Segment[] }} props
+         * @param {{ id: number, lineTimestamp: number, segments: import("../store/types").Segment[], highlight?: boolean }} props
          * @param {import('react').ForwardedRef<HTMLDivElement>} ref
          */
-        ({ id, lineTimestamp, segments }, ref) => {
+        ({ id, lineTimestamp, segments, highlight }, ref) => {
             const theme = useTheme();
 
             const [idOver, setIdOver] = useState(false);
@@ -89,6 +90,9 @@ const Line = memo(
             };
 
             const colorBackground = () => {
+                if (highlight) {
+                    return theme.palette.action.selected; // Use a distinct highlight color
+                }
                 if (isClipStart || isInClipRange) {
                     return theme.palette.lineground.clip;
                 }
@@ -106,6 +110,7 @@ const Line = memo(
             return (
                 <Typography
                     ref={ref}
+                    className={highlight ? "highlight" : ""}
                     color="secondary"
                     aria-live="assertive"
                     padding="1px"
@@ -132,6 +137,7 @@ const Line = memo(
                         segments.map((segment, index) => (
                             <Fragment key={`line-${id}-segment-${index}`}>
                                 <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onSegmentClick} />
+                                <span />
                                 {index < segments.length - 1 && " "}
                             </Fragment>
                         ))

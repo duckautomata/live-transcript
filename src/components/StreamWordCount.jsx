@@ -64,11 +64,11 @@ export default function StreamWordCount() {
     return (
         <>
             {isMobile ? (
-                <Typography color="primary" variant="h5" component="h5" sx={{ mb: 2, wordBreak: "break-word" }}>
+                <Typography color="primary" variant="h5" component="h5" sx={{ mb: 2, wordBreak: "break-word", pl: isMobile ? 6 : 0 }}>
                     {activeTitle}
                 </Typography>
             ) : (
-                <Typography color="primary" variant="h4" component="h4" sx={{ mb: 2, wordBreak: "break-word" }}>
+                <Typography color="primary" variant="h4" component="h4" sx={{ mb: 2, wordBreak: "break-word", pl: isMobile ? 6 : 0 }}>
                     {activeTitle}
                 </Typography>
             )}

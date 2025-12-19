@@ -10,7 +10,7 @@ import {
     FormControl,
     InputLabel,
     Box,
-    MenuItem, // Import Box for better layout
+    MenuItem,
 } from "@mui/material";
 import { useAppStore } from "../store/store";
 
@@ -24,13 +24,16 @@ const SettingsPopup = ({ open, setOpen }) => {
     const theme = useAppStore((state) => state.theme);
     const density = useAppStore((state) => state.density);
     const timeFormat = useAppStore((state) => state.timeFormat);
-    const newAtTop = useAppStore((state) => state.newAtTop);
+    const transcriptHeight = useAppStore((state) => state.transcriptHeight);
     const enableTagHelper = useAppStore((state) => state.enableTagHelper);
+    const devMode = useAppStore((state) => state.devMode);
+
     const setTheme = useAppStore((state) => state.setTheme);
     const setDensity = useAppStore((state) => state.setDensity);
     const setTimeFormat = useAppStore((state) => state.setTimeFormat);
-    const setNewAtTop = useAppStore((state) => state.setNewAtTop);
+    const setTranscriptHeight = useAppStore((state) => state.setTranscriptHeight);
     const setEnableTagHelper = useAppStore((state) => state.setEnableTagHelper);
+    const setDevMode = useAppStore((state) => state.setDevMode);
 
     const handleClose = () => {
         setOpen(false);
@@ -80,16 +83,20 @@ const SettingsPopup = ({ open, setOpen }) => {
                             <MenuItem value="UTC">UTC</MenuItem>
                         </Select>
                     </FormControl>
-                    <FormControlLabel
-                        control={
-                            <Switch
-                                checked={newAtTop}
-                                onChange={(e) => setNewAtTop(e.target.checked)}
-                                name="newAtTop"
-                            />
-                        }
-                        label="New Lines at Top"
-                    />
+                    <FormControl fullWidth variant="filled">
+                        <InputLabel id="transcript-height-select-label">Transcript Height</InputLabel>
+                        <Select
+                            labelId="transcript-height-select-label"
+                            name="transcriptHeight"
+                            value={transcriptHeight}
+                            onChange={(e) => setTranscriptHeight(e.target.value)}
+                        >
+                            <MenuItem value="100%">100%</MenuItem>
+                            <MenuItem value="90%">90%</MenuItem>
+                            <MenuItem value="75%">75%</MenuItem>
+                            <MenuItem value="50%">50%</MenuItem>
+                        </Select>
+                    </FormControl>
                     <FormControlLabel
                         control={
                             <Switch
@@ -99,6 +106,12 @@ const SettingsPopup = ({ open, setOpen }) => {
                             />
                         }
                         label="Enable Tag Helper"
+                    />
+                    <FormControlLabel
+                        control={
+                            <Switch checked={devMode} onChange={(e) => setDevMode(e.target.checked)} name="devMode" />
+                        }
+                        label="Developer Mode"
                     />
                 </Box>
             </DialogContent>

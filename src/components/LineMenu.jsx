@@ -96,7 +96,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
         horizontal: "left",
     };
 
-    if (clipStartIndex >= 0 && lineMenuId > clipStartIndex) {
+    if (clipStartIndex >= 0 && lineMenuId < clipStartIndex) {
         anchorOrigin = {
             vertical: "top",
             horizontal: "left",

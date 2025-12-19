@@ -23,6 +23,7 @@
         "react-h5-audio-player": "^3.10.1",
         "react-router-dom": "^7.11.0",
         "react-use-websocket": "^4.13.0",
+        "react-virtuoso": "^4.17.0",
         "zustand": "^5.0.9"
     },
     "devDependencies": {
