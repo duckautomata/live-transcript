@@ -4,14 +4,6 @@
     text-align: center;
 }
 
-#live {
-    color: forestgreen;
-}
-
-#offline {
-    color: red;
-}
-
 .highlight {
     background-color: rgb(123, 138, 145) !important;
     transition: background-color 1s ease-out;
