@@ -9,6 +9,8 @@ export const createSettingsSlice: AppSliceCreator<SettingsSlice> = (set) => ({
     defaultOffset: -20,
     sidebarOpen: true,
     devMode: false,
+    membershipKey: "",
+    membershipInfo: null,
     setTheme: (theme) => set({ theme }),
     setDensity: (density) => set({ density }),
     setTimeFormat: (format) => set({ timeFormat: format }),
@@ -17,4 +19,6 @@ export const createSettingsSlice: AppSliceCreator<SettingsSlice> = (set) => ({
     setDefaultOffset: (offset) => set({ defaultOffset: offset }),
     setSidebarOpen: (isOpen) => set({ sidebarOpen: isOpen }),
     setDevMode: (value) => set({ devMode: value }),
+    setMembershipKey: (key) => set({ membershipKey: key }),
+    setMembershipInfo: (info) => set({ membershipInfo: info }),
 });

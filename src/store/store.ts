@@ -35,6 +35,8 @@ export const useAppStore = create<AppStore>()(
                 defaultOffset: state.defaultOffset,
                 sidebarOpen: state.sidebarOpen,
                 devMode: state.devMode,
+                membershipKey: state.membershipKey,
+                membershipInfo: state.membershipInfo,
             }),
         },
     ),
