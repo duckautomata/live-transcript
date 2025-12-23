@@ -17,6 +17,7 @@ import ClipperPopup from "./components/ClipperPopup";
 import { keys } from "./config";
 import { useAppStore } from "./store/store";
 import TagOffsetPopup from "./components/TagOffsetPopup";
+import SummaryPopup from "./components/SummaryPopup";
 
 /**
  * The root application component.
@@ -65,6 +66,7 @@ function App() {
             ) : (
                 <>
                     <ClipperPopup wsKey={wsKey} />
+                    <SummaryPopup />
                     <TagOffsetPopup />
                     <Sidebar wsKey={wsKey}>
                         {wsKey ? (

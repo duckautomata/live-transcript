@@ -23,14 +23,15 @@ const TimestampTheme = styled("span")(({ theme }) => ({
  * @param {number} props.lineTimestamp - The timestamp of the line.
  * @param {import("../store/types").Segment[]} props.segments - The segments of the line.
  * @param {boolean} [props.highlight] - Whether to highlight the line.
+ * @param {object} [props.summaryData] - The summary data.
  */
 const Line = memo(
     forwardRef(
         /**
-         * @param {{ id: number, lineTimestamp: number, segments: import("../store/types").Segment[], highlight?: boolean }} props
+         * @param {{ id: number, lineTimestamp: number, segments: import("../store/types").Segment[], highlight?: boolean, summaryData?: object }} props
          * @param {import('react').ForwardedRef<HTMLDivElement>} ref
          */
-        ({ id, lineTimestamp, segments, highlight }, ref) => {
+        ({ id, lineTimestamp, segments, highlight, summaryData }, ref) => {
             const theme = useTheme();
 
             const [idOver, setIdOver] = useState(false);
@@ -38,6 +39,9 @@ const Line = memo(
             const setTagPopupOpen = useAppStore((state) => state.setTagPopupOpen);
             const setTagPopupTimestamp = useAppStore((state) => state.setTagPopupTimestamp);
             const setTagPopupText = useAppStore((state) => state.setTagPopupText);
+            const setSummaryPopupOpen = useAppStore((state) => state.setSummaryPopupOpen);
+            const setSummaryPopupTimestamp = useAppStore((state) => state.setSummaryPopupTimestamp);
+            const setSummaryPopupText = useAppStore((state) => state.setSummaryPopupText);
             const setLineMenuId = useAppStore((state) => state.setLineMenuId);
 
             const startTime = useAppStore((state) => state.startTime);
@@ -68,9 +72,9 @@ const Line = memo(
             );
 
             const onSegmentClick = (timestamp, text) => {
-                setTagPopupTimestamp(timestamp);
-                setTagPopupText(text);
-                setTagPopupOpen(true);
+                setSummaryPopupTimestamp(timestamp);
+                setSummaryPopupText(text);
+                setSummaryPopupOpen(true);
             };
 
             const onIdClick = () => {
@@ -102,6 +106,52 @@ const Line = memo(
                 return "none";
             };
 
+            const getOutlineColor = () => {
+                if (!summaryData) return "none";
+
+                // Check Tags
+                const isTag = summaryData.tags?.some(tag => tag.timestamp === lineTimestamp);
+                if (isTag) return `2px solid ${theme.palette.primary.main}`;
+
+                // Check Chapters
+                const isChapter = summaryData.chapters?.some(chapter => chapter.timestamp === lineTimestamp);
+                if (isChapter) return `2px solid ${theme.palette.secondary.main}`;
+
+                // Check Groups
+                let isGroup = false;
+                if (summaryData.groups) {
+                    for (const groupName in summaryData.groups) {
+                        if (summaryData.groups[groupName].some(item => item.timestamp === lineTimestamp)) {
+                            isGroup = true;
+                            break;
+                        }
+                    }
+                }
+                if (isGroup) return `2px solid ${theme.palette.warning.main}`;
+
+                return "none";
+            };
+
+            const getTooltipText = () => {
+                if (!summaryData) return "";
+                // Check Tags
+                const tag = summaryData.tags?.find(tag => tag.timestamp === lineTimestamp);
+                if (tag) return tag.text;
+
+                // Check Chapters
+                const chapter = summaryData.chapters?.find(chapter => chapter.timestamp === lineTimestamp);
+                if (chapter) return `[${chapter.title}] ${chapter.text}`;
+
+                // Check Groups
+                if (summaryData.groups) {
+                    for (const groupName in summaryData.groups) {
+                        const groupItem = summaryData.groups[groupName].find(item => item.timestamp === lineTimestamp);
+                        if (groupItem) return `${groupName} :: ${groupItem.text}`;
+                    }
+                }
+                return "";
+            };
+
             const iconColor = isClipable ? theme.palette.id.clip : theme.palette.id.main;
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
@@ -117,8 +167,10 @@ const Line = memo(
                     whiteSpace="pre-wrap"
                     align="left"
                     id={id}
+                    title={getTooltipText()}
                     style={{
                         background: colorBackground(),
+                        border: getOutlineColor(),
                         wordBreak: "break-word",
                     }}
                 >

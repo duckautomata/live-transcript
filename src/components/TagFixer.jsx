@@ -2,6 +2,9 @@ import { useState } from "react";
 import { TextField, Button, Box, Typography } from "@mui/material";
 import { genericCensor, mintCensor } from "../logic/censors";
 import { chapter_formatting, collection_formatting, HBD_formatting } from "../logic/formatting";
+import { formatSummary, loadSummary, saveSummary } from "../logic/summary";
+import { useAppStore } from "../store/store";
+import { useEffect } from "react";
 
 /**
  * Component for manually fixing and formatting transcript tags.
@@ -13,6 +16,19 @@ const TagFixer = ({ wsKey }) => {
     const [rightText, setRightText] = useState("");
     const [numFixedLines, setNumFixedLines] = useState(0);
     const [copied, setCopied] = useState(false);
+
+    // Store access for timestamps if needed, or we just rely on summary data
+    const startTime = useAppStore((state) => state.startTime);
+
+    // Initial load from summary
+    useEffect(() => {
+        if (!wsKey) return;
+        const summary = loadSummary(wsKey);
+        const formatted = formatSummary(summary, startTime);
+        if (formatted) {
+            handleChange(formatted);
+        }
+    }, [wsKey, startTime]);
 
     const handleClear = () => {
         setLeftText("");
@@ -52,6 +68,28 @@ const TagFixer = ({ wsKey }) => {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const [chapters, setChapters] = useState([]);
+    const [groups, setGroups] = useState({});
+
+    useEffect(() => {
+        if (!wsKey) return;
+        const summary = loadSummary(wsKey);
+        setChapters(summary.chapters || []);
+        setGroups(summary.groups || {});
+    }, [wsKey]);
+
+    const handleChapterChange = (index, field, value) => {
+        const newChapters = [...chapters];
+        newChapters[index][field] = value;
+        setChapters(newChapters);
+
+        const summary = loadSummary(wsKey);
+        summary.chapters = newChapters;
+        saveSummary(wsKey, summary);
+    };
+
+    // Simple UI to list chapters/groups
+
     return (
         <Box
             sx={{
@@ -61,6 +99,26 @@ const TagFixer = ({ wsKey }) => {
                 padding: 2,
             }}
         >
+            <Box sx={{ mb: 2 }}>
+                <Typography variant="h6">Chapters</Typography>
+                {chapters.map((chapter, index) => (
+                    <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                        <TextField
+                            label="Title"
+                            size="small"
+                            value={chapter.title}
+                            onChange={(e) => handleChapterChange(index, "title", e.target.value)}
+                        />
+                        <TextField
+                            label="Start Text"
+                            size="small"
+                            fullWidth
+                            value={chapter.text}
+                            onChange={(e) => handleChapterChange(index, "text", e.target.value)}
+                        />
+                    </Box>
+                ))}
+            </Box>
             <Box
                 sx={{
                     display: "flex",

@@ -102,6 +102,15 @@ export interface PerformanceSlice {
     clearMetrics: () => void;
 }
 
+export interface SummaryPopupSlice {
+    summaryPopupOpen: boolean;
+    summaryPopupTimestamp: number;
+    summaryPopupText: string;
+    setSummaryPopupOpen: (open: boolean) => void;
+    setSummaryPopupTimestamp: (timestamp: number) => void;
+    setSummaryPopupText: (text: string) => void;
+}
+
 // The combined store type
 export type AppStore = AudioSlice &
     ClipperSlice &
@@ -110,7 +119,8 @@ export type AppStore = AudioSlice &
     ServerSlice &
     TranscriptSlice &
     SettingsSlice &
-    PerformanceSlice;
+    PerformanceSlice &
+    SummaryPopupSlice;
 
 // Helper type for creating slices
 export type AppSliceCreator<T> = StateCreator<AppStore, [], [], T>;

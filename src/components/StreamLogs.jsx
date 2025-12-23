@@ -18,6 +18,7 @@ import StreamLogsSkeleton from "./StreamLogsSkeleton";
 import { unixToLocal } from "../logic/dateTime";
 import LiveTimer from "./Timer";
 import { Virtuoso } from "react-virtuoso";
+import { loadSummary } from "../logic/summary";
 
 /**
  * Component for displaying and searching the transcript logs.
@@ -49,6 +50,17 @@ export default function StreamLogs({ wsKey }) {
     // Jump / Highlight state
     const [pendingJumpId, setPendingJumpId] = useState(-1);
     const [highlightedId, setHighlightedId] = useState(-1);
+
+    const [summaryData, setSummaryData] = useState({ tags: [], chapters: [], groups: {} });
+
+    useEffect(() => {
+        const updateSummary = () => {
+            setSummaryData(loadSummary(wsKey));
+        };
+        updateSummary();
+        window.addEventListener("summaryUpdated", updateSummary);
+        return () => window.removeEventListener("summaryUpdated", updateSummary);
+    }, [wsKey]);
 
     // Cleanup timer on unmount
     useEffect(() => {
@@ -290,6 +302,7 @@ export default function StreamLogs({ wsKey }) {
                                                 lineTimestamp={line.timestamp}
                                                 segments={line.segments}
                                                 highlight={highlightedId === line.id}
+                                                summaryData={summaryData}
                                             />
                                         )}
                                         followOutput={atLiveEdge ? "auto" : false}
@@ -359,8 +372,8 @@ export default function StreamLogs({ wsKey }) {
                                                 {searchTerm
                                                     ? `${displayData.length} / ${transcript.length} found`
                                                     : !atLiveEdge && visibleRange.endIndex < transcript.length - 1
-                                                      ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcript.length}`
-                                                      : `${transcript.length} lines`}
+                                                        ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcript.length}`
+                                                        : `${transcript.length} lines`}
                                             </Typography>
 
                                             <Divider orientation="vertical" flexItem sx={{ height: 20, my: "auto" }} />
@@ -373,8 +386,8 @@ export default function StreamLogs({ wsKey }) {
                                                 searchTerm
                                                     ? "Click to clear search and jump to live"
                                                     : atLiveEdge
-                                                      ? "Click to pause auto-scroll"
-                                                      : "Click to resume auto-scroll live updates"
+                                                        ? "Click to pause auto-scroll"
+                                                        : "Click to resume auto-scroll live updates"
                                             }
                                         >
                                             <Box
@@ -426,10 +439,10 @@ export default function StreamLogs({ wsKey }) {
                                                     {searchTerm
                                                         ? "Searching"
                                                         : atLiveEdge
-                                                          ? "Live"
-                                                          : unreadCount > 0
-                                                            ? `Paused (${unreadCount})`
-                                                            : "Paused"}
+                                                            ? "Live"
+                                                            : unreadCount > 0
+                                                                ? `Paused (${unreadCount})`
+                                                                : "Paused"}
                                                 </Typography>
                                             </Box>
                                         </Tooltip>
