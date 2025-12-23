@@ -37,6 +37,7 @@ export const useAppStore = create<AppStore>()(
                 devMode: state.devMode,
                 membershipKey: state.membershipKey,
                 membershipInfo: state.membershipInfo,
+                useVirtualList: state.useVirtualList,
             }),
         },
     ),

@@ -6,7 +6,7 @@ import { CssBaseline, useMediaQuery } from "@mui/material";
 import { ThemeProvider } from "@emotion/react";
 import { darkTheme, lightTheme } from "./theme";
 import { Websocket } from "./Websocket";
-import StreamLogs from "./components/StreamLogs";
+import View from "./components/View";
 import StreamWordCount from "./components/StreamWordCount";
 import Maintenance from "./components/Maintenance";
 import Sidebar from "./components/Sidebar";
@@ -20,7 +20,7 @@ import TagOffsetPopup from "./components/TagOffsetPopup";
 
 /**
  * The root application component.
- * Manages theme, routing, and WebSocket key state based on the current URL.
+ * Manages theme, routing, and WebSocket key state based on the current url.
  */
 function App() {
     const location = useLocation();
@@ -71,7 +71,7 @@ function App() {
                             <>
                                 <Websocket wsKey={wsKey} />
                                 <Routes>
-                                    <Route path={`${wsKey}/*`} element={<StreamLogs wsKey={wsKey} />} />
+                                    <Route path={`${wsKey}/*`} element={<View wsKey={wsKey} />} />
                                     <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
                                     <Route path={`${wsKey}/tagFixer/`} element={<TagFixer wsKey={wsKey} />} />
                                 </Routes>
