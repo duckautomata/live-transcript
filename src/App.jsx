@@ -17,6 +17,7 @@ import ClipperPopup from "./components/ClipperPopup";
 import { keys } from "./config";
 import { useAppStore } from "./store/store";
 import TagOffsetPopup from "./components/TagOffsetPopup";
+import UpdateAlert from "./components/UpdateAlert";
 
 /**
  * The root application component.
@@ -57,6 +58,7 @@ function App() {
     return (
         <ThemeProvider theme={colorTheme}>
             <CssBaseline />
+            <UpdateAlert />
             {window.maintenance ? (
                 <Routes>
                     <Route path={`*`} element={<Maintenance />} />
