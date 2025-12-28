@@ -1,64 +1,139 @@
+// 1. Common Regex Pattern.
+// Matches: Word boundary OR quote, apostrophe, bracket, dash, underscore.
+const P = `(\\b|["'(\\[\\-_])`;
+
 // Uses the js .replace() api. Supports either string or regex
 // [search, replacement]
 // case insensitive. It will automatically match the replacement with the source format.
 /** @type {[string|RegExp, string][]} */
 const replacements = [
-    [/((\b|"|'|\(|\[|-|_)n)t(r)/gi, "$1*$3"], //ntr -> n*r
-    [/((\b|"|'|\(|\[|-|_)d)i(ck)/gi, "$1*$3"], //dick -> d*ck
-    [/((\b|"|'|\(|\[|-|_)c)o(ck)/gi, "$1*$3"], //cock -> c*ck
-    [/((\b|"|'|\(|\[|-|_)cu)c(k)/gi, "$1*$3"], //cuck -> cu*k
-    [/((\b|"|'|\(|\[|-|_)f)uck(ing)/gi, "$1-$3"], //fucking -> f-ing
-    [/((\b|"|'|\(|\[|-|_)f)u(ck)/gi, "$1*$3"], //fuck -> f*ck
-    [/((\b|"|'|\(|\[|-|_)sh)i(t)/gi, "$1*$3"], //shit -> sh*t
-    [/((\b|"|'|\(|\[|-|_)wh)o(re)/gi, "$1*$3"], //whore -> wh*re
-    [/((\b|"|'|\(|\[|-|_)wh)o(ring)/gi, "$1*$3"], //whoring -> wh*ring
-    [/((\b|"|'|\(|\[|-|_)sl)u(t)/gi, "$1*$3"], //slut -> sl*t
-    [/((\b|"|'|\(|\[|-|_)b)i(tch)/gi, "$1*$3"], //bitch -> b*tch
-    [/((\b|"|'|\(|\[|-|_)str)i(p)/gi, "$1*$3"], //strip -> str*p
-    [/((\b|"|'|\(|\[|-|_)cond)o(m)/gi, "$1*$3"], //condom -> cond*m
+    // --- SECTION 1: URLs & Domains (Must be at the top) ---
     [
-        /(\b|"|'|\(|\[|-|_)(https?:\/\/)?(www\.|t\.|m\.)?([a-zA-Z0-9-]+)+\.(com|io|ai|tv|be|cc|ly|co|net|org|us|ca|net|edu|gov|mil)/gi,
-        "$4's website",
-    ], // www.example.com -> example's website
-    [/(\b|"|'|\(|\[|-|_)([a-zA-Z0-9-]+)+\.(com|io|ai|tv|be|cc|ly|co|net|org|us|ca|net|edu|gov|mil)/gi, "$2. $3"], // end.start -> end. start
-    [/(\b|"|'|\(|\[|-|_)([a-zA-Z0-9-]+)+\.(com|io|ai|tv|be|cc|ly|co|net|org|us|ca|net|edu|gov|mil)/gi, "$2. $3"], // running again for any duplicates
-    [/((\b|"|'|\(|\[|-|_)mess)a(ge)/gi, "$1*$3"], //message -> mess*ge
-    [/((\b|"|'|\(|\[|-|_)mess)a(ging)/gi, "$1*$3"], //messaging -> mess*ging
-    [/((\b|"|'|\(|\[|-|_)comm)e(nt)/gi, "$1*$3"], //comment -> comm*nt
-    [/((\b|"|'|\(|\[|-|_)f)i(st)/gi, "$1*$3"], //fist -> f*st
-    [/(f)i(sting)/gi, "$1*$2"], //fisting -> f*sting (global)
-    [/(\b|"|'|\(|\[|-|_| )#(\w*[a-zA-Z]+\w*)/gi, "$1hashtag-$2"], //#example -> hashtag-example
-    [/((\b|"|'|\(|\[|-|_)tw)i(tter)/gi, "$1*$3"], //twitter -> tw*tter
-    [/((\b|"|'|\(|\[|-|_)ti)k(tok)/gi, "$1*$3"], //tiktok -> ti*tok
-    [/((\b|"|'|\(|\[|-|_)tw)i(tch)/gi, "$1*$3"], //twitch -> tw*tch
-    [/((\b|"|'|\(|\[|-|_)s)e(x)/gi, "$1*$3"], //sex -> s*x
-    [/(p)o(rn)/gi, "$1*$2"], //porn -> p*rn
-    [/((\b|"|'|\(|\[|-|_)b)a(ll)/gi, "$1*$3"], //ball -> b*ll
-    [/kill yourself/gi, "unalive"], //kill yourself -> unalive
-    [/((\b|"|'|\(|\[|-|_)k)i(ll)/gi, "$1*$3"], //kill -> k*ll
-    [/18\+/gi, "18 up"], //18+ -> 18 UP
-    [/((\b|"|'|\(|\[|-|_)sp)e(rm)/gi, "$1*$3"], //sperm -> sp*rm
-    [/((\b|"|'|\(|\[|-|_)n)i(pple)/gi, "$1*$3"], //nipple -> n*pple
-    [/(pu)s(sies)/gi, "$1*$2"], //pussies -> pu*sies
-    [/(pu)s(sy)/gi, "$1*$2"], //pussy -> pu*sy
-    [/((\b|"|'|\(|\[|-|_)rac)i(st)/gi, "$1*$3"], //racist -> rac*st
-    [/((\b|"|'|\(|\[|-|_)per)v(ert)/gi, "$1*$3"], //pervert -> per*ert
-    [/((\b|"|'|\(|\[|-|_)g)a(ngb)a(ng)/gi, "$1*$3*$4"], //gangbang -> g*ngb*ng
-    [/((\b|"|'|\(|\[|-|_)h)i(tler)/gi, "$1*$3"], //hitler -> h*tler
-    [/((\b|"|'|\(|\[|-|_)d)u(mbass)/gi, "$1*$3"], //dumbass -> d*mbass
-    [/(c)o(vid)/gi, "$1*$2"], //covid -> c*vid
-    [/((\b|"|'|\(|\[|-|_)b)o(ob)/gi, "$1*$3"], //boob -> b*ob
-    [/((\b|"|'|\(|\[|-|_)g)o(on)/gi, "$1*$3"], //goon -> g*on
-    [/\\/g, ""], // \ -> nothing
-    [/^\s*\[([\dhms]+)\] /i, "$1 "], //[00:11:22] -> 00:11:22
-    [/^\s*(\d )/, "00:0$1"], //adds 00:0 to any tags that do not have it
-    [/^\s*(\d+ )/, "00:$1"], //adds 00: to any tags that do not have it
-    [/^\s*(\d\d)s /i, "00:$1 "], //34s -> 00:34
-    [/^\s*(\d\d)m(\d\d)s /i, "$1:$2 "], //12m34s -> 12:34
-    [/^\s*(\d\d)h(\d\d)m(\d\d)s /i, "$1:$2:$3 "], //01h12m34s -> 01:12:34
-    [/^\s*00:00:00 /, "00:00:01 "], //00:00:00 -> 00:00:01
-    [/^\s*00:00 /, "00:01 "], //00:00 -> 00:01
-    [/^\s*[0-9:]+ (!adjust|!t)\b.*/i, ""], //removes any accidental tags
+        new RegExp(
+            `${P}(https?:\\/\\/)?(www\\.|t\\.|m\\.)?([a-zA-Z0-9-]+)\\.(com|io|ai|tv|be|cc|ly|co|net|org|us|ca|edu|gov|mil)`,
+            "gi",
+        ),
+        "$1$4's website",
+    ],
+    [new RegExp(`${P}([a-zA-Z0-9-]+)\\.(com|io|ai|tv|be|cc|ly|co|net|org|us|ca|edu|gov|mil)`, "gi"), "$1$2. $3"],
+
+    // --- SECTION 2: Hate Speech & Slurs (High Risk for Shadowban) ---
+    // Covering various racial, homophobic, and ableist slurs
+    [new RegExp(`${P}(n)i(gg)`, "gi"), "$1$2*$3"], // Covers n-words
+    [new RegExp(`${P}(f)a(g|ggot)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(d)y(ke)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(r)e(tard)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(t)r(anny)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(c)h(ink)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(k)i(ke)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(j)e(w)`, "gi"), "$1$2*$3"], // Often flagged in specific contexts
+    [new RegExp(`${P}(g)y(psy)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(m)o(ngol)`, "gi"), "$1$2*$3"],
+
+    // --- SECTION 3: Violence, Self-Harm, & Crimes ---
+    // YouTube deletes "kill yourself" and "suicide" extremely fast
+    [new RegExp(`kill yourself`, "gi"), "unalive"],
+    [new RegExp(`${P}(s)u(icide)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(k)i(ll)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(m)u(rder)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(r)a(pe|pist)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(t)e(rrorist)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(sh)oo(t)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(st)a(b)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(b)o(mb)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(g)u(n)`, "gi"), "$1$2*$3"],
+
+    // --- SECTION 4: Sexual Content & Anatomy ---
+    [new RegExp(`${P}(n)t(r)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(d)i(ck)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(c)o(ck)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(cu)c(k)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(p)e(nis)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(v)a(gina)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(c)l(it)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(c)u(nt)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(a)n(al)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(a)n(us)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(b)oo(ty)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(t)i(ts|tties)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(b)o(ner)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(d)i(ldo)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(s)e(x)`, "gi"), "$1$2*$3"],
+    [new RegExp(`(p)o(rn)`, "gi"), "$1*$2"],
+    [new RegExp(`(h)en(tai)`, "gi"), "$1*$2"],
+    [new RegExp(`${P}(m)a(sturbat)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(o)r(gasm)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(i)n(cest)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(p)e(do|dophile)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(g)r(oomer)`, "gi"), "$1$2*$3"], // Very high heat word on YT right now
+    [new RegExp(`${P}(w)a(ifu)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(b)a(ll)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(sp)e(rm)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(c)u(m)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(n)i(pple)`, "gi"), "$1$2*$3"],
+    [new RegExp(`(pu)s(sy|sies)`, "gi"), "$1*$2"],
+    [new RegExp(`${P}(b)o(ob)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(g)o(on)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(f)i(st)`, "gi"), "$1$2*$3"],
+    [new RegExp(`(f)i(sting)`, "gi"), "$1*$2"],
+    [new RegExp(`${P}(cond)o(m)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(str)i(p)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(b)i(tch)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(sl)u(t)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(wh)o(re|ring)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(g)a(ngb)a(ng)`, "gi"), "$1$2*$3*$4"],
+    [/18\+/gi, "18 up"],
+
+    // --- SECTION 5: General Profanity ---
+    [new RegExp(`${P}(f)u(ck)(?!ing)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(f)uck(ing)`, "gi"), "$1$2-$3"],
+    [new RegExp(`${P}(sh)i(t)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(a)ss(hole|hat)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(a)s(s)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(b)a(stard)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(d)a(mn)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(c)r(ap)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(p)i(ss)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(d)o(uche)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(jacka)s(s)`, "gi"), "$1$2*$3"],
+
+    // --- SECTION 6: Insults & Other ---
+    [new RegExp(`${P}(d)u(mbass)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(i)d(iot)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(l)o(ser)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(rac)i(st)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(per)v(ert)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(h)i(tler)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(n)a(zi)`, "gi"), "$1$2*$3"],
+    [new RegExp(`(c)o(vid)`, "gi"), "$1*$2"],
+
+    // --- SECTION 7: Spam & Bot Triggers ---
+    [new RegExp(`${P}(c)r(ypto)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(b)i(tcoin)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(w)h(atsapp)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(t)e(legram)`, "gi"), "$1$2*$3"],
+
+    // --- SOCIAL MEDIA ---
+    [new RegExp(`(\\b|[\\s"'(\\[\\-_])#(\\w*[a-zA-Z]+\\w*)`, "gi"), "$1hashtag-$2"],
+    [new RegExp(`${P}(mess)a(ge|ging)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(comm)e(nt)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(tw)i(tter|tch)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(ti)k(tok)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(f)a(cebook)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(i)n(sta)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(d)i(scord)`, "gi"), "$1$2*$3"],
+
+    // --- CLEANUP ---
+    [/\\/g, ""],
+    [/^\s*\[([\dhms]+)\] /i, "$1 "],
+    [/^\s*(\d )/, "00:0$1"],
+    [/^\s*(\d+ )/, "00:$1"],
+    [/^\s*(\d\d)s /i, "00:$1 "],
+    [/^\s*(\d\d)m(\d\d)s /i, "$1:$2 "],
+    [/^\s*(\d\d)h(\d\d)m(\d\d)s /i, "$1:$2:$3 "],
+    [/^\s*00:00:00 /, "00:00:01 "],
+    [/^\s*00:00 /, "00:01 "],
+    [/^\s*[0-9:]+ (!adjust|!t)\b.*/i, ""],
 ];
 
 /** @type {[string|RegExp, string][]} */
