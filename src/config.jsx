@@ -3,8 +3,8 @@ import mintIcon from "./assets/icons/mint.jpg";
 import { Avatar } from "@mui/material";
 import { useAppStore } from "./store/store";
 
-export const server = "http://192.168.10.15:8080";
-export const wsServer = "ws://192.168.10.15:8080";
+export const server = "https://api.dokiscripts.com";
+export const wsServer = "wss://api.dokiscripts.com";
 export const maxClipSize = 30;
 export const keys = () => {
     const keys = ["doki", "mint"];
