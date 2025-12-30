@@ -12,7 +12,7 @@ import Maintenance from "./components/Maintenance";
 import Sidebar from "./components/Sidebar";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./components/Home";
-import TagFixer from "./components/TagFixer";
+import TagFormatter from "./components/TagFormatter";
 import ClipperPopup from "./components/ClipperPopup";
 import { keys } from "./config";
 import { useAppStore } from "./store/store";
@@ -62,7 +62,7 @@ function App() {
             {window.maintenance ? (
                 <Routes>
                     <Route path={`*`} element={<Maintenance />} />
-                    <Route path={`tagFixer/`} element={<TagFixer wsKey={undefined} />} />
+                    <Route path={`tagFixer/`} element={<TagFormatter wsKey={undefined} />} />
                 </Routes>
             ) : (
                 <>
@@ -75,7 +75,7 @@ function App() {
                                 <Routes>
                                     <Route path={`${wsKey}/*`} element={<View wsKey={wsKey} />} />
                                     <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
-                                    <Route path={`${wsKey}/tagFixer/`} element={<TagFixer wsKey={wsKey} />} />
+                                    <Route path={`${wsKey}/tagFixer/`} element={<TagFormatter wsKey={wsKey} />} />
                                 </Routes>
                             </>
                         ) : (

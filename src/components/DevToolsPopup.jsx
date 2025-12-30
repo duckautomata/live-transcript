@@ -47,6 +47,8 @@ export default function DevToolsPopup({ open, setOpen }) {
     const transcript = useAppStore((state) => state.transcript);
     const resetTranscript = useAppStore((state) => state.resetTranscript);
     const addTranscriptLine = useAppStore((state) => state.addTranscriptLine);
+    const updateLineMedia = useAppStore((state) => state.updateLineMedia);
+    const recalculateClipRange = useAppStore((state) => state.recalculateClipRange);
     const setTranscript = useAppStore((state) => state.setTranscript);
     const metrics = useAppStore((state) => state.metrics);
     const clearMetrics = useAppStore((state) => state.clearMetrics);
@@ -68,6 +70,10 @@ export default function DevToolsPopup({ open, setOpen }) {
     const [simStartId, setSimStartId] = useState(1);
     const [simInterval, setSimInterval] = useState(1000);
     const [isSimulating, setIsSimulating] = useState(false);
+
+    // Media Availability State
+    const [mediaIds, setMediaIds] = useState("");
+    const [mediaAvailable, setMediaAvailable] = useState(true);
 
     // Performance Metrics State
     const [fps, setFps] = useState(0);
@@ -144,6 +150,18 @@ export default function DevToolsPopup({ open, setOpen }) {
 
     const handleStartSim = () => setIsSimulating(true);
     const handleStopSim = () => setIsSimulating(false);
+
+    const handleSetMediaAvailability = () => {
+        const ids = mediaIds
+            .split(",")
+            .map((id) => parseInt(id.trim()))
+            .filter((id) => !isNaN(id));
+
+        if (ids.length > 0) {
+            updateLineMedia(ids, mediaAvailable);
+            recalculateClipRange();
+        }
+    };
 
     // Performance Stats Effect (FPS & Memory)
     useEffect(() => {
@@ -350,6 +368,31 @@ export default function DevToolsPopup({ open, setOpen }) {
                                         Stop
                                     </Button>
                                 )}
+                            </Box>
+                        </Box>
+
+                        <Box sx={{ border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
+                            <Typography variant="h6">Media Availability</Typography>
+                            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                                <TextField
+                                    label="Line IDs (comma-separated)"
+                                    size="small"
+                                    value={mediaIds}
+                                    onChange={(e) => setMediaIds(e.target.value)}
+                                    sx={{ flexGrow: 1 }}
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            checked={mediaAvailable}
+                                            onChange={(e) => setMediaAvailable(e.target.checked)}
+                                        />
+                                    }
+                                    label={mediaAvailable ? "Available" : "Unavailable"}
+                                />
+                                <Button variant="contained" onClick={handleSetMediaAvailability}>
+                                    Set
+                                </Button>
                             </Box>
                         </Box>
 

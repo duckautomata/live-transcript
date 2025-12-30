@@ -2,6 +2,7 @@ import { AppSliceCreator, PerformanceSlice } from "./types";
 
 export const createPerformanceSlice: AppSliceCreator<PerformanceSlice> = (set) => ({
     metrics: [],
+    lastLineReceivedAt: 0,
     addMetric: (metric) =>
         set((state) => {
             if (!state.devMode) return { metrics: state.metrics };
@@ -13,5 +14,6 @@ export const createPerformanceSlice: AppSliceCreator<PerformanceSlice> = (set) =
             }
             return { metrics: newMetrics };
         }),
-    clearMetrics: () => set({ metrics: [] }),
+    setLastLineReceivedAt: (time) => set({ lastLineReceivedAt: time }),
+    clearMetrics: () => set({ metrics: [], lastLineReceivedAt: 0 }),
 });

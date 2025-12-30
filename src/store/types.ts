@@ -10,6 +10,7 @@ export interface TranscriptLine {
     id: number;
     segments: Segment[];
     timestamp: number;
+    mediaAvailable?: boolean;
 }
 
 // Slice Interfaces
@@ -22,9 +23,12 @@ export interface ClipperSlice {
     clipPopupOpen: boolean;
     clipStartIndex: number;
     clipEndIndex: number;
+    clipInvalidBefore?: number;
+    clipInvalidAfter?: number;
     setClipPopupOpen: (isOpen: boolean) => void;
     setClipStartIndex: (index: number) => void;
     setClipEndIndex: (index: number) => void;
+    recalculateClipRange: () => void;
 }
 
 export interface LineMenuSlice {
@@ -61,6 +65,7 @@ export interface TranscriptSlice {
     setIsLive: (live: boolean) => void;
     setTranscript: (data: TranscriptLine[]) => void;
     addTranscriptLine: (newLine: TranscriptLine) => void;
+    updateLineMedia: (ids: number[], available?: boolean) => void;
     resetTranscript: () => void;
 }
 
@@ -100,7 +105,9 @@ export interface PerformanceMetric {
 
 export interface PerformanceSlice {
     metrics: PerformanceMetric[];
+    lastLineReceivedAt: number;
     addMetric: (metric: PerformanceMetric) => void;
+    setLastLineReceivedAt: (time: number) => void;
     clearMetrics: () => void;
 }
 

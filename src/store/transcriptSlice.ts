@@ -27,6 +27,13 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
             return { transcript: [...state.transcript, newLine] };
         });
     },
+    updateLineMedia: (ids, available = true) => {
+        set((state) => ({
+            transcript: state.transcript.map((line) =>
+                ids.includes(line.id) ? { ...line, mediaAvailable: available } : line,
+            ),
+        }));
+    },
     resetTranscript: () =>
         set({
             activeId: "",

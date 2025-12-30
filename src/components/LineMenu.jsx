@@ -79,12 +79,34 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     };
 
     const hasAudio = mediaType === "audio" || mediaType === "video";
-    const shouldRenderStartClip = hasAudio && clipStartIndex < 0;
+
+    // Media availability check
+    const isMediaAvailable = (id) => {
+        if (mediaType === "none") return true;
+        const line = transcript.find((l) => l.id === id);
+        return line?.mediaAvailable !== false;
+    };
+
+    const isRangeMediaAvailable = (start, end) => {
+        if (mediaType === "none") return true;
+        const min = Math.min(start, end);
+        const max = Math.max(start, end);
+        // Find if ANY line in range has mediaAvailable === false.
+        const missingMediaLine = transcript.find((l) => l.id >= min && l.id <= max && l.mediaAvailable === false);
+        return !missingMediaLine;
+    };
+
+    const currentLineMediaAvailable = isMediaAvailable(lineMenuId);
+
+    const shouldRenderStartClip = hasAudio && clipStartIndex < 0 && currentLineMediaAvailable;
+
     const shouldRenderDownloadClip =
         hasAudio &&
         !shouldRenderStartClip &&
         lineMenuId !== clipStartIndex &&
-        Math.abs(clipStartIndex - lineMenuId) < maxClipSize;
+        Math.abs(clipStartIndex - lineMenuId) < maxClipSize &&
+        isRangeMediaAvailable(clipStartIndex, lineMenuId);
+
     const shouldRenderResetClip = hasAudio && !shouldRenderStartClip;
 
     let anchorOrigin = {
@@ -121,7 +143,11 @@ export default function LineMenu({ wsKey, jumpToLine }) {
             {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Process Clip</MenuItem>}
             {shouldRenderResetClip && <MenuItem onClick={handleResetClip}>Reset Clip</MenuItem>}
             {hasAudio && <MenuItem onClick={handleDownload}>Download Audio</MenuItem>}
-            {hasAudio && <MenuItem onClick={handlePlay}>Play Audio</MenuItem>}
+            {hasAudio && (
+                <MenuItem onClick={handlePlay} disabled={!currentLineMediaAvailable}>
+                    Play Audio
+                </MenuItem>
+            )}
             <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>
             <MenuItem onClick={handleCopyTimestamp}>Copy Timestamp</MenuItem>
             <MenuItem onClick={handleJumpToLine}>Jump to line</MenuItem>

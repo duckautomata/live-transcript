@@ -138,6 +138,26 @@ describe("genericCensor", () => {
     });
 
     test.each([
+        ["as", "as"],
+        ["pass", "pass"],
+        ["ass", "a*s"],
+        ["ss", "ss"],
+        ["trass", "trass"],
+        ["Associate", "Associate"],
+        ["ASS", "A*S"],
+        ["Ass", "A*s"],
+        ["ass a ass", "a*s a a*s"],
+        ["ass'd", "a*s'd"],
+        ['"ass"', '"a*s"'],
+        ["'ass'", "'a*s'"],
+        ["(ass)", "(a*s)"],
+        ["-ass-", "-a*s-"],
+        ["_ass_", "_a*s_"],
+    ])("ass genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
         ["whor", "whor"],
         ["whore", "wh*re"],
         ["ore", "ore"],

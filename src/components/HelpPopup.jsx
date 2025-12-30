@@ -2,12 +2,14 @@ import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
+    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
     Paper,
+    Switch,
     Typography,
     useMediaQuery,
 } from "@mui/material";
@@ -28,6 +30,20 @@ import clippingMenuDownload_light from "../assets/helpguide/clipping-menu-light.
 import clippingPopup_light from "../assets/helpguide/clipping-popup-light.png";
 import devtoolsControls_light from "../assets/helpguide/devtools-controls-light.png";
 import devtoolsPerformance_light from "../assets/helpguide/devtools-performance-light.png";
+import formatterDisableGroup_light from "../assets/helpguide/formatter-disable-group-light.png";
+import formatterEditingChapter_light from "../assets/helpguide/formatter-editing-chapter-light.png";
+import formatterEditingTag_light from "../assets/helpguide/formatter-editing-tag-light.png";
+import formatterEnableDisable_light from "../assets/helpguide/formatter-enabledisable-light.png";
+import formatterFormatButton_light from "../assets/helpguide/formatter-format-button-light.png";
+import formatterFormatButtonExtra_light from "../assets/helpguide/formatter-format-button-extra-light.png";
+import formatterFormatView_light from "../assets/helpguide/formatter-format-view-light.png";
+import formatterHeaderEdit_light from "../assets/helpguide/formatter-header-edit-light.png";
+import formatterHighlightExample_light from "../assets/helpguide/formatter-highlight-example-light.png";
+import formatterHighlightExampleFix_light from "../assets/helpguide/formatter-highlight-example-fix-light.png";
+import formatterHighlightMenu_light from "../assets/helpguide/formatter-highlight-menu-light.png";
+import formatterInputBlank_light from "../assets/helpguide/formatter-input-blank-light.png";
+import formatterOffset_light from "../assets/helpguide/formatter-offset-light.png";
+import formatterWordEdit_light from "../assets/helpguide/formatter-wordedit-light.png";
 
 // Dark images
 import settings_dark from "../assets/helpguide/settings-dark.png";
@@ -45,6 +61,20 @@ import clippingMenuDownload_dark from "../assets/helpguide/clipping-menu-dark.pn
 import clippingPopup_dark from "../assets/helpguide/clipping-popup-dark.png";
 import devtoolsControls_dark from "../assets/helpguide/devtools-controls-dark.png";
 import devtoolsPerformance_dark from "../assets/helpguide/devtools-performance-dark.png";
+import formatterDisableGroup_dark from "../assets/helpguide/formatter-disable-group-dark.png";
+import formatterEditingChapter_dark from "../assets/helpguide/formatter-editing-chapter-dark.png";
+import formatterEditingTag_dark from "../assets/helpguide/formatter-editing-tag-dark.png";
+import formatterEnableDisable_dark from "../assets/helpguide/formatter-enabledisable-dark.png";
+import formatterFormatButton_dark from "../assets/helpguide/formatter-format-button-dark.png";
+import formatterFormatButtonExtra_dark from "../assets/helpguide/formatter-format-button-extra-dark.png";
+import formatterFormatView_dark from "../assets/helpguide/formatter-format-view-dark.png";
+import formatterHeaderEdit_dark from "../assets/helpguide/formatter-header-edit-dark.png";
+import formatterHighlightExample_dark from "../assets/helpguide/formatter-highlight-example-dark.png";
+import formatterHighlightExampleFix_dark from "../assets/helpguide/formatter-highlight-example-fix-dark.png";
+import formatterHighlightMenu_dark from "../assets/helpguide/formatter-highlight-menu-dark.png";
+import formatterInputBlank_dark from "../assets/helpguide/formatter-input-blank-dark.png";
+import formatterOffset_dark from "../assets/helpguide/formatter-offset-dark.png";
+import formatterWordEdit_dark from "../assets/helpguide/formatter-wordedit-dark.png";
 
 import { ExpandMore } from "@mui/icons-material";
 import { useAppStore } from "../store/store";
@@ -95,6 +125,8 @@ export default function HelpPopup({ open, setOpen }) {
     const theme = useAppStore((state) => state.theme);
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
     const isDarkMode = theme === "dark" || (theme === "system" && prefersDarkMode);
+    const enableTagHelper = useAppStore((state) => state.enableTagHelper);
+    const setEnableTagHelper = useAppStore((state) => state.setEnableTagHelper);
 
     const images = {
         settings: isDarkMode ? settings_dark : settings_light,
@@ -112,6 +144,22 @@ export default function HelpPopup({ open, setOpen }) {
         clippingPopup: isDarkMode ? clippingPopup_dark : clippingPopup_light,
         devtoolsControls: isDarkMode ? devtoolsControls_dark : devtoolsControls_light,
         devtoolsPerformance: isDarkMode ? devtoolsPerformance_dark : devtoolsPerformance_light,
+        formatterDisableGroup: isDarkMode ? formatterDisableGroup_dark : formatterDisableGroup_light,
+        formatterEditingChapter: isDarkMode ? formatterEditingChapter_dark : formatterEditingChapter_light,
+        formatterEditingTag: isDarkMode ? formatterEditingTag_dark : formatterEditingTag_light,
+        formatterEnableDisable: isDarkMode ? formatterEnableDisable_dark : formatterEnableDisable_light,
+        formatterFormatButton: isDarkMode ? formatterFormatButton_dark : formatterFormatButton_light,
+        formatterFormatButtonExtra: isDarkMode ? formatterFormatButtonExtra_dark : formatterFormatButtonExtra_light,
+        formatterFormatView: isDarkMode ? formatterFormatView_dark : formatterFormatView_light,
+        formatterHeaderEdit: isDarkMode ? formatterHeaderEdit_dark : formatterHeaderEdit_light,
+        formatterHighlightExample: isDarkMode ? formatterHighlightExample_dark : formatterHighlightExample_light,
+        formatterHighlightExampleFix: isDarkMode
+            ? formatterHighlightExampleFix_dark
+            : formatterHighlightExampleFix_light,
+        formatterHighlightMenu: isDarkMode ? formatterHighlightMenu_dark : formatterHighlightMenu_light,
+        formatterInputBlank: isDarkMode ? formatterInputBlank_dark : formatterInputBlank_light,
+        formatterOffset: isDarkMode ? formatterOffset_dark : formatterOffset_light,
+        formatterWordEdit: isDarkMode ? formatterWordEdit_dark : formatterWordEdit_light,
     };
 
     const handleClose = () => {
@@ -442,6 +490,116 @@ export default function HelpPopup({ open, setOpen }) {
                             </AccordionDetails>
                         </Accordion>
 
+                        {/* Tag Formatter */}
+                        <Accordion>
+                            <AccordionSummary
+                                expandIcon={<ExpandMore />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>Tag Formatter</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                <Typography variant="h6" gutterBottom>
+                                    Input View
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    The tag formatter allows you to format, organize, edit, and delete tags. Everything
+                                    is saved locally and is unique to each streamer.
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    To use it, click on the tag formatter button in the top right corner of the page.
+                                </Typography>
+                                <HelpImage src={images.formatterInputBlank} />
+                                <Typography variant="body1" gutterBottom>
+                                    When you first open the tag formatter, you will see an empty input field. Paste the
+                                    tags and press &quot;Format Tags&quot;, or click &quot;Format From Clipboard&quot;
+                                    to automatically use the tags from your clipboard.
+                                </Typography>
+                                <HelpImage src={images.formatterFormatButton} />
+                                <Typography variant="body1" gutterBottom>
+                                    If you go back to this page after formatting, you will be given the option to reset
+                                    data, reformat, or go back to the format view.
+                                </Typography>
+                                <HelpImage src={images.formatterFormatButtonExtra} />
+
+                                <Typography variant="h6" gutterBottom>
+                                    Format View
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    After clicking format, you go to the format view. Here you will see a list of tags,
+                                    a list of headers, and a section to bulk edit tags.
+                                </Typography>
+                                <HelpImage src={images.formatterFormatView} />
+                                <Typography variant="body1" gutterBottom>
+                                    The Headers section is a list of groups, chapters, and birthday group, in order they
+                                    appear in the formatted tags. Here you can:
+                                </Typography>
+                                <ul>
+                                    <li>Click on a header to jump to its position in the tags.</li>
+                                    <li>
+                                        Click on the checkbox to enable/disable a header. Disabling a group will put its
+                                        tags back to the original spot. Disabling a chapter will just remove the chapter
+                                        header.
+                                    </li>
+                                    <li>Organize a group by moving it up or down by clicking on the arrows.</li>
+                                </ul>
+                                <HelpImage src={images.formatterHeaderEdit} />
+                                <Typography variant="body1" gutterBottom>
+                                    The Tags section shows what the output will look like. Here you can:
+                                </Typography>
+                                <ul>
+                                    <li>Enable or disable a tag. Disabling a tag will remove it from the output.</li>
+                                    <li>
+                                        Edit a tag or header by clicking on the edit button. Tags and chapters can also
+                                        edit the timestamp.
+                                    </li>
+                                </ul>
+                                <HelpImage src={images.formatterEditingTag} />
+                                <HelpImage src={images.formatterEditingChapter} />
+                                <Typography variant="body1" gutterBottom>
+                                    If you disable all tags in a header, it will disable the header and remove it from
+                                    the output.
+                                </Typography>
+                                <HelpImage src={images.formatterDisableGroup} />
+                                <Typography variant="body1" gutterBottom>
+                                    The Bulk Edit section allows you to edit multiple tags at once. There are currently
+                                    4 actions you can perform:
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    1. Offset Timestamps: enter the start and end timestamp, and the offset, in the
+                                    format hh:mm:ss. Click on the plus to add the offset to all tags in the range. Click
+                                    on the minus to subtract the offset from all tags in the range.
+                                </Typography>
+                                <HelpImage src={images.formatterOffset} />
+                                <Typography variant="body1" gutterBottom>
+                                    2. Enable and Disable Tags: enter the start and end timestamp in the format
+                                    hh:mm:ss. Click on enable or disable to enable or disable all tags in the range.
+                                </Typography>
+                                <HelpImage src={images.formatterEnableDisable} />
+                                <Typography variant="body1" gutterBottom>
+                                    3. Word Edit: enter a word to find and replace it with another word. Clicking on
+                                    replace all will replace all instances of the word with the replace word.
+                                </Typography>
+                                <HelpImage src={images.formatterWordEdit} />
+                                <Typography variant="body1" gutterBottom>
+                                    4. Highlight Timestamps: enableing this will highlight all tags that are too close
+                                    to each other. The seconds value defines how close they can be. This is useful for
+                                    finding tags that could be duplicates.
+                                </Typography>
+                                <HelpImage src={images.formatterHighlightMenu} />
+                                <Typography variant="body1" gutterBottom>
+                                    When highlight is turned on, any close tags will be highlighted in yellow.
+                                </Typography>
+                                <HelpImage src={images.formatterHighlightExample} />
+                                <Typography variant="body1" gutterBottom>
+                                    Disabling one of the close tags will remove the highlight (assuming there are no
+                                    other close tags to it).
+                                </Typography>
+                                <HelpImage src={images.formatterHighlightExampleFix} />
+                            </AccordionDetails>
+                        </Accordion>
+
                         {/* Tagging */}
                         <Accordion>
                             <AccordionSummary
@@ -453,9 +611,28 @@ export default function HelpPopup({ open, setOpen }) {
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography variant="body1" gutterBottom>
-                                    The tagging feature allows you to time a tag to a place in the transcript. This
-                                    feature is off by default, so you will need to enable it in the settings.
+                                    The tagging feature allows you to time a tag to a specific point in the transcript.
+                                    This feature is disabled by default - enable it by toggling the switch below. You
+                                    can also enable/disable it in the settings.
                                 </Typography>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        mt: 1,
+                                    }}
+                                >
+                                    <Typography variant="body1" sx={{ fontWeight: "bold" }} gutterBottom>
+                                        Tagging Feature: {enableTagHelper ? "Enabled" : "Disabled"}
+                                    </Typography>
+                                    <Switch
+                                        checked={enableTagHelper}
+                                        onChange={(e) => setEnableTagHelper(e.target.checked)}
+                                        name="enableTagHelper"
+                                    />
+                                </Box>
                                 <Typography variant="body1" gutterBottom>
                                     Once enabled, you will be able to hover over the text in the transcript and click
                                     specific sections (denoted by the colored box that appears).
@@ -463,7 +640,8 @@ export default function HelpPopup({ open, setOpen }) {
                                 <HelpImage src={images.tagHighlightText} />
                                 <Typography variant="body1" gutterBottom>
                                     These sections denote a specific part where you can set the tag to (the tags will be
-                                    set to the beginning of the section).
+                                    set to the beginning of the section. For example, using the image above, the tag
+                                    will be set to the word &quot;Oh&quot;).
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
                                     Once you find the section you want to time a tag to; click it and a menu will
@@ -472,7 +650,7 @@ export default function HelpPopup({ open, setOpen }) {
                                 <HelpImage src={images.tagMenu} />
                                 <Typography variant="body1" gutterBottom>
                                     This is the tagging alignment menu. It takes the discord message ID of your tag, and
-                                    calculates the offset you need for it to align with the beginning of the segment you
+                                    calculates the offset you need for it to align with the beginning of the section you
                                     selected.
                                 </Typography>
                                 If you do not know how to get the message ID of your tag:
@@ -486,14 +664,19 @@ export default function HelpPopup({ open, setOpen }) {
                                 <HelpImage src={images.messageId} width="auto" />
                                 <Typography variant="body1" gutterBottom>
                                     The default offset is whatever your server&#39;s tagger bot is set to. For DPS, it
-                                    is -20. This value is also stored in the cookie, so you will only have to change it
-                                    once.
+                                    is -20. This value is also stored in local storage, so you will only have to change
+                                    it once.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
                                     Once both values are set, it will display the adjust command to run. As well as
                                     enable the button Copy Command to copy the command to your clipboard.
                                 </Typography>
                                 <HelpImage src={images.filledOutTagMenu} />
+                                <Typography variant="body1" gutterBottom>
+                                    Using the image above, after pasting the command into discord, the tag will be timed
+                                    exactly to &quot;Gotta&quot;. If maybe a half second before it (we floor the
+                                    timestamps).
+                                </Typography>
                                 <br />
                                 Note:
                                 <ol>
@@ -504,14 +687,14 @@ export default function HelpPopup({ open, setOpen }) {
                                         section is to guess how long a section is and change the offset accordingly.
                                     </li>
                                     <li>
-                                        The timings seem to be very accurate. When you want to start at the beginning of
-                                        the section, it might be best to move it back by one second to give the YT
-                                        player time to start the video/audio. Though this should be determined after
-                                        testing it out for a few streams.
+                                        The timings are perfect. Because of this, you might want to move the tag back by
+                                        one second to give the YT player time to start the video/audio. But from my
+                                        testing, it&apos;s not necessary.
                                     </li>
                                 </ol>
                             </AccordionDetails>
                         </Accordion>
+
                         {/* Developer Mode */}
                         <Accordion>
                             <AccordionSummary

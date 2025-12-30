@@ -89,7 +89,7 @@ const replacements = [
     [new RegExp(`${P}(f)uck(ing)`, "gi"), "$1$2-$3"],
     [new RegExp(`${P}(sh)i(t)`, "gi"), "$1$2*$3"],
     [new RegExp(`${P}(a)ss(hole|hat)`, "gi"), "$1$2*$3"],
-    [new RegExp(`${P}(a)s(s)`, "gi"), "$1$2*$3"],
+    [new RegExp(`${P}(a)s(s)${P}`, "gi"), "$1$2*$3$4"],
     [new RegExp(`${P}(b)a(stard)`, "gi"), "$1$2*$3"],
     [new RegExp(`${P}(d)a(mn)`, "gi"), "$1$2*$3"],
     [new RegExp(`${P}(c)r(ap)`, "gi"), "$1$2*$3"],

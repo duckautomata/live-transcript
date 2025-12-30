@@ -126,6 +126,7 @@ export default function TranscriptVirtual({
                             lineTimestamp={line.timestamp}
                             segments={line.segments}
                             highlight={highlightedId === line.id}
+                            mediaAvailable={line.mediaAvailable}
                         />
                     )}
                     followOutput={atLiveEdge ? "auto" : false}

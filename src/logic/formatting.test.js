@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { chapter_formatting, collection_formatting, compareKeys, HBD_formatting } from "./formatting";
 
-const hbdHeader = "*Dragoon Birthdays*";
+const hbdText = "Dragoon Birthdays";
+const hbdHeader = `*${hbdText}*`;
 
 describe("compareKeys", () => {
     test.each([
@@ -61,7 +62,7 @@ describe("HBD_formatting", () => {
             `00:02 example\n\n${hbdHeader}\n00:01 name\n00:03 dude but gets another hbd !`,
         ],
     ])("HBD_formatting(%s) -> %s", (tags, expected) => {
-        expect(HBD_formatting(tags)).toBe(expected);
+        expect(HBD_formatting(tags, hbdText)).toBe(expected);
     });
 });
 
@@ -187,21 +188,21 @@ describe("Formatting is commutative", () => {
     // C: collection_formatting
     // All possible permutations (without repetition):  abc, acb, bac, bca, cab, cba
     test.each(data)("A(B(C(%s))) -> %s", (tags, expected) => {
-        expect(HBD_formatting(chapter_formatting(collection_formatting(tags)))).toBe(expected);
+        expect(HBD_formatting(chapter_formatting(collection_formatting(tags)), hbdText)).toBe(expected);
     });
     test.each(data)("A(C(B(%s))) -> %s", (tags, expected) => {
-        expect(HBD_formatting(collection_formatting(chapter_formatting(tags)))).toBe(expected);
+        expect(HBD_formatting(collection_formatting(chapter_formatting(tags)), hbdText)).toBe(expected);
     });
     test.each(data)("B(A(C(%s))) -> %s", (tags, expected) => {
-        expect(chapter_formatting(HBD_formatting(collection_formatting(tags)))).toBe(expected);
+        expect(chapter_formatting(HBD_formatting(collection_formatting(tags), hbdText))).toBe(expected);
     });
     test.each(data)("B(C(A(%s))) -> %s", (tags, expected) => {
-        expect(chapter_formatting(collection_formatting(HBD_formatting(tags)))).toBe(expected);
+        expect(chapter_formatting(collection_formatting(HBD_formatting(tags, hbdText)))).toBe(expected);
     });
     test.each(data)("C(A(B(%s))) -> %s", (tags, expected) => {
-        expect(collection_formatting(HBD_formatting(chapter_formatting(tags)))).toBe(expected);
+        expect(collection_formatting(HBD_formatting(chapter_formatting(tags), hbdText))).toBe(expected);
     });
     test.each(data)("C(B(A(%s))) -> %s", (tags, expected) => {
-        expect(collection_formatting(chapter_formatting(HBD_formatting(tags)))).toBe(expected);
+        expect(collection_formatting(chapter_formatting(HBD_formatting(tags, hbdText)))).toBe(expected);
     });
 });

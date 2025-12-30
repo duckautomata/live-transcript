@@ -2,11 +2,13 @@ import { Box, Pagination, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Line from "./Line";
 
+/** @typedef {import("../store/types").TranscriptLine} TranscriptLine */
+
 /**
  * TranscriptPagination component for displaying logs with pagination.
  *
  * @param {object} props
- * @param {import("../store/types").TranscriptLine[]} props.displayData - The filtered lines to display.
+ * @param {TranscriptLine[]} props.displayData - The filtered lines to display.
  * @param {number} props.pendingJumpId
  * @param {function(number)} props.setPendingJumpId
  */
@@ -34,7 +36,7 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
 
     let start = 0;
     let end = 0;
-    /** @type {import("../store/types").TranscriptLine[]} */
+    /** @type {TranscriptLine[]} */
     let displayedLines = [];
 
     if (displayData.length > 0) {
@@ -110,6 +112,7 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
                             id={line.id}
                             lineTimestamp={line.timestamp}
                             segments={line.segments}
+                            mediaAvailable={line.mediaAvailable}
                         />
                     ))}
                     <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

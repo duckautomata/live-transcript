@@ -1,7 +1,7 @@
-import { IconButton, Typography } from "@mui/material";
+import { IconButton, Typography, Tooltip } from "@mui/material";
 import { forwardRef, Fragment, memo, useState } from "react";
 import Segment from "./Segment";
-import { useTheme } from "@emotion/react";
+import { useTheme, keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
 import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
 import { MoreHoriz } from "@mui/icons-material";
@@ -9,28 +9,44 @@ import { maxClipSize } from "../config";
 import { useAppStore } from "../store/store";
 import { useShallow } from "zustand/shallow";
 
+/** @typedef {import("../store/types").Segment} Segment */
+/** @typedef {import('react').ForwardedRef<HTMLDivElement>} Ref */
+
 const TimestampTheme = styled("span")(({ theme }) => ({
     "&": {
         color: theme.palette.timestamp.main,
     },
 }));
 
+const loadingAnimation = keyframes`
+  0% {
+    rotate: 90deg;
+  }
+  50% {
+    rotate: 270deg;
+  }
+  100% {
+    rotate: 450deg;
+  }
+`;
+
 /**
  * A full line in the transcript, containing multiple segments.
  * @param {object} props
- * @param {import('react').ForwardedRef<HTMLDivElement>} props.ref - The ref of the line.
+ * @param {Ref} props.ref - The ref of the line.
  * @param {number} props.id - The id of the line.
  * @param {number} props.lineTimestamp - The timestamp of the line.
- * @param {import("../store/types").Segment[]} props.segments - The segments of the line.
+ * @param {Segment[]} props.segments - The segments of the line.
  * @param {boolean} [props.highlight] - Whether to highlight the line.
+ * @param {boolean} [props.mediaAvailable] - Whether media is available for this line.
  */
 const Line = memo(
     forwardRef(
         /**
-         * @param {{ id: number, lineTimestamp: number, segments: import("../store/types").Segment[], highlight?: boolean }} props
-         * @param {import('react').ForwardedRef<HTMLDivElement>} ref
+         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean }} props
+         * @param {Ref} ref
          */
-        ({ id, lineTimestamp, segments, highlight }, ref) => {
+        ({ id, lineTimestamp, segments, highlight, ...props }, ref) => {
             const theme = useTheme();
 
             const [idOver, setIdOver] = useState(false);
@@ -43,13 +59,23 @@ const Line = memo(
             const startTime = useAppStore((state) => state.startTime);
             const timeFormat = useAppStore((state) => state.timeFormat);
             const density = useAppStore((state) => state.density);
+            const mediaType = useAppStore((state) => state.mediaType);
+
+            const isMediaMissing = mediaType !== "none" && props.mediaAvailable === false;
 
             const { isSelected, isInClipRange, isPlaying, isClipable, isClipStart } = useAppStore(
                 useShallow((state) => {
-                    const { lineMenuId, clipStartIndex, clipEndIndex, audioId } = state;
+                    const { lineMenuId, clipStartIndex, clipEndIndex, audioId, clipInvalidBefore, clipInvalidAfter } =
+                        state;
 
                     const isBetween = (start, end, current) =>
                         (start <= current && current <= end) || (end <= current && current <= start);
+
+                    const isRangeValid =
+                        clipStartIndex >= 0 &&
+                        (id < clipStartIndex
+                            ? id > (clipInvalidBefore ?? -1)
+                            : id < (clipInvalidAfter ?? Number.MAX_SAFE_INTEGER));
 
                     const inMenuClipRange =
                         lineMenuId >= 0 && clipStartIndex >= 0 && isBetween(clipStartIndex, lineMenuId, id);
@@ -60,9 +86,11 @@ const Line = memo(
                         isSelected: lineMenuId === id,
                         isClipStart: clipStartIndex === id,
                         isInClipRange:
-                            (inMenuClipRange || inFinalClipRange) && Math.abs(clipStartIndex - id) < maxClipSize,
+                            isRangeValid &&
+                            (inMenuClipRange || inFinalClipRange) &&
+                            Math.abs(clipStartIndex - id) < maxClipSize,
                         isPlaying: audioId === id,
-                        isClipable: clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize,
+                        isClipable: clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize && isRangeValid,
                     };
                 }),
             );
@@ -102,10 +130,15 @@ const Line = memo(
                 return "none";
             };
 
-            const iconColor = isClipable ? theme.palette.id.clip : theme.palette.id.main;
+            const iconColor = isMediaMissing
+                ? theme.palette.id.loading
+                : isClipable
+                  ? theme.palette.id.clip
+                  : theme.palette.id.main;
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
             const iconSx = density === "compact" ? { padding: 0 } : {};
+            const timestampColor = theme.palette.timestamp.main;
 
             return (
                 <Typography
@@ -122,17 +155,26 @@ const Line = memo(
                         wordBreak: "break-word",
                     }}
                 >
-                    <IconButton
-                        size={iconSize}
-                        sx={iconSx}
-                        onClick={onIdClick}
-                        onMouseEnter={() => setIdOver(true)}
-                        onMouseLeave={() => setIdOver(false)}
-                        id={`line-button-${id}`}
-                    >
-                        <MoreHoriz style={{ color: iconColor }} />
-                    </IconButton>{" "}
-                    [<TimestampTheme theme={theme}>{convertTime(lineTimestamp)}</TimestampTheme>]{" "}
+                    <Tooltip title={isMediaMissing ? "Media isn't available yet" : ""}>
+                        <IconButton
+                            size={iconSize}
+                            sx={{
+                                ...iconSx,
+                                animation: isMediaMissing ? `${loadingAnimation} 1.5s infinite ease-in-out` : "none",
+                            }}
+                            onClick={onIdClick}
+                            onMouseEnter={() => setIdOver(true)}
+                            onMouseLeave={() => setIdOver(false)}
+                            id={`line-button-${id}`}
+                        >
+                            <MoreHoriz style={{ color: iconColor }} />
+                        </IconButton>
+                    </Tooltip>{" "}
+                    [
+                    <TimestampTheme theme={theme} style={{ color: timestampColor }}>
+                        {convertTime(lineTimestamp)}
+                    </TimestampTheme>
+                    ]{" "}
                     {hasSegments ? (
                         segments.map((segment, index) => (
                             <Fragment key={`line-${id}-segment-${index}`}>

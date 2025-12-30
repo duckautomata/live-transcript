@@ -7,6 +7,7 @@ export const darkTheme = createTheme({
         mode: "dark",
         id: {
             main: "#20A79A",
+            loading: "#a8a8a8ff",
             clip: orange[900],
             background: "#FFFFFF",
         },
@@ -27,6 +28,7 @@ export const darkTheme = createTheme({
         },
         background: {
             main: "#424242",
+            important: "#494913ff",
         },
         error: {
             main: red.A400,
@@ -39,6 +41,7 @@ export const lightTheme = createTheme({
         mode: "light",
         id: {
             main: "#12645B",
+            loading: "#474747ff",
             clip: orange[900],
             background: "#22B9AA",
         },
@@ -59,6 +62,7 @@ export const lightTheme = createTheme({
         },
         background: {
             main: "#17786E",
+            important: "#ffff00",
         },
         error: {
             main: red.A400,

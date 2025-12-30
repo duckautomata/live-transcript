@@ -8,12 +8,13 @@ import { useAppStore } from "./store/store";
 
 /**
  * @typedef {import('./store/types').TranscriptLine} TranscriptLine
+ * @typedef {import('./store/types').Segment} Segment
  * @typedef {import('./store/types').TranscriptSlice['mediaType']} MediaType
  * @typedef {import('./store/types').ServerSlice['serverStatus']} ServerStatus
  */
 
 /**
- * @typedef {object} ClientData
+ * @typedef {object} EventSyncData
  * @property {string} [activeId]
  * @property {string} [activeTitle]
  * @property {number} [startTime]
@@ -23,9 +24,44 @@ import { useAppStore } from "./store/store";
  */
 
 /**
+ * @typedef {object} EventNewLineData
+ * @property {number} lineId
+ * @property {number} timestamp
+ * @property {number} uploadTime
+ * @property {number} emittedTime
+ * @property {boolean} mediaAvailable
+ * @property {Segment[]} segments
+ */
+
+/**
+ * @typedef {object} EventNewStreamData
+ * @property {string} activeId
+ * @property {string} activeTitle
+ * @property {number} startTime
+ * @property {MediaType} mediaType
+ * @property {boolean} isLive
+ */
+
+/**
+ * @typedef {object} EventStatusData
+ * @property {string} activeId
+ * @property {string} activeTitle
+ * @property {boolean} isLive
+ */
+
+/**
+ * @typedef {object} EventNewMediaData
+ * @property {number[]} ids
+ */
+
+/**
+ * @typedef {"newLine" | "newStream" | "status" | "sync" | "newMedia"} Events
+ */
+
+/**
  * @typedef {object} WebSocketMessage
- * @property {string} event
- * @property {ClientData} [clientData]
+ * @property {Events} event
+ * @property {EventSyncData | EventNewLineData | EventNewStreamData | EventStatusData | EventNewMediaData} [data]
  */
 
 /**
@@ -34,7 +70,7 @@ import { useAppStore } from "./store/store";
  * @param {string} props.wsKey - The WebSocket channel key.
  */
 export const Websocket = ({ wsKey }) => {
-    const WS_URL = `${wsServer}/ws/${wsKey}`;
+    const WS_URL = `${wsServer}/${wsKey}/websocket`;
     const setServerStatus = useAppStore((state) => state.setServerStatus);
     const setActiveId = useAppStore((state) => state.setActiveId);
     const setActiveTitle = useAppStore((state) => state.setActiveTitle);
@@ -43,183 +79,188 @@ export const Websocket = ({ wsKey }) => {
     const setIsLive = useAppStore((state) => state.setIsLive);
     const setTranscript = useAppStore((state) => state.setTranscript);
     const addTranscriptLine = useAppStore((state) => state.addTranscriptLine);
+    const updateLineMedia = useAppStore((state) => state.updateLineMedia);
+    const recalculateClipRange = useAppStore((state) => state.recalculateClipRange);
     const addMetric = useAppStore((state) => state.addMetric);
+    const setLastLineReceivedAt = useAppStore((state) => state.setLastLineReceivedAt);
 
     const lastReceiveTime = useRef(Date.now());
 
-    const { lastMessage, lastJsonMessage } = useWebSocket(WS_URL, {
+    const hasConnected = useRef(false);
+
+    /** @type {{ lastJsonMessage: WebSocketMessage }} */
+    const { lastJsonMessage } = useWebSocket(WS_URL, {
         share: false,
         shouldReconnect: () => true,
         reconnectAttempts: 10,
         reconnectInterval: 3000,
-        onOpen: () => setServerStatus("loading"),
-        onClose: () => setServerStatus("connecting"),
-        onError: () => setServerStatus("connecting"),
+        onOpen: () => {
+            setServerStatus("loading");
+            hasConnected.current = true;
+        },
+        onClose: () => {
+            if (hasConnected.current) {
+                setServerStatus("reconnecting");
+            } else {
+                setServerStatus("connecting");
+            }
+        },
+        onError: () => {
+            if (hasConnected.current) {
+                setServerStatus("reconnecting");
+            } else {
+                setServerStatus("connecting");
+            }
+        },
         onReconnectStop: () => setServerStatus("offline"),
     });
+    useEffect(() => {
+        hasConnected.current = false;
+    }, [wsKey]);
 
     useEffect(() => {
-        if (lastJsonMessage?.event !== "hardrefresh") {
+        if (!lastJsonMessage) {
             return;
         }
-        resetState(lastJsonMessage?.clientData);
-        setServerStatus("online");
-    }, [lastJsonMessage]);
 
-    useEffect(() => {
-        if (lastMessage === null) {
-            LOG_WARN("lastMessage is null");
-            return;
-        }
-        const message = lastMessage.data;
-        if (typeof message !== "string") {
-            LOG_WARN("message is not a string", typeof message, message);
-            return;
-        }
-        if (message.length < 4 || message.substring(0, 3) !== "![]") {
-            LOG_WARN("message is too small or doesn't have the starting key", message.length, message.substring(0, 3));
-            return;
-        }
-        const parts = message.split("\n");
-        const event = parts?.[0];
+        const { event, data } = lastJsonMessage;
         switch (event) {
-            case "![]refresh":
-                LOG_MSG("addNewLine event", parts);
-                addNewLine(parts);
+            case "newLine":
+                addNewLine(data);
                 break;
-            case "![]newstream":
-                LOG_MSG("setNewActiveStream event", parts);
-                setNewActiveStream(parts);
+            case "newStream":
+                setNewActiveStream(data);
                 break;
-            case "![]status":
-                LOG_MSG("setStreamStatus event", parts);
-                setStreamStatus(parts);
+            case "status":
+                setStreamStatus(data);
                 break;
-            case "![]error":
-                LOG_MSG("handleError event", parts);
-                handleError(parts);
+            case "sync":
+                resetState(data);
+                setServerStatus("online");
+                break;
+            case "newMedia":
+                handleNewMedia(data);
                 break;
             default:
-                LOG_ERROR("unknown event from relay:", event);
+                LOG_WARN("Unknown message event:", event, lastJsonMessage);
                 break;
         }
-    }, [lastMessage]);
+    }, [lastJsonMessage]);
 
     /**
      * Resets the application state with the provided client data.
-     * @param {ClientData} [clientData]
+     * @param {EventSyncData | null} data
      */
-    const resetState = (clientData) => {
-        if (!clientData) {
-            LOG_ERROR("resetState clientData is null");
+    const resetState = (data) => {
+        if (!data) {
+            LOG_ERROR("resetState data is null");
             return;
         }
 
-        LOG_MSG("resetState clientData", clientData);
+        LOG_MSG("resetState data", data);
 
-        setActiveId(clientData.activeId ?? "");
-        setActiveTitle(clientData.activeTitle ?? "");
-        setStartTime(clientData.startTime ? +clientData.startTime : 0);
-        setMediaType(clientData.mediaType ?? "none");
-        setIsLive(clientData.isLive ?? false);
+        setActiveId(data.activeId ?? "");
+        setActiveTitle(data.activeTitle ?? "");
+        setStartTime(data.startTime ? +data.startTime : 0);
+        setMediaType(data.mediaType ?? "none");
+        setIsLive(data.isLive ?? false);
 
         /** @type {TranscriptLine[]} */
         let newTranscript = [];
-        if (clientData.transcript) {
-            newTranscript = [...clientData.transcript];
+        if (data.transcript) {
+            newTranscript = [...data.transcript];
         }
         setTranscript(newTranscript);
     };
 
     /**
-     * @param {string[]} parts
-     * structure: [![]refresh, id, line_timestamp, upload_time, server_timestamp, segment1_timestamp, segment1_text, ...]
+     * @param {EventNewLineData | null} data
      */
-    const addNewLine = (parts) => {
-        if (!Array.isArray(parts) || parts.length < 5 || parts.length % 2 !== 1) {
-            LOG_ERROR("addNewLine parts is not a valid array:", typeof parts, parts.length);
+    const addNewLine = (data) => {
+        if (!data) {
+            LOG_ERROR("addNewLine data is null");
             return;
         }
+
+        LOG_MSG("addNewLine data", data);
 
         const now = Date.now();
         const interArrival = now - lastReceiveTime.current;
         lastReceiveTime.current = now;
+        setLastLineReceivedAt(now);
 
-        /** @type {number} Time in ms of how long it took to upload the line to the server */
-        const uploadTime = +parts[3];
-
-        /** @type {number} Unix timestamp in ms of when the line was emitted by the server */
-        const serverEmittedAt = +parts[4];
+        const { lineId, timestamp, uploadTime, emittedTime, segments, mediaAvailable } = data;
 
         addMetric({
-            id: +parts[1],
+            id: lineId,
             receivedAt: now,
-            serverEmittedAt: serverEmittedAt,
-            uploadTime,
-            latency: now - serverEmittedAt,
+            serverEmittedAt: emittedTime,
+            uploadTime: uploadTime,
+            latency: now - emittedTime,
             interArrival,
         });
 
-        const segments = [];
-        for (let i = 5; i < parts.length; i += 2) {
-            const newSegment = {
-                timestamp: +parts[i],
-                text: parts[i + 1],
-            };
-            segments.push(newSegment);
-        }
         const newLine = {
-            id: +parts[1],
-            timestamp: +parts[2],
+            id: lineId,
+            timestamp: timestamp,
             segments: segments,
+            mediaAvailable: mediaAvailable,
         };
 
         addTranscriptLine(newLine);
     };
 
     /**
-     * @param {string[]} parts
-     * structure: [![]newstream, id, title, start_time, media_type, is_live]
+     * @param {EventNewStreamData | null} data
      */
-    const setNewActiveStream = (parts) => {
-        if (!Array.isArray(parts) || parts.length !== 6) {
-            LOG_ERROR("setNewActiveStream parts is not a valid array:", typeof parts, parts.length);
+    const setNewActiveStream = (data) => {
+        if (!data) {
+            LOG_ERROR("setNewActiveStream data is null");
             return;
         }
 
-        setActiveId(parts[1]);
-        setActiveTitle(parts[2]);
-        setStartTime(+parts[3]);
-        setMediaType(parts[4]);
-        setIsLive(parts[5] === "true");
+        LOG_MSG("setNewActiveStream data", data);
+
+        setActiveId(data.activeId);
+        setActiveTitle(data.activeTitle);
+        setStartTime(+data.startTime);
+        setMediaType(data.mediaType);
+        setIsLive(data.isLive);
         setTranscript([]);
     };
 
     /**
-     * @param {string[]} parts
-     * structure: [![]status, id, title, is_live]
+     * @param {EventStatusData | null} data
      */
-    const setStreamStatus = (parts) => {
-        if (!Array.isArray(parts) || parts.length !== 4) {
-            LOG_ERROR("setStreamStatus parts is not a valid array:", typeof parts, parts.length);
+    const setStreamStatus = (data) => {
+        if (!data) {
+            LOG_ERROR("setStreamStatus data is null");
             return;
         }
 
-        setActiveId(parts[1]);
-        setActiveTitle(parts[2]);
-        setIsLive(parts[3] === "true");
+        LOG_MSG("setStreamStatus data", data);
+
+        setActiveId(data.activeId);
+        setActiveTitle(data.activeTitle);
+        setIsLive(data.isLive);
     };
 
     /**
-     * @param {string[]} parts
-     * structure: [![]error, type, message]
+     * @param {EventNewMediaData | null} data
      */
-    const handleError = (parts) => {
-        if (!Array.isArray(parts) || parts.length !== 3) {
-            LOG_ERROR("handleError parts is not a valid array:", typeof parts, parts.length);
+    const handleNewMedia = (data) => {
+        if (!data) {
+            LOG_ERROR("handleNewMedia data is null");
             return;
         }
 
-        LOG_ERROR(`Error from relay. type: '${parts[1]}' message: '${parts[2]}'`);
+        LOG_MSG("handleNewMedia data", data);
+
+        if (data?.ids && Array.isArray(data.ids)) {
+            updateLineMedia(data.ids);
+            recalculateClipRange();
+        } else {
+            LOG_ERROR("handleNewMedia data.ids is not an array", data);
+        }
     };
 };

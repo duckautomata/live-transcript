@@ -2,9 +2,10 @@
 /**
  * Formats tags such that entries starting with "HBD" are moved to a special section at the bottom.
  * @param {string} tags - String containing all tags, separated by newlines.
+ * @param {string} headerText - Text to use for the header of the HBD section.
  * @returns {string} Formatted tags string.
  */
-export const HBD_formatting = (tags) => {
+export const HBD_formatting = (tags, headerText) => {
     if (!tags || tags.trim().length === 0) {
         return tags ?? "";
     }
@@ -12,7 +13,7 @@ export const HBD_formatting = (tags) => {
     // non-global, meaning we only search for the first match
     const hbdLineRegex = /[\d:]+\s+HBD\s*.*/i;
     const hbdRegex = /\s*HBD\s*/i;
-    const hbdHeader = "*Dragoon Birthdays*";
+    const hbdHeader = `*${headerText}*`;
     const lines = tags.trim().split("\n");
     const hbds = lines
         .filter((line) => hbdLineRegex.test(line))

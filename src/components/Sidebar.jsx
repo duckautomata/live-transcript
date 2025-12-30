@@ -49,7 +49,7 @@ export default function Sidebar({ wsKey, children }) {
     const pages = [
         { name: "View", icon: <LiveTvIcon />, value: "" },
         { name: "Graph", icon: <AssessmentIcon />, value: "graph" },
-        { name: "Tag Fixer", icon: <Construction />, value: "tagFixer" },
+        { name: "Tag Formatter", icon: <Construction />, value: "tagFixer" },
     ];
 
     const handleCollapseToggle = () => {

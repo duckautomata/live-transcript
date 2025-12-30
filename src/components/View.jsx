@@ -12,12 +12,13 @@ import {
 import { Clear, ExpandLess, ExpandMore, Info, Search } from "@mui/icons-material";
 import { useState, useMemo } from "react";
 import LineMenu from "./LineMenu";
-import LiveTimer from "./Timer";
+import DevHeaderInfo from "./DevHeaderInfo";
 import { unixToLocal } from "../logic/dateTime";
 import { useAppStore } from "../store/store";
 import ViewSkeleton from "./ViewSkeleton";
 import TranscriptVirtual from "./TranscriptVirtual";
 import TranscriptPagination from "./TranscriptPagination";
+import ConnectionBanner from "./ConnectionBanner";
 
 /**
  * View component for the StreamLogs.
@@ -70,6 +71,17 @@ export default function View({ wsKey }) {
         });
     }, [transcript, searchTerm]);
 
+    const isOutOfSync = useMemo(() => {
+        if (transcript.length < 2) return false;
+        // Check for holes in the sequence
+        for (let i = 1; i < transcript.length; i++) {
+            if (transcript[i].id !== transcript[i - 1].id + 1) {
+                return true;
+            }
+        }
+        return false;
+    }, [transcript]);
+
     const displayData = filteredTranscript;
 
     const jumpToLine = (/** @type {number} */ id) => {
@@ -98,7 +110,7 @@ export default function View({ wsKey }) {
 
     return (
         <>
-            {!isOnline ? (
+            {serverStatus !== "online" && serverStatus !== "reconnecting" ? (
                 <ViewSkeleton serverStatus={serverStatus} />
             ) : (
                 <>
@@ -132,6 +144,7 @@ export default function View({ wsKey }) {
                             }}
                         >
                             <Box sx={{ flexShrink: 0 }}>
+                                {serverStatus === "reconnecting" && <ConnectionBanner />}
                                 <LineMenu wsKey={wsKey} jumpToLine={jumpToLine} />
                                 {showTitle && (
                                     <Tooltip title={streamInfoTooltip}>
@@ -145,7 +158,14 @@ export default function View({ wsKey }) {
                                         </Typography>
                                     </Tooltip>
                                 )}
-                                {!isHeaderMinimized && isLive && devMode && <LiveTimer startTime={startTime} />}
+                                {!isHeaderMinimized && isLive && devMode && <DevHeaderInfo startTime={startTime} />}
+                                {isOutOfSync && (
+                                    <Box sx={{ p: 2, pb: 0 }}>
+                                        <Typography color="warning.main" sx={{ fontWeight: "bold" }}>
+                                            The current transcript is out of sync. Refresh to fix it.
+                                        </Typography>
+                                    </Box>
+                                )}
                                 {transcript.length > 0 && (
                                     <Box
                                         sx={{

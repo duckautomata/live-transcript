@@ -8,3 +8,38 @@
     background-color: rgb(123, 138, 145) !important;
     transition: background-color 1s ease-out;
 }
+
+@keyframes loadingDots {
+    0% {
+        content: "";
+    }
+
+    20% {
+        content: ".";
+    }
+
+    40% {
+        content: "..";
+    }
+
+    60% {
+        content: "...";
+    }
+
+    80% {
+        content: "....";
+    }
+
+    100% {
+        content: "";
+    }
+}
+
+.loading-dots::after {
+    content: "";
+    animation: loadingDots 1.5s infinite steps(1);
+    display: inline-block;
+    width: 1.5em;
+    /* Ensure fixed width to prevent layout shift */
+    text-align: left;
+}
