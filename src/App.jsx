@@ -18,6 +18,7 @@ import { keys } from "./config";
 import { useAppStore } from "./store/store";
 import TagOffsetPopup from "./components/TagOffsetPopup";
 import UpdateAlert from "./components/UpdateAlert";
+import CensorPage from "./components/CensorPage";
 
 /**
  * The root application component.
@@ -79,7 +80,10 @@ function App() {
                                 </Routes>
                             </>
                         ) : (
-                            <Home />
+                            <Routes>
+                                <Route path="/censor" element={<CensorPage />} />
+                                <Route path="*" element={<Home />} />
+                            </Routes>
                         )}
                     </Sidebar>
                 </>
