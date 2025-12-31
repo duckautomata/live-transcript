@@ -195,6 +195,82 @@ describe("genericCensor", () => {
     });
 
     test.each([
+        ["g*oner", "degen"],
+        ["ag*oner", "adegen"],
+        ["g*onera", "degena"],
+        ["ag*onera", "adegena"],
+        ["*oner", "*oner"],
+        ["g*one", "g*one"],
+        ["*oner", "*oner"],
+        ["g*oner g*oner", "degen degen"],
+        [`"g*oner"`, `"degen"`],
+        [`'g*oner'`, `'degen'`],
+        [`(g*oner)`, `(degen)`],
+        [`[g*oner]`, `[degen]`],
+        [`-g*oner-`, `-degen-`],
+        [`_g*oner_`, `_degen_`],
+    ])("g*oner genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
+        ["go*ner", "degen"],
+        ["ago*ner", "adegen"],
+        ["go*nera", "degena"],
+        ["ago*nera", "adegena"],
+        ["o*ner", "o*ner"],
+        ["go*one", "go*one"],
+        ["o*ner", "o*ner"],
+        ["go*ner go*ner", "degen degen"],
+        [`"go*ner"`, `"degen"`],
+        [`'go*ner'`, `'degen'`],
+        [`(go*ner)`, `(degen)`],
+        [`[go*ner]`, `[degen]`],
+        [`-go*ner-`, `-degen-`],
+        [`_go*ner_`, `_degen_`],
+    ])("go*ner genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
+        ["g**ner", "degen"],
+        ["ag**ner", "adegen"],
+        ["g**nera", "degena"],
+        ["ag**nera", "adegena"],
+        ["**ner", "**ner"],
+        ["g**ne", "g**ne"],
+        ["**ner", "**ner"],
+        ["g**ner g**ner", "degen degen"],
+        [`"g**ner"`, `"degen"`],
+        [`'g**ner'`, `'degen'`],
+        [`(g**ner)`, `(degen)`],
+        [`[g**ner]`, `[degen]`],
+        [`-g**ner-`, `-degen-`],
+        [`_g**ner_`, `_degen_`],
+    ])("g**ner genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
+        ["goo*er", "degen"],
+        ["agoo*er", "adegen"],
+        ["goo*era", "degena"],
+        ["agoo*era", "adegena"],
+        ["oo*er", "oo*er"],
+        ["goo*e", "goo*e"],
+        ["oo*er", "oo*er"],
+        ["goo*er goo*er", "degen degen"],
+        [`"goo*er"`, `"degen"`],
+        [`'goo*er'`, `'degen'`],
+        [`(goo*er)`, `(degen)`],
+        [`[goo*er]`, `[degen]`],
+        [`-goo*er-`, `-degen-`],
+        [`_goo*er_`, `_degen_`],
+    ])("goo*er genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
         ["fag", "person"],
         ["fagg", "person"],
         ["faggot", "person"],
@@ -224,6 +300,24 @@ describe("genericCensor", () => {
         [`_fagg_`, `_person_`],
         [`_faggot_`, `_person_`],
     ])("fag genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
+        ["sweet-ass", "sweet"],
+        ["asweet-ass", "asweet"],
+        ["sweet-assa", "sweet-assa"],
+        ["asweet-assa", "asweet-assa"],
+        ["hard-ass", "hard"],
+        ["ahard-ass", "ahard"],
+        ["sweet-ass sweet-ass", "sweet sweet"],
+        [`"sweet-ass"`, `"sweet"`],
+        [`'sweet-ass'`, `'sweet'`],
+        [`(sweet-ass)`, `(sweet)`],
+        [`[sweet-ass]`, `[sweet]`],
+        [`-sweet-ass-`, `-sweet-`],
+        [`_sweet-ass_`, `_sweet_`],
+    ])("sweet-ass genericCensor(%s) -> %s", (text, expected) => {
         expect(genericCensor(text)).toBe(expected);
     });
 
@@ -370,7 +464,7 @@ describe("genericCensor", () => {
         ["orgasm", "o*gasm"],
         ["incest", "i*cest"],
         ["waifu", "w*ifu"],
-        ["ball", "b*ll"],
+        ["ball", "round object"],
         ["sperm", "sp*rm"],
         ["cum", "c*m"],
         ["comming", "coming"],
