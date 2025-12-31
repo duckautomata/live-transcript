@@ -403,7 +403,7 @@ describe("genericCensor", () => {
         ["shit", "rot"],
         ["asshole", "mean person"],
         ["asshat", "mean person"],
-        ["bastard", "unprincipled"],
+        ["bastard", "rat"],
         ["damn", "darn"],
         ["crap", "nonsense"],
         ["piss", "leak"],

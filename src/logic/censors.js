@@ -127,7 +127,7 @@ const replacements = [
     [new RegExp(`${P}shit`, "gi"), "$1rot"],
     [new RegExp(`${P}(a)ss(hole|hat)`, "gi"), "$1mean person"],
     [new RegExp(`${P}ass${P}`, "gi"), "$1bad$2"],
-    [new RegExp(`${P}bastard`, "gi"), "$1unprincipled"],
+    [new RegExp(`${P}bastard`, "gi"), "$1rat"],
     [new RegExp(`${P}damn`, "gi"), "$1darn"],
     [new RegExp(`${P}crap`, "gi"), "$1nonsense"],
     [new RegExp(`${P}piss`, "gi"), "$1leak"],
