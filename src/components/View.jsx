@@ -10,7 +10,7 @@ import {
     useMediaQuery,
 } from "@mui/material";
 import { Clear, ExpandLess, ExpandMore, Info, Search } from "@mui/icons-material";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import LineMenu from "./LineMenu";
 import DevHeaderInfo from "./DevHeaderInfo";
 import { unixToLocal } from "../logic/dateTime";
@@ -18,6 +18,7 @@ import { useAppStore } from "../store/store";
 import ViewSkeleton from "./ViewSkeleton";
 import TranscriptVirtual from "./TranscriptVirtual";
 import TranscriptPagination from "./TranscriptPagination";
+import TranscriptFrame from "./TranscriptFrame";
 import ConnectionBanner from "./ConnectionBanner";
 
 /**
@@ -28,6 +29,7 @@ import ConnectionBanner from "./ConnectionBanner";
  * @param {string} props.wsKey
  */
 export default function View({ wsKey }) {
+    const activeId = useAppStore((state) => state.activeId);
     const activeTitle = useAppStore((state) => state.activeTitle);
     const isLive = useAppStore((state) => state.isLive);
     const startTime = useAppStore((state) => state.startTime);
@@ -42,6 +44,19 @@ export default function View({ wsKey }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [pendingJumpId, setPendingJumpId] = useState(-1);
     const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
+
+    // 0: Pagination, 1: Virtual, 2: Visual Frames
+    const [tabValue, setTabValue] = useState(useVirtualList ? 1 : 0);
+
+    // Sync external changes to useVirtualList (e.g. from other tabs/persistence) to tabValue
+    // Only if tabValue is 0 or 1. If it's 2, we stay on 2.
+    useEffect(() => {
+        if (tabValue !== 2) {
+            setTabValue(useVirtualList ? 1 : 0);
+        } else if (mediaType !== "video") {
+            setTabValue(useVirtualList ? 1 : 0);
+        }
+    }, [useVirtualList, tabValue, mediaType]);
 
     const isMobile = useMediaQuery("(max-width:768px)");
     const isOnline = serverStatus === "online";
@@ -85,10 +100,24 @@ export default function View({ wsKey }) {
     const displayData = filteredTranscript;
 
     const jumpToLine = (/** @type {number} */ id) => {
+        if (tabValue === 2) {
+            setTabValue(useVirtualList ? 1 : 0);
+        }
         if (searchTerm) {
             setSearchTerm("");
         }
         setPendingJumpId(id);
+    };
+
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue);
+        if (newValue === 0) {
+            setUseVirtualList(false);
+        } else if (newValue === 1) {
+            setUseVirtualList(true);
+        }
+        // If newValue is 2, we don't change useVirtualList preference,
+        // or we could leave it as is so if they switch back it remembers the last list mode.
     };
 
     const streamInfoTooltip = (
@@ -107,6 +136,35 @@ export default function View({ wsKey }) {
     );
 
     const showTitle = !isHeaderMinimized || isMobile;
+
+    const renderContent = () => {
+        switch (tabValue) {
+            case 2:
+                return <TranscriptFrame displayData={displayData} activeId={activeId} wsKey={wsKey} />;
+            case 1:
+                return (
+                    <TranscriptVirtual
+                        displayData={displayData}
+                        transcriptLength={transcript.length}
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        isLive={isLive}
+                        isOnline={isOnline}
+                        pendingJumpId={pendingJumpId}
+                        setPendingJumpId={setPendingJumpId}
+                    />
+                );
+            case 0:
+            default:
+                return (
+                    <TranscriptPagination
+                        displayData={displayData}
+                        pendingJumpId={pendingJumpId}
+                        setPendingJumpId={setPendingJumpId}
+                    />
+                );
+        }
+    };
 
     return (
         <>
@@ -209,11 +267,14 @@ export default function View({ wsKey }) {
                                 {!isHeaderMinimized && (
                                     <Box sx={{ display: "flex", justifyContent: "center", width: "100%", mb: 1 }}>
                                         <Tabs
-                                            value={useVirtualList ? 1 : 0}
-                                            onChange={(e, newValue) => setUseVirtualList(newValue === 1)}
+                                            value={tabValue}
+                                            onChange={handleTabChange}
                                             sx={{ minHeight: "48px" }}
                                             indicatorColor="primary"
                                             textColor="primary"
+                                            variant="scrollable"
+                                            scrollButtons="auto"
+                                            allowScrollButtonsMobile
                                         >
                                             <Tab
                                                 label={
@@ -275,30 +336,45 @@ export default function View({ wsKey }) {
                                                 }
                                                 sx={{ minHeight: "48px", py: 1, minWidth: "auto", px: 2 }}
                                             />
+                                            {mediaType === "video" && (
+                                                <Tab
+                                                    label={
+                                                        <Box
+                                                            sx={{
+                                                                display: "flex",
+                                                                flexDirection: "column",
+                                                                alignItems: "center",
+                                                                lineHeight: 1.2,
+                                                            }}
+                                                        >
+                                                            <Typography
+                                                                variant="body2"
+                                                                sx={{ fontWeight: "bold", textTransform: "none" }}
+                                                            >
+                                                                Visual Frames
+                                                            </Typography>
+                                                            <Typography
+                                                                variant="caption"
+                                                                sx={{
+                                                                    fontSize: "0.7rem",
+                                                                    opacity: 0.8,
+                                                                    textTransform: "none",
+                                                                }}
+                                                            >
+                                                                Grid of Line Images
+                                                            </Typography>
+                                                        </Box>
+                                                    }
+                                                    sx={{ minHeight: "48px", py: 1, minWidth: "auto", px: 2 }}
+                                                />
+                                            )}
                                         </Tabs>
                                     </Box>
                                 )}
                                 <hr />
                             </Box>
 
-                            {useVirtualList ? (
-                                <TranscriptVirtual
-                                    displayData={displayData}
-                                    transcriptLength={transcript.length}
-                                    searchTerm={searchTerm}
-                                    setSearchTerm={setSearchTerm}
-                                    isLive={isLive}
-                                    isOnline={isOnline}
-                                    pendingJumpId={pendingJumpId}
-                                    setPendingJumpId={setPendingJumpId}
-                                />
-                            ) : (
-                                <TranscriptPagination
-                                    displayData={displayData}
-                                    pendingJumpId={pendingJumpId}
-                                    setPendingJumpId={setPendingJumpId}
-                                />
-                            )}
+                            {renderContent()}
                         </Box>
                     )}
                 </>

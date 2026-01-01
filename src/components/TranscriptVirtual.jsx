@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { Box, IconButton, Paper, Divider, Tooltip, Typography, useMediaQuery } from "@mui/material";
 import { VerticalAlignTop, VerticalAlignBottom, Pause, PlayArrow, Search } from "@mui/icons-material";
 import { Virtuoso } from "react-virtuoso";
@@ -30,7 +30,16 @@ export default function TranscriptVirtual({
 }) {
     const isMobile = useMediaQuery("(max-width:768px)");
     const virtuosoRef = useRef(null);
-    const [atLiveEdge, setAtLiveEdge] = useState(true);
+
+    // Calculate initial jump index only on mount
+    const initialJumpIndex = useMemo(() => {
+        if (pendingJumpId !== -1) {
+            return displayData.findIndex((line) => line.id === pendingJumpId);
+        }
+        return -1;
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const [atLiveEdge, setAtLiveEdge] = useState(initialJumpIndex === -1);
     const [unreadCount, setUnreadCount] = useState(0);
     const [visibleRange, setVisibleRange] = useState({ startIndex: 0, endIndex: 0 });
     const transcriptLengthRef = useRef(transcriptLength);
@@ -67,17 +76,21 @@ export default function TranscriptVirtual({
 
     // Handle Pending Jump
     useEffect(() => {
-        if (pendingJumpId !== -1 && virtuosoRef.current) {
+        if (pendingJumpId !== -1) {
             const index = displayData.findIndex((line) => line.id === pendingJumpId);
             if (index !== -1) {
-                // Determine alignment: 'start' puts it at the top which is very clear
-                virtuosoRef.current.scrollToIndex({
-                    index,
-                    align: "start",
-                    behavior: "auto",
-                });
+                // If the ref is available (updates), scroll to it.
+                // If we used initialTopMostItemIndex (mount), this is redundant but safe.
+                if (virtuosoRef.current) {
+                    virtuosoRef.current.scrollToIndex({
+                        index,
+                        align: "start",
+                        behavior: "auto",
+                    });
+                }
 
-                // Set highlight
+                // Set highlight and clear Pending Jump ID
+                // We do this regardless of virtuosoRef because initialTopMostItemIndex might have handled the scroll
                 setTimeout(() => {
                     setAtLiveEdge(false);
                     setHighlightedId(pendingJumpId);
@@ -85,7 +98,7 @@ export default function TranscriptVirtual({
                     setTimeout(() => {
                         setHighlightedId(-1);
                     }, 2000);
-                }, 0);
+                }, 100);
             }
         }
     }, [displayData, pendingJumpId, setPendingJumpId]);
@@ -130,7 +143,7 @@ export default function TranscriptVirtual({
                         />
                     )}
                     followOutput={atLiveEdge ? "auto" : false}
-                    initialTopMostItemIndex={displayData.length - 1}
+                    initialTopMostItemIndex={initialJumpIndex !== -1 ? initialJumpIndex : displayData.length - 1}
                     style={{ height: "100%" }}
                     components={{
                         Footer: () => <Box sx={{ height: 50 }} />,
