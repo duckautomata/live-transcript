@@ -321,6 +321,24 @@ describe("genericCensor", () => {
         expect(genericCensor(text)).toBe(expected);
     });
 
+    test.each([
+        ["coomer", "degen"],
+        ["acoomer", "acoomer"],
+        ["coomera", "degena"],
+        ["acoomera", "acoomera"],
+        ["oomer", "oomer"],
+        ["coome", "co-ome"],
+        ["coomer coomer", "degen degen"],
+        [`"coomer"`, `"degen"`],
+        [`'coomer'`, `'degen'`],
+        [`(coomer)`, `(degen)`],
+        [`[coomer]`, `[degen]`],
+        [`-coomer-`, `-degen-`],
+        [`_coomer_`, `_degen_`],
+    ])("coomer genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
     /**
      * Helper to generate 12 test cases for a word
      * @param {string} word
@@ -423,35 +441,35 @@ describe("genericCensor", () => {
         ["kill", "take out"],
         ["murder", "attack"],
         ["predator", "hunter"],
-        ["rape", "r*pe"],
-        ["rapist", "r*pist"],
+        ["rape", "not good action"],
+        ["rapist", "not good action"],
         ["shoot", "pew-pew"],
-        ["stab", "st*b"],
+        ["stab", "perform surgery"],
         ["torture", "horror"],
         ["bomb", "tnt"],
         ["grenade", "hand-tnt"],
         ["missile", "rocket"],
         ["gun", "pew-pew"],
-        ["terrorist", "ter-or-st"],
+        ["terrorist", "demolition person"],
 
         // Section 4
         ["ntr", "cheating"],
-        ["dick", "d*ck"],
-        ["cock", "c*ck"],
-        ["cuck", "cu*k"],
-        ["penis", "p*nis"],
-        ["vagin", "v*gin"],
-        ["clit", "c*it"],
-        ["cunt", "c*nt"],
-        ["anal", "a*al"],
-        ["anus", "a*us"],
-        ["booty", "b**ty"],
-        ["boner", "b*ner"],
-        ["dildo", "d**do"],
-        ["sex", "s*x"],
-        ["porn", "grown up anime"],
+        ["dick", "thing"],
+        ["cock", "hot dog"],
+        ["penis", "hot dog"],
+        ["cuck", "person"],
+        ["vagina", "body part"],
+        ["clit", "body part"],
+        ["cunt", "mean person"],
+        ["anal", "thorough"],
+        ["anus", "body part"],
+        ["booty", "rear"],
+        ["boner", "bone"],
+        ["dildo", "toy"],
+        ["sex", "procreation"],
+        ["porn", "grown up movies"],
         ["goon", "go-on"],
-        ["coomer", "degen"],
+        ["coom", "co-om"],
         ["edging", "close"],
         ["mpreg", "birth"],
         ["loli", "little"],
@@ -460,15 +478,15 @@ describe("genericCensor", () => {
         ["groomer", "cleaning"],
         ["breed", "act"],
         ["bukkake", "paint"],
-        ["masturbate", "m*sturbate"],
-        ["orgasm", "o*gasm"],
-        ["incest", "i*cest"],
-        ["waifu", "w*ifu"],
+        ["masturbate", "play"],
+        ["orgasm", "finish"],
+        ["incest", "family"],
+        ["waifu", "wife"],
         ["ball", "round object"],
-        ["sperm", "sp*rm"],
-        ["cum", "c*m"],
+        ["sperm", "DNA"],
+        ["cum", "DNA"],
         ["comming", "coming"],
-        ["nipple", "n*pple"],
+        ["nipple", "chest"],
         ["tits", "chest"],
         ["tity", "chest"],
         ["titties", "chest"],
@@ -484,13 +502,16 @@ describe("genericCensor", () => {
         ["pee", "leak"],
         ["simp", "fawn"],
         ["throb", "boop"],
-        ["condom", "cond*m"],
-        ["strip", "line"],
-        ["bitch", "b*tch"],
-        ["slut", "sl*t"],
-        ["whore", "wh*re"],
-        ["whoring", "wh*ring"],
-        ["gangbang", "g*ngb*ng"],
+        ["condom", "protection"],
+        ["strip", "layer"],
+        ["bitch", "mean person"],
+        ["slut", "revolving door"],
+        ["panty", "undergarment"],
+        ["panties", "undergarment"],
+        ["mating", "reproduction"],
+        ["whore", "mean person"],
+        ["whoring", "mean person"],
+        ["gangbang", "group party"],
 
         // Section 5
         ["fuck", "frick"],
@@ -559,7 +580,10 @@ describe("genericCensor", () => {
 
         // Section 9
         ["snuff", "extinguish"],
-        ["snuffles", "racoon friends"],
+        ["snuffies", "Snum's"],
+        ["snuffles", "Snum's"],
+        ["sloppy", "messy"],
+        ["sloppies", "messy"],
     ];
 
     // P(word)P
@@ -571,15 +595,15 @@ describe("genericCensor", () => {
         ["bisexual", "loving"],
         ["trans", "loving"],
         ["queer", "loving"],
-        ["ass", "bad"],
+        ["ass", "rear"],
     ];
 
     // word in any position
     const literalWords = [
         ["white boy", "boy"],
         ["hentai", "grown up anime"],
-        ["pussy", "pu*sy"],
-        ["pussies", "pu*sies"],
+        ["pussy", "chicken"],
+        ["pussies", "chicken"],
     ];
 
     // Execution
