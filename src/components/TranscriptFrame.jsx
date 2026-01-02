@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Box,
     Paper,
@@ -9,9 +9,36 @@ import {
     Dialog,
     DialogContent,
 } from "@mui/material";
+import { BrokenImage } from "@mui/icons-material";
 import { VirtuosoGrid } from "react-virtuoso";
 import styled from "@emotion/styled";
 import { server } from "../config";
+
+const FrameImage = ({ src, alt, style, ...props }) => {
+    const [error, setError] = useState(false);
+
+    if (error) {
+        return (
+            <Box
+                sx={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "action.disabledBackground",
+                    color: "text.secondary",
+                }}
+            >
+                <BrokenImage sx={{ fontSize: 40 }} />
+                <Typography variant="body2">Image Unavailable</Typography>
+            </Box>
+        );
+    }
+
+    return <img src={src} alt={alt} onError={() => setError(true)} style={style} {...props} />;
+};
 import { useAppStore } from "../store/store";
 import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
 import Line from "./Line";
@@ -23,7 +50,7 @@ const ItemContainer = styled(Box)(({ theme }) => ({
     boxSizing: "border-box",
 }));
 
-const ListContainer = styled(Box)(({ theme }) => ({
+const ListContainer = styled(Box)(() => ({
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "center",
@@ -46,8 +73,12 @@ export default function TranscriptFrame({ displayData, activeId, wsKey }) {
     const [selectedLine, setSelectedLine] = useState(null);
     const [lastSelectedId, setLastSelectedId] = useState(null);
 
+    const reversedDisplayData = useMemo(() => {
+        return [...displayData].reverse();
+    }, [displayData]);
+
     const activeItemWidth = useMemo(() => {
-        if (isMobile) return "33.33%"; // 3 per row on mobile
+        if (isMobile) return "50%"; // 2 per row on mobile
         return "200px"; // Fixed width on desktop
     }, [isMobile]);
 
@@ -66,6 +97,78 @@ export default function TranscriptFrame({ displayData, activeId, wsKey }) {
         setSelectedLine(line);
         setLastSelectedId(line.id);
     };
+
+    useEffect(() => {
+        if (!selectedLine) return;
+
+        const handleKeyDown = (e) => {
+            if (["ArrowRight", "ArrowLeft"].includes(e.key)) {
+                e.preventDefault();
+
+                const currentIndex = reversedDisplayData.findIndex((l) => l.id === selectedLine.id);
+                if (currentIndex === -1) return;
+
+                let nextIndex = currentIndex;
+                const isShift = e.shiftKey;
+                const tenMinutes = 600;
+
+                // Directions
+                // ArrowRight -> Newer (Future) -> Index Decreases (since list is Newest First)
+                // ArrowLeft -> Older (Past) -> Index Increases
+                const isNewer = e.key === "ArrowRight";
+
+                if (isShift) {
+                    const targetTime = selectedLine.timestamp + (isNewer ? tenMinutes : -tenMinutes);
+
+                    // Find closest frame to targetTime in the correct direction
+                    let closestIdx = currentIndex;
+                    let minDiff = Math.abs(reversedDisplayData[currentIndex].timestamp - targetTime);
+
+                    if (isNewer) {
+                        // Scan indices < currentIndex (Newer items)
+                        for (let i = currentIndex - 1; i >= 0; i--) {
+                            const diff = Math.abs(reversedDisplayData[i].timestamp - targetTime);
+                            if (diff <= minDiff) {
+                                minDiff = diff;
+                                closestIdx = i;
+                            } else {
+                                // Since timestamps are sorted, once diff increases, we are moving away from target
+                                break;
+                            }
+                        }
+                    } else {
+                        // Scan indices > currentIndex (Older items)
+                        for (let i = currentIndex + 1; i < reversedDisplayData.length; i++) {
+                            const diff = Math.abs(reversedDisplayData[i].timestamp - targetTime);
+                            if (diff <= minDiff) {
+                                minDiff = diff;
+                                closestIdx = i;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    nextIndex = closestIdx;
+                } else {
+                    // Single Step
+                    if (isNewer) {
+                        nextIndex = Math.max(0, currentIndex - 1);
+                    } else {
+                        nextIndex = Math.min(reversedDisplayData.length - 1, currentIndex + 1);
+                    }
+                }
+
+                if (nextIndex !== currentIndex) {
+                    const nextLine = reversedDisplayData[nextIndex];
+                    setSelectedLine(nextLine);
+                    setLastSelectedId(nextLine.id);
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [selectedLine, reversedDisplayData]);
 
     const handleClose = () => {
         setSelectedLine(null);
@@ -87,14 +190,18 @@ export default function TranscriptFrame({ displayData, activeId, wsKey }) {
             ) : (
                 <VirtuosoGrid
                     style={{ height: "100%" }}
-                    data={displayData}
+                    data={reversedDisplayData}
                     components={{
                         List: ListContainer,
-                        Item: ItemContainer,
+                        Item: ({ children, ...props }) => (
+                            <ItemContainer {...props} sx={{ width: activeItemWidth }}>
+                                {children}
+                            </ItemContainer>
+                        ),
                     }}
                     itemClassName="frame-item"
                     itemContent={(index, line) => (
-                        <Box sx={{ width: activeItemWidth }}>
+                        <Box sx={{ width: "100%" }}>
                             <Paper
                                 elevation={2}
                                 sx={{
@@ -111,7 +218,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey }) {
                                 onClick={() => handleFrameClick(line)}
                             >
                                 {line.mediaAvailable ? (
-                                    <img
+                                    <FrameImage
                                         src={`${server}/${wsKey}/frame?id=${line.id}&stream_id=${activeId}`}
                                         alt={`Frame ${line.id}`}
                                         loading="lazy"
@@ -175,7 +282,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey }) {
                                 }}
                             >
                                 {selectedLine.mediaAvailable ? (
-                                    <img
+                                    <FrameImage
                                         src={`${server}/${wsKey}/frame?id=${selectedLine.id}&stream_id=${activeId}`}
                                         alt={`Frame ${selectedLine.id}`}
                                         style={{ width: "100%", height: "100%", objectFit: "contain" }}

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Box, IconButton, Paper, Divider, Tooltip, Typography, useMediaQuery } from "@mui/material";
 import { VerticalAlignTop, VerticalAlignBottom, Pause, PlayArrow, Search } from "@mui/icons-material";
 import { Virtuoso } from "react-virtuoso";
@@ -32,12 +32,12 @@ export default function TranscriptVirtual({
     const virtuosoRef = useRef(null);
 
     // Calculate initial jump index only on mount
-    const initialJumpIndex = useMemo(() => {
+    const [initialJumpIndex] = useState(() => {
         if (pendingJumpId !== -1) {
             return displayData.findIndex((line) => line.id === pendingJumpId);
         }
         return -1;
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    });
 
     const [atLiveEdge, setAtLiveEdge] = useState(initialJumpIndex === -1);
     const [unreadCount, setUnreadCount] = useState(0);

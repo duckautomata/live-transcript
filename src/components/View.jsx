@@ -10,7 +10,7 @@ import {
     useMediaQuery,
 } from "@mui/material";
 import { Clear, ExpandLess, ExpandMore, Info, Search } from "@mui/icons-material";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import LineMenu from "./LineMenu";
 import DevHeaderInfo from "./DevHeaderInfo";
 import { unixToLocal } from "../logic/dateTime";
@@ -49,14 +49,17 @@ export default function View({ wsKey }) {
     const [tabValue, setTabValue] = useState(useVirtualList ? 1 : 0);
 
     // Sync external changes to useVirtualList (e.g. from other tabs/persistence) to tabValue
-    // Only if tabValue is 0 or 1. If it's 2, we stay on 2.
-    useEffect(() => {
-        if (tabValue !== 2) {
-            setTabValue(useVirtualList ? 1 : 0);
-        } else if (mediaType !== "video") {
-            setTabValue(useVirtualList ? 1 : 0);
-        }
-    }, [useVirtualList, tabValue, mediaType]);
+    // Only if tabValue is 0 or 1. If it's 2, we stay on 2 unless mediaType changes.
+    let targetTab = tabValue;
+    if (tabValue !== 2) {
+        targetTab = useVirtualList ? 1 : 0;
+    } else if (mediaType !== "video") {
+        targetTab = useVirtualList ? 1 : 0;
+    }
+
+    if (targetTab !== tabValue) {
+        setTabValue(targetTab);
+    }
 
     const isMobile = useMediaQuery("(max-width:768px)");
     const isOnline = serverStatus === "online";
