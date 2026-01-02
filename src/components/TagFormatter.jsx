@@ -17,7 +17,6 @@ import {
     IconButton,
     Tooltip,
     Switch,
-    FormControlLabel,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -105,7 +104,7 @@ const TagRow = memo(
         extraMarginTop,
         densityStyles,
         theme,
-        isHighlightedLowDelta,
+        highlightColor,
         isHighlightedRow,
         headerOpacity,
         headerDecoration,
@@ -223,8 +222,8 @@ const TagRow = memo(
                     opacity: isEditing ? 1 : opacity,
                     bgcolor: isEditing
                         ? "action.selected"
-                        : isHighlightedLowDelta
-                          ? theme.palette.background.important
+                        : highlightColor // Use specific highlight color
+                          ? highlightColor
                           : "transparent",
                     border: isEditing ? `0px solid ${purple[500]}` : "0px solid transparent",
                     "&:hover": { bgcolor: isEditing ? "action.selected" : "action.hover" },
@@ -798,7 +797,9 @@ const TagFormatter = ({ wsKey }) => {
         findText: "",
         replaceText: "",
         highlightThreshold: "30",
-        isHighlightEnabled: false,
+        isHighlightTime: false,
+        isHighlightStar: false,
+        isHighlightCaps: false,
     });
 
     const handleBulkEditChange = (field, value) => {
@@ -855,13 +856,31 @@ const TagFormatter = ({ wsKey }) => {
         if (!bulkEdit.findText) return;
         const regex = new RegExp(bulkEdit.findText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
 
-        setFormattedRows((prev) =>
-            prev.map((row) => {
-                if (row.type !== "tag") return row;
-                // Only replace in text
+        let matchesCount = 0;
+        const newRows = formattedRows.map((row) => {
+            if (row.type !== "tag") return row;
+            const matches = row.text.match(regex);
+            if (matches) {
+                matchesCount += matches.length;
                 return { ...row, text: row.text.replace(regex, bulkEdit.replaceText) };
-            }),
-        );
+            }
+            return row;
+        });
+
+        if (matchesCount > 0) {
+            setFormattedRows(newRows);
+        }
+
+        setDialogConfig({
+            open: true,
+            title: "Replace Results",
+            message:
+                matchesCount > 0
+                    ? `Replaced ${matchesCount} instance${matchesCount !== 1 ? "s" : ""}.`
+                    : "No matches found.",
+            confirmLabel: "OK",
+            onConfirm: null,
+        });
     };
 
     // --- Renders ---
@@ -1099,35 +1118,36 @@ const TagFormatter = ({ wsKey }) => {
                 return { py: 0.2, minHeight: "36px" };
         }
     }, [density]);
-
     const registerRef = useCallback((id, el) => {
         rowRefs.current[id] = el;
     }, []);
 
-    const renderFormattedTags = () => {
-        // Pre-calculate highlighting for low delta timestamps
-        const highlightedLowDeltaIds = new Set();
-        if (bulkEdit.isHighlightEnabled) {
+    const highlightStats = useMemo(() => {
+        const rowColors = {};
+        let countTime = 0;
+        let countStar = 0;
+        let countCaps = 0;
+
+        const timeIds = new Set();
+
+        // 1. Time Delta
+        if (bulkEdit.isHighlightTime) {
             const threshold = parseFloat(bulkEdit.highlightThreshold) || 0;
             let lastTime = -1;
             let lastId = null;
-
             displayedRows.forEach((row) => {
-                // Check if row is visible/enabled essentially
                 const isParentDisabled =
                     row.parentName && controls[row.parentName] && !controls[row.parentName].isEnabled;
-                // Ignore Collections from this check
                 const isCollection = row.subtype === "collection";
                 const isHbd = row.subtype === "hbd" || row.parentName === birthdayText;
 
                 if (row.type === "tag" && row.isEnabled && !isParentDisabled && !isCollection && !isHbd) {
-                    // Check timestamp validity
                     const t = row.timestamp ? timeToSeconds(row.timestamp) : -1;
                     if (t !== -1) {
                         if (lastTime !== -1) {
                             if (t - lastTime < threshold) {
-                                highlightedLowDeltaIds.add(row.id);
-                                if (lastId) highlightedLowDeltaIds.add(lastId);
+                                timeIds.add(row.id);
+                                if (lastId) timeIds.add(lastId);
                             }
                         }
                         lastTime = t;
@@ -1135,8 +1155,54 @@ const TagFormatter = ({ wsKey }) => {
                     }
                 }
             });
+            countTime = timeIds.size;
         }
 
+        // 2. Iterate for Colors and other counts
+        displayedRows.forEach((row) => {
+            if (row.type !== "tag") return;
+
+            // Caps
+            // Check condition regardless of overwrite for counting
+            let isCaps = false;
+            if (bulkEdit.isHighlightCaps) {
+                const text = row.text.trim();
+                // Contains letters and is all caps
+                const hasLetters = /[a-zA-Z]/.test(text);
+                if (hasLetters && text === text.toUpperCase()) {
+                    isCaps = true;
+                    countCaps++;
+                }
+            }
+
+            // Star
+            let isStar = false;
+            if (bulkEdit.isHighlightStar && row.text.includes("*")) {
+                isStar = true;
+                countStar++;
+            }
+
+            // Determine Winner Color
+            let color = null;
+            if (timeIds.has(row.id)) {
+                color = theme.palette.background.yellow;
+            }
+            if (isCaps) {
+                color = theme.palette.background.teal;
+            }
+            if (isStar) {
+                color = theme.palette.background.red;
+            }
+
+            if (color) {
+                rowColors[row.id] = color;
+            }
+        });
+
+        return { rowColors, countTime, countStar, countCaps };
+    }, [displayedRows, bulkEdit, controls, birthdayText, theme]);
+
+    const renderFormattedTags = () => {
         return (
             <Paper
                 elevation={3}
@@ -1226,7 +1292,7 @@ const TagFormatter = ({ wsKey }) => {
                                 extraMarginTop={extraMarginTop}
                                 densityStyles={densityStyles}
                                 theme={theme}
-                                isHighlightedLowDelta={highlightedLowDeltaIds.has(row.id)}
+                                highlightColor={highlightStats.rowColors[row.id]}
                                 isHighlightedRow={highlightedRowId === row.id}
                                 headerOpacity={headerOpacity}
                                 headerDecoration={headerDecoration}
@@ -1477,10 +1543,10 @@ const TagFormatter = ({ wsKey }) => {
                 </Box>
             </Box>
 
-            {/* Word Edit */}
+            {/* Find & Replace */}
             <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                    Word Edit
+                    Find & Replace
                 </Typography>
                 <TextField
                     label="Find"
@@ -1506,30 +1572,115 @@ const TagFormatter = ({ wsKey }) => {
             {/* Highlight */}
             <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                    Highlight Analysis
+                    Highlight timestamps that:
                 </Typography>
-                <FormControlLabel
-                    control={
+
+                {/* Time Delta */}
+                <Box sx={{ mb: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Switch
-                            checked={bulkEdit.isHighlightEnabled}
-                            onChange={(e) => handleBulkEditChange("isHighlightEnabled", e.target.checked)}
+                            checked={bulkEdit.isHighlightTime}
+                            onChange={(e) => handleBulkEditChange("isHighlightTime", e.target.checked)}
                             size="small"
+                            sx={{ mr: 1 }}
                         />
-                    }
-                    label="Highlight timestamps"
-                />
-                <Typography variant="body2" gutterBottom>
-                    less than
-                </Typography>
-                <TextField
-                    label="Seconds apart"
-                    size="small"
-                    fullWidth
-                    sx={{ mb: 1 }}
-                    value={bulkEdit.highlightThreshold}
-                    onChange={(e) => handleBulkEditChange("highlightThreshold", e.target.value)}
-                    disabled={!bulkEdit.isHighlightEnabled}
-                />
+                        <Typography variant="body2" sx={{ mr: 0.5, whiteSpace: "nowrap" }}>
+                            are under
+                        </Typography>
+                        <TextField
+                            size="small"
+                            variant="standard"
+                            value={bulkEdit.highlightThreshold}
+                            onChange={(e) => handleBulkEditChange("highlightThreshold", e.target.value)}
+                            disabled={!bulkEdit.isHighlightTime}
+                            sx={{ width: "40px", mr: 0.5, "& input": { textAlign: "center" } }}
+                        />
+                        <Typography variant="body2" sx={{ mr: 0.5, whiteSpace: "nowrap" }}>
+                            seconds apart
+                        </Typography>
+                    </Box>
+                    {bulkEdit.isHighlightTime && (
+                        <Box sx={{ pl: 5, mt: 0.5 }}>
+                            <Box
+                                sx={{
+                                    display: "inline-block",
+                                    bgcolor: theme.palette.background.yellow,
+                                    color: theme.palette.getContrastText(theme.palette.background.yellow),
+                                    px: 1,
+                                    borderRadius: 1,
+                                    fontSize: "0.75rem",
+                                    fontWeight: "bold",
+                                }}
+                            >
+                                {highlightStats.countTime} instances
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
+
+                {/* Contains * */}
+                <Box sx={{ mb: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Switch
+                            checked={bulkEdit.isHighlightStar}
+                            onChange={(e) => handleBulkEditChange("isHighlightStar", e.target.checked)}
+                            size="small"
+                            sx={{ mr: 1 }}
+                        />
+                        <Typography variant="body2" sx={{ mr: 1 }}>
+                            contain a *
+                        </Typography>
+                    </Box>
+                    {bulkEdit.isHighlightStar && (
+                        <Box sx={{ pl: 5, mt: 0.5 }}>
+                            <Box
+                                sx={{
+                                    display: "inline-block",
+                                    bgcolor: theme.palette.background.red,
+                                    color: theme.palette.getContrastText(theme.palette.background.red),
+                                    px: 1,
+                                    borderRadius: 1,
+                                    fontSize: "0.75rem",
+                                    fontWeight: "bold",
+                                }}
+                            >
+                                {highlightStats.countStar} instances
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
+
+                {/* All Caps */}
+                <Box sx={{ mb: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Switch
+                            checked={bulkEdit.isHighlightCaps}
+                            onChange={(e) => handleBulkEditChange("isHighlightCaps", e.target.checked)}
+                            size="small"
+                            sx={{ mr: 1 }}
+                        />
+                        <Typography variant="body2" sx={{ mr: 1 }}>
+                            are all caps
+                        </Typography>
+                    </Box>
+                    {bulkEdit.isHighlightCaps && (
+                        <Box sx={{ pl: 5, mt: 0.5 }}>
+                            <Box
+                                sx={{
+                                    display: "inline-block",
+                                    bgcolor: theme.palette.background.teal,
+                                    color: theme.palette.getContrastText(theme.palette.background.teal),
+                                    px: 1,
+                                    borderRadius: 1,
+                                    fontSize: "0.75rem",
+                                    fontWeight: "bold",
+                                }}
+                            >
+                                {highlightStats.countCaps} instances
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
             </Box>
         </Paper>
     );

@@ -28,7 +28,9 @@ export const darkTheme = createTheme({
         },
         background: {
             main: "#424242",
-            important: "#494913ff",
+            yellow: "#494913ff",
+            teal: "#004d40",
+            red: "#561b1b",
         },
         error: {
             main: red.A400,
@@ -62,7 +64,9 @@ export const lightTheme = createTheme({
         },
         background: {
             main: "#17786E",
-            important: "#ffff00",
+            yellow: "#ffff00",
+            teal: "#b2dfdb",
+            red: "#ffcdd2",
         },
         error: {
             main: red.A400,

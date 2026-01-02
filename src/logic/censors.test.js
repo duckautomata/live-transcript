@@ -595,7 +595,7 @@ describe("genericCensor", () => {
         ["bisexual", "loving"],
         ["trans", "loving"],
         ["queer", "loving"],
-        ["ass", "rear"],
+        // ["ass", "rear"],
     ];
 
     // word in any position

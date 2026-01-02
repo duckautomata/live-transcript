@@ -40,11 +40,13 @@ export default [
             "no-restricted-syntax": [
                 "error",
                 {
-                    selector: "Literal[value=/\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b/]",
+                    selector:
+                        "Literal[value=/\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b/]",
                     message: "Do not use IP addresses in code. Use domain names instead.",
                 },
                 {
-                    selector: "TemplateElement[value.raw=/\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b/]",
+                    selector:
+                        "TemplateElement[value.raw=/\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b/]",
                     message: "Do not use IP addresses in code. Use domain names instead.",
                 },
             ],
