@@ -4,21 +4,22 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { CssBaseline, useMediaQuery } from "@mui/material";
 import { ThemeProvider } from "@emotion/react";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { darkTheme, lightTheme } from "./theme";
 import { Websocket } from "./Websocket";
-import View from "./components/View";
-import StreamWordCount from "./components/StreamWordCount";
-import Maintenance from "./components/Maintenance";
 import Sidebar from "./components/Sidebar";
-import { Route, Routes, useLocation } from "react-router-dom";
-import Home from "./components/Home";
-import TagFormatter from "./components/TagFormatter";
 import ClipperPopup from "./components/ClipperPopup";
 import { keys } from "./config";
 import { useAppStore } from "./store/store";
 import TagOffsetPopup from "./components/TagOffsetPopup";
 import UpdateAlert from "./components/UpdateAlert";
-import CensorPage from "./components/CensorPage";
+import Maintenance from "./pages/single/Maintenance";
+import TagFormatter from "./pages/tagformatter/TagFormatter";
+import View from "./pages/transcript/View";
+import StreamWordCount from "./pages/graph/StreamWordCount";
+import CensorPage from "./pages/single/CensorPage";
+import Home from "./pages/single/Home";
+import { useTagIntegration } from "./hooks/useTagIntegration";
 
 /**
  * The root application component.
@@ -56,6 +57,8 @@ function App() {
         setWsKey(key);
     }, [location]);
 
+    useTagIntegration(wsKey);
+
     return (
         <ThemeProvider theme={colorTheme}>
             <CssBaseline />
@@ -68,7 +71,7 @@ function App() {
             ) : (
                 <>
                     <ClipperPopup wsKey={wsKey} />
-                    <TagOffsetPopup />
+                    <TagOffsetPopup wsKey={wsKey} />
                     <Sidebar wsKey={wsKey}>
                         {wsKey ? (
                             <>

@@ -2,7 +2,7 @@ import { Box, Pagination, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Line from "./Line";
 
-/** @typedef {import("../store/types").TranscriptLine} TranscriptLine */
+/** @typedef {import("../../store/types").TranscriptLine} TranscriptLine */
 
 /**
  * TranscriptPagination component for displaying logs with pagination.
@@ -11,8 +11,10 @@ import Line from "./Line";
  * @param {TranscriptLine[]} props.displayData - The filtered lines to display.
  * @param {number} props.pendingJumpId
  * @param {function(number)} props.setPendingJumpId
+ * @param {Map<string, any[]>} props.tagsMap
+ * @param {boolean} props.hasOverflow
  */
-export default function TranscriptPagination({ displayData, pendingJumpId, setPendingJumpId }) {
+export default function TranscriptPagination({ displayData, pendingJumpId, setPendingJumpId, tagsMap, hasOverflow }) {
     const [page, setPage] = useState(1);
     const lineRefs = useRef(new Map());
 
@@ -24,11 +26,6 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
     if (actualPage !== page && totalPages > 0) {
         setPage(actualPage);
     }
-
-    // Reset to page 1 if displayData changes significantly (e.g. search)
-    // Actually, 'actualPage' logic handles out of bounds.
-    // If we want to reset to page 1 on NEW search, that should probably be handled by parent or effect.
-    // But for now, let's keep it simple.
 
     const handleChange = (event, /** @type {number} */ value) => {
         setPage(value);
@@ -54,12 +51,6 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
 
         if (lineIndexInFiltered !== -1) {
             // Calculate page in filtered list
-            // displayData is chronological (0 is oldest).
-            // Pagination logic above:
-            // Page 1: last 'linesPerPage' items (indices: length-300 to length)
-            // Page 2: indices length-600 to length-300
-
-            // Distance from end
             const distFromEnd = displayData.length - 1 - lineIndexInFiltered;
             const targetPage = Math.floor(distFromEnd / linesPerPage) + 1;
 
@@ -90,7 +81,7 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
                 <Typography>Nothing found.</Typography>
             ) : (
                 <>
-                    <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
                         <Pagination
                             count={totalPages}
                             page={actualPage}
@@ -98,7 +89,12 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
                             showFirstButton
                             showLastButton
                         />
-                    </div>
+                        {hasOverflow && (
+                            <Typography variant="body2" color="warning.main" sx={{ fontStyle: "italic", py: 1, mt: 1 }}>
+                                Warning: Tags exist beyond the transcript
+                            </Typography>
+                        )}
+                    </Box>
                     {displayedLines.map((line) => (
                         <Line
                             ref={(/** @type {HTMLDivElement | null} */ node) => {
@@ -113,6 +109,7 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
                             lineTimestamp={line.timestamp}
                             segments={line.segments}
                             mediaAvailable={line.mediaAvailable}
+                            tagsMap={tagsMap}
                         />
                     ))}
                     <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

@@ -194,54 +194,71 @@ export default function Sidebar({ wsKey, children }) {
                         </ListItem>
                         {!isMobile && !sidebarOpen && <ListItem sx={{ height: 16 }} />}
                         {/* Streamers List */}
-                        <ListItemText
-                            primary="Transcripts"
-                            sx={{ ml: 1, display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none" }}
-                        />
-                        {keyIcons(32).map((streamer) => (
-                            <ListItem key={streamer.value} disablePadding>
-                                <Tooltip title={!isMobile && !sidebarOpen ? streamer.name : ""} placement="right">
-                                    <ListItemButton
-                                        selected={wsKey === streamer.value}
-                                        onClick={() => handleStreamerChange(streamer.value)}
-                                        sx={{
-                                            paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
-                                            overflow: "hidden",
-                                        }}
-                                    >
-                                        <ListItemIcon>{streamer.icon}</ListItemIcon>
-                                        {((!isMobile && sidebarOpen) || isMobile) && (
-                                            <ListItemText primary={streamer.name} />
-                                        )}
-                                    </ListItemButton>
-                                </Tooltip>
-                            </ListItem>
-                        ))}
-                        {!isMobile && !sidebarOpen && <ListItem sx={{ height: 16 }} />}
-                        {/* Page Selection */}
-                        <ListItemText
-                            primary="Pages"
-                            sx={{ mt: 2, ml: 1, display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none" }}
-                        />
-                        {pages.map((page) => (
-                            <ListItem key={page.value} disablePadding>
-                                <Tooltip title={!isMobile && !sidebarOpen ? page.name : ""} placement="right">
-                                    <ListItemButton
-                                        selected={window.location.pathname.split("/")[3] === page.value}
-                                        onClick={() => handlePageChange(page.value)}
-                                        sx={{
-                                            paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
-                                            overflow: "hidden",
-                                        }}
-                                    >
-                                        <ListItemIcon>{page.icon}</ListItemIcon>
-                                        {((!isMobile && sidebarOpen) || isMobile) && (
-                                            <ListItemText primary={page.name} />
-                                        )}
-                                    </ListItemButton>
-                                </Tooltip>
-                            </ListItem>
-                        ))}
+                        {wsKey && (
+                            <>
+                                <ListItemText
+                                    primary="Transcripts"
+                                    sx={{ ml: 1, display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none" }}
+                                />
+                                {keyIcons(32)
+                                    .filter((streamer) => streamer.value === wsKey)
+                                    .map((streamer) => (
+                                        <ListItem key={streamer.value} disablePadding>
+                                            <Tooltip
+                                                title={!isMobile && !sidebarOpen ? streamer.name : ""}
+                                                placement="right"
+                                            >
+                                                <ListItemButton
+                                                    selected={wsKey === streamer.value}
+                                                    onClick={() => handleStreamerChange(streamer.value)}
+                                                    sx={{
+                                                        paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
+                                                        overflow: "hidden",
+                                                    }}
+                                                >
+                                                    <ListItemIcon>{streamer.icon}</ListItemIcon>
+                                                    {((!isMobile && sidebarOpen) || isMobile) && (
+                                                        <ListItemText primary={streamer.name} />
+                                                    )}
+                                                </ListItemButton>
+                                            </Tooltip>
+                                        </ListItem>
+                                    ))}
+                                {!isMobile && !sidebarOpen && <ListItem sx={{ height: 16 }} />}
+                            </>
+                        )}
+                        {/* Page Selection Only when key is set */}
+                        {wsKey && (
+                            <>
+                                <ListItemText
+                                    primary="Pages"
+                                    sx={{
+                                        mt: 2,
+                                        ml: 1,
+                                        display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none",
+                                    }}
+                                />
+                                {pages.map((page) => (
+                                    <ListItem key={page.value} disablePadding>
+                                        <Tooltip title={!isMobile && !sidebarOpen ? page.name : ""} placement="right">
+                                            <ListItemButton
+                                                selected={window.location.pathname.split("/")[3] === page.value}
+                                                onClick={() => handlePageChange(page.value)}
+                                                sx={{
+                                                    paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
+                                                    overflow: "hidden",
+                                                }}
+                                            >
+                                                <ListItemIcon>{page.icon}</ListItemIcon>
+                                                {((!isMobile && sidebarOpen) || isMobile) && (
+                                                    <ListItemText primary={page.name} />
+                                                )}
+                                            </ListItemButton>
+                                        </Tooltip>
+                                    </ListItem>
+                                ))}
+                            </>
+                        )}
                         {/* Developer Group */}
                         {devMode && (
                             <>

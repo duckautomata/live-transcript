@@ -1,10 +1,10 @@
 import { Box, Stack, TextField, Typography, useMediaQuery } from "@mui/material";
 import { useCallback, useState } from "react";
 import { LineChart } from "@mui/x-charts";
-import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
+import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
 import "./StreamWordCount.css";
-import { countWord } from "../logic/wordCount";
-import { useAppStore } from "../store/store";
+import { countWord } from "../../logic/wordCount";
+import { useAppStore } from "../../store/store";
 
 /**
  * Component providing word usage analysis and visualization via a LineChart.

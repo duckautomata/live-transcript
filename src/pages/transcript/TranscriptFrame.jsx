@@ -8,12 +8,16 @@ import {
     CircularProgress,
     Dialog,
     DialogContent,
+    Tooltip,
 } from "@mui/material";
 import { BrokenImage } from "@mui/icons-material";
 import { VirtuosoGrid } from "react-virtuoso";
 import styled from "@emotion/styled";
-import { server } from "../config";
-
+import { server } from "../../config";
+import { orange, purple, blue } from "@mui/material/colors";
+import { useAppStore } from "../../store/store";
+import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
+import Line from "./Line";
 const FrameImage = ({ src, alt, style, ...props }) => {
     const [error, setError] = useState(false);
 
@@ -39,9 +43,6 @@ const FrameImage = ({ src, alt, style, ...props }) => {
 
     return <img src={src} alt={alt} onError={() => setError(true)} style={style} {...props} />;
 };
-import { useAppStore } from "../store/store";
-import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
-import Line from "./Line";
 
 const ItemContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(0.5),
@@ -63,8 +64,9 @@ const ListContainer = styled(Box)(() => ({
  * @param {object[]} props.displayData
  * @param {string} props.activeId
  * @param {string} props.wsKey
+ * @param {Map<string, any[]>} props.tagsMap
  */
-export default function TranscriptFrame({ displayData, activeId, wsKey }) {
+export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const timeFormat = useAppStore((state) => state.timeFormat);
@@ -200,68 +202,120 @@ export default function TranscriptFrame({ displayData, activeId, wsKey }) {
                         ),
                     }}
                     itemClassName="frame-item"
-                    itemContent={(index, line) => (
-                        <Box sx={{ width: "100%" }}>
-                            <Paper
-                                elevation={2}
-                                sx={{
-                                    cursor: "pointer",
-                                    overflow: "hidden",
-                                    position: "relative",
-                                    outline:
-                                        line.id === lastSelectedId ? `3px solid ${theme.palette.primary.main}` : "none",
-                                    "&:hover": {
-                                        outline: `3px solid ${theme.palette.primary.light}`,
-                                    },
-                                    aspectRatio: "16/9",
-                                }}
-                                onClick={() => handleFrameClick(line)}
-                            >
-                                {line.mediaAvailable ? (
-                                    <FrameImage
-                                        src={`${server}/${wsKey}/frame?id=${line.id}&stream_id=${activeId}`}
-                                        alt={`Frame ${line.id}`}
-                                        loading="lazy"
-                                        style={{
-                                            width: "100%",
-                                            height: "100%",
-                                            objectFit: "cover",
-                                            display: "block",
-                                        }}
-                                    />
-                                ) : (
-                                    <Box
-                                        sx={{
-                                            width: "100%",
-                                            height: "100%",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            bgcolor: "action.disabledBackground",
-                                        }}
-                                    >
-                                        <CircularProgress size={24} color="secondary" />
-                                    </Box>
-                                )}
-                                <Box
-                                    sx={{
-                                        position: "absolute",
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        bgcolor: "rgba(0, 0, 0, 0.6)",
-                                        color: "white",
-                                        p: 0.5,
-                                        textAlign: "center",
-                                    }}
-                                >
-                                    <Typography variant="caption" sx={{ display: "block", lineHeight: 1 }}>
-                                        {formatTimestamp(line.timestamp)}
-                                    </Typography>
+                    itemContent={(index, line) => {
+                        let borderColor = "transparent";
+                        const tooltipLines = [];
+
+                        if (tagsMap && line.segments) {
+                            let isChapter = false;
+                            let isCollection = false;
+                            let isTag = false;
+
+                            line.segments.forEach((seg, i) => {
+                                const key = `${line.id}_${i}`;
+                                const tags = tagsMap.get(key);
+                                if (tags) {
+                                    tags.forEach((t) => {
+                                        if (t.type === "header") {
+                                            if (t.subtype === "chapter") isChapter = true;
+                                            if (t.subtype === "collection") isCollection = true;
+                                            tooltipLines.push(`[${t.subtype}] ${t.name}`);
+                                        } else {
+                                            if (t.subtype === "collection") isCollection = true;
+                                            isTag = true;
+                                            tooltipLines.push(t.text);
+                                        }
+                                    });
+                                }
+                            });
+
+                            if (isChapter) borderColor = orange[500];
+                            else if (isCollection) borderColor = purple[500];
+                            else if (isTag) borderColor = blue[500];
+                        }
+
+                        const tooltipContent =
+                            tooltipLines.length > 0 ? (
+                                <Box>
+                                    {tooltipLines.map((txt, idx) => (
+                                        <Typography key={idx} variant="body2">
+                                            {txt}
+                                        </Typography>
+                                    ))}
                                 </Box>
-                            </Paper>
-                        </Box>
-                    )}
+                            ) : (
+                                ""
+                            );
+
+                        return (
+                            <Box sx={{ width: "100%" }}>
+                                <Tooltip title={tooltipContent} arrow placement="top">
+                                    <Paper
+                                        elevation={2}
+                                        sx={{
+                                            cursor: "pointer",
+                                            overflow: "hidden",
+                                            position: "relative",
+                                            outline:
+                                                line.id === lastSelectedId
+                                                    ? `3px solid ${theme.palette.primary.main}`
+                                                    : "none",
+                                            border: `4px solid ${borderColor}`,
+                                            "&:hover": {
+                                                outline: `3px solid ${theme.palette.primary.light}`,
+                                            },
+                                            aspectRatio: "16/9",
+                                            boxSizing: "border-box", // Ensure border doesn't break size
+                                        }}
+                                        onClick={() => handleFrameClick(line)}
+                                    >
+                                        {line.mediaAvailable ? (
+                                            <FrameImage
+                                                src={`${server}/${wsKey}/frame?id=${line.id}&stream_id=${activeId}`}
+                                                alt={`Frame ${line.id}`}
+                                                loading="lazy"
+                                                style={{
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    objectFit: "cover",
+                                                    display: "block",
+                                                }}
+                                            />
+                                        ) : (
+                                            <Box
+                                                sx={{
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    bgcolor: "action.disabledBackground",
+                                                }}
+                                            >
+                                                <CircularProgress size={24} color="secondary" />
+                                            </Box>
+                                        )}
+                                        <Box
+                                            sx={{
+                                                position: "absolute",
+                                                bottom: 0,
+                                                left: 0,
+                                                right: 0,
+                                                bgcolor: "rgba(0, 0, 0, 0.6)",
+                                                color: "white",
+                                                p: 0.5,
+                                                textAlign: "center",
+                                            }}
+                                        >
+                                            <Typography variant="caption" sx={{ display: "block", lineHeight: 1 }}>
+                                                {formatTimestamp(line.timestamp)}
+                                            </Typography>
+                                        </Box>
+                                    </Paper>
+                                </Tooltip>
+                            </Box>
+                        );
+                    }}
                 />
             )}
 
@@ -297,6 +351,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey }) {
                                     lineTimestamp={selectedLine.timestamp}
                                     segments={selectedLine.segments}
                                     mediaAvailable={selectedLine.mediaAvailable}
+                                    tagsMap={tagsMap}
                                 />
                             </Paper>
                         </Box>

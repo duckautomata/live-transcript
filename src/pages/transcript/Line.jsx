@@ -3,13 +3,13 @@ import { forwardRef, Fragment, memo, useState } from "react";
 import Segment from "./Segment";
 import { useTheme, keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
-import { unixToLocal, unixToRelative, unixToUTC } from "../logic/dateTime";
+import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
 import { MoreHoriz } from "@mui/icons-material";
-import { maxClipSize } from "../config";
-import { useAppStore } from "../store/store";
+import { maxClipSize } from "../../config";
+import { useAppStore } from "../../store/store";
 import { useShallow } from "zustand/shallow";
 
-/** @typedef {import("../store/types").Segment} Segment */
+/** @typedef {import("../../store/types").Segment} Segment */
 /** @typedef {import('react').ForwardedRef<HTMLDivElement>} Ref */
 
 const TimestampTheme = styled("span")(({ theme }) => ({
@@ -46,7 +46,7 @@ const Line = memo(
          * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean }} props
          * @param {Ref} ref
          */
-        ({ id, lineTimestamp, segments, highlight, ...props }, ref) => {
+        ({ id, lineTimestamp, segments, highlight, tagsMap, ...props }, ref) => {
             const theme = useTheme();
 
             const [idOver, setIdOver] = useState(false);
@@ -176,15 +176,28 @@ const Line = memo(
                     </TimestampTheme>
                     ]{" "}
                     {hasSegments ? (
-                        segments.map((segment, index) => (
-                            <Fragment key={`line-${id}-segment-${index}`}>
-                                <Segment timestamp={segment?.timestamp} text={segment?.text} onClick={onSegmentClick} />
-                                <span />
-                                {index < segments.length - 1 && " "}
-                            </Fragment>
-                        ))
+                        segments.map((segment, index) => {
+                            const segmentTags = tagsMap?.get(`${id}_${index}`);
+                            return (
+                                <Fragment key={`line-${id}-segment-${index}`}>
+                                    <Segment
+                                        timestamp={segment?.timestamp}
+                                        text={segment?.text}
+                                        onClick={onSegmentClick}
+                                        tags={segmentTags}
+                                    />
+                                    <span />
+                                    {index < segments.length - 1 && " "}
+                                </Fragment>
+                            );
+                        })
                     ) : (
-                        <Segment timestamp={lineTimestamp} text={"          "} onClick={onSegmentClick} />
+                        <Segment
+                            timestamp={lineTimestamp}
+                            text={"          "}
+                            onClick={onSegmentClick}
+                            tags={tagsMap?.get(`${id}_0`)}
+                        />
                     )}
                 </Typography>
             );

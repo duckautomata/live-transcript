@@ -11,15 +11,16 @@ import {
 } from "@mui/material";
 import { Clear, ExpandLess, ExpandMore, Info, Search } from "@mui/icons-material";
 import { useState, useMemo } from "react";
-import LineMenu from "./LineMenu";
-import DevHeaderInfo from "./DevHeaderInfo";
-import { unixToLocal } from "../logic/dateTime";
-import { useAppStore } from "../store/store";
+import LineMenu from "../../components/LineMenu";
+import DevHeaderInfo from "../../components/DevHeaderInfo";
+import { unixToLocal } from "../../logic/dateTime";
+import { useAppStore } from "../../store/store";
 import ViewSkeleton from "./ViewSkeleton";
 import TranscriptVirtual from "./TranscriptVirtual";
 import TranscriptPagination from "./TranscriptPagination";
 import TranscriptFrame from "./TranscriptFrame";
-import ConnectionBanner from "./ConnectionBanner";
+import ConnectionBanner from "../../components/ConnectionBanner";
+import { timeToSeconds } from "../../logic/tagHelpers";
 
 /**
  * View component for the StreamLogs.
@@ -40,6 +41,7 @@ export default function View({ wsKey }) {
     const devMode = useAppStore((state) => state.devMode);
     const useVirtualList = useAppStore((state) => state.useVirtualList);
     const setUseVirtualList = useAppStore((state) => state.setUseVirtualList);
+    const formattedRows = useAppStore((state) => state.formattedRows);
 
     const [searchTerm, setSearchTerm] = useState("");
     const [pendingJumpId, setPendingJumpId] = useState(-1);
@@ -123,6 +125,103 @@ export default function View({ wsKey }) {
         // or we could leave it as is so if they switch back it remembers the last list mode.
     };
 
+    // Memoize tags map for performance
+    const { tagsMap, hasOverflow } = useMemo(() => {
+        const map = new Map();
+        let overflow = false;
+        if (!formattedRows || !displayData || displayData.length === 0) return { tagsMap: map, hasOverflow: false };
+
+        const lastLine = displayData[displayData.length - 1];
+        const lastLineTimestamp = lastLine.timestamp;
+        const THRESHOLD = 5; // Seconds beyond last line
+
+        // Optimized approach:
+        // 1. Iterate tags.
+        // 2. Binary search displayData for closest line.
+        // 3. Scan segments in that line for closest segment.
+        // 4. Map Key: `${lineId}_${segmentIndex}`
+
+        formattedRows.forEach((row) => {
+            if (row.timestamp) {
+                const relativeSeconds = timeToSeconds(row.timestamp);
+                const absoluteTimestamp = (startTime || 0) + relativeSeconds;
+
+                // Check for overflow (Tags beyond the transcript end)
+                if (absoluteTimestamp > lastLineTimestamp + THRESHOLD) {
+                    overflow = true;
+                    return;
+                }
+
+                // Binary Search for Closest Line
+                let low = 0;
+                let high = displayData.length - 1;
+                let closestLineIndex = -1;
+                let minDiff = Infinity;
+
+                while (low <= high) {
+                    const mid = Math.floor((low + high) / 2);
+                    const line = displayData[mid];
+                    const diff = line.timestamp - absoluteTimestamp;
+
+                    if (Math.abs(diff) < minDiff) {
+                        minDiff = Math.abs(diff);
+                        closestLineIndex = mid;
+                    }
+
+                    if (diff === 0) {
+                        closestLineIndex = mid; // Exact match found
+                        break;
+                    } else if (diff < 0) {
+                        low = mid + 1;
+                    } else {
+                        high = mid - 1;
+                    }
+                }
+
+                // Check neighbors of closestLineIndex just in case
+                let bestLine = displayData[closestLineIndex];
+
+                if (bestLine) {
+                    // Check neighbors
+                    const candidates = [closestLineIndex - 1, closestLineIndex, closestLineIndex + 1];
+                    candidates.forEach((idx) => {
+                        if (idx >= 0 && idx < displayData.length) {
+                            const line = displayData[idx];
+                            if (
+                                Math.abs(line.timestamp - absoluteTimestamp) <
+                                Math.abs(bestLine.timestamp - absoluteTimestamp)
+                            ) {
+                                bestLine = line;
+                            }
+                        }
+                    });
+
+                    // Find closest segment in bestLine
+                    let bestSegIndex = 0;
+                    if (bestLine.segments && bestLine.segments.length > 0) {
+                        let minSegDiff = Math.abs(bestLine.segments[0].timestamp - absoluteTimestamp);
+
+                        for (let i = 1; i < bestLine.segments.length; i++) {
+                            const diff = Math.abs(bestLine.segments[i].timestamp - absoluteTimestamp);
+                            if (diff < minSegDiff) {
+                                minSegDiff = diff;
+                                bestSegIndex = i;
+                            }
+                        }
+                    }
+
+                    // Assign Tag
+                    const key = `${bestLine.id}_${bestSegIndex}`;
+                    if (!map.has(key)) {
+                        map.set(key, []);
+                    }
+                    map.get(key).push(row);
+                }
+            }
+        });
+        return { tagsMap: map, hasOverflow: overflow };
+    }, [formattedRows, displayData, startTime]);
+
     const streamInfoTooltip = (
         <div>
             <p style={{ margin: 0 }}>
@@ -143,7 +242,9 @@ export default function View({ wsKey }) {
     const renderContent = () => {
         switch (tabValue) {
             case 2:
-                return <TranscriptFrame displayData={displayData} activeId={activeId} wsKey={wsKey} />;
+                return (
+                    <TranscriptFrame displayData={displayData} activeId={activeId} wsKey={wsKey} tagsMap={tagsMap} />
+                );
             case 1:
                 return (
                     <TranscriptVirtual
@@ -155,6 +256,8 @@ export default function View({ wsKey }) {
                         isOnline={isOnline}
                         pendingJumpId={pendingJumpId}
                         setPendingJumpId={setPendingJumpId}
+                        tagsMap={tagsMap}
+                        hasOverflow={hasOverflow}
                     />
                 );
             case 0:
@@ -164,6 +267,8 @@ export default function View({ wsKey }) {
                         displayData={displayData}
                         pendingJumpId={pendingJumpId}
                         setPendingJumpId={setPendingJumpId}
+                        tagsMap={tagsMap}
+                        hasOverflow={hasOverflow}
                     />
                 );
         }

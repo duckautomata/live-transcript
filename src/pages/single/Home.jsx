@@ -10,8 +10,8 @@ import {
     Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { keyIcons } from "../config";
-import { useAppStore } from "../store/store";
+import { keyIcons } from "../../config";
+import { useAppStore } from "../../store/store";
 
 export default function Home() {
     const navigate = useNavigate();

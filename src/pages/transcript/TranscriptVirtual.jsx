@@ -17,6 +17,8 @@ import Line from "./Line";
  * @param {boolean} props.isOnline
  * @param {number} props.pendingJumpId
  * @param {function(number)} props.setPendingJumpId
+ * @param {Map<string, any[]>} props.tagsMap
+ * @param {boolean} props.hasOverflow
  */
 export default function TranscriptVirtual({
     displayData,
@@ -27,6 +29,8 @@ export default function TranscriptVirtual({
     isOnline,
     pendingJumpId,
     setPendingJumpId,
+    tagsMap,
+    hasOverflow,
 }) {
     const isMobile = useMediaQuery("(max-width:768px)");
     const virtuosoRef = useRef(null);
@@ -140,13 +144,41 @@ export default function TranscriptVirtual({
                             segments={line.segments}
                             highlight={highlightedId === line.id}
                             mediaAvailable={line.mediaAvailable}
+                            tagsMap={tagsMap}
                         />
                     )}
                     followOutput={atLiveEdge ? "auto" : false}
                     initialTopMostItemIndex={initialJumpIndex !== -1 ? initialJumpIndex : displayData.length - 1}
                     style={{ height: "100%" }}
                     components={{
-                        Footer: () => <Box sx={{ height: 50 }} />,
+                        Footer: () => (
+                            <>
+                                {hasOverflow ? (
+                                    <Box
+                                        sx={{
+                                            pb: 6,
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        {hasOverflow && (
+                                            <Typography
+                                                variant="body2"
+                                                color="warning.main"
+                                                sx={{ fontStyle: "italic", py: 1, mt: 1 }}
+                                            >
+                                                Warning: Tags exist beyond the transcript
+                                            </Typography>
+                                        )}
+                                        <Box sx={{ height: 50 }} />
+                                    </Box>
+                                ) : (
+                                    <Box sx={{ height: 50 }} />
+                                )}
+                            </>
+                        ),
                     }}
                     defaultItemHeight={30}
                     rangeChanged={(range) => {

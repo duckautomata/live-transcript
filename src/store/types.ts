@@ -119,7 +119,17 @@ export type AppStore = AudioSlice &
     ServerSlice &
     TranscriptSlice &
     SettingsSlice &
-    PerformanceSlice;
+    PerformanceSlice &
+    TagFormatterSlice;
+
+export interface TagFormatterSlice {
+    formattedRows: any[];
+    controls: Record<string, any>;
+    inputTags: string;
+    setFormattedRows: (rows: any[] | ((prev: any[]) => any[])) => void;
+    setControls: (controls: Record<string, any>) => void;
+    setInputTags: (tags: string) => void;
+}
 
 // Helper type for creating slices
 export type AppSliceCreator<T> = StateCreator<AppStore, [], [], T>;
