@@ -111,17 +111,19 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
     };
 
     lines.forEach((line) => {
-        const match = line.match(collectionRegex);
+        const { text } = processText(line);
+        const match = text.match(collectionRegex);
+        const ogMatch = line.match(collectionRegex);
         if (match) {
             const timestamp = match[1];
             const rawName = match[2];
             const rawText = match[3];
 
-            const procName = processText(rawName);
-            const procText = processText(rawText);
+            const ogRawName = ogMatch[2];
+            const ogRawText = ogMatch[3];
 
             // Use censored name for grouping
-            const keyName = procName.text;
+            const keyName = rawName;
             const key = [...collectionGroups.keys()].find((k) => compareKeys(k, keyName) >= 90) || keyName;
 
             if (!collectionGroups.has(key)) {
@@ -129,7 +131,7 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
                 // For now, simpler to flag items.
                 // Or store checking logic in build step?
                 // Let's store metadata.
-                collectionGroups.set(key, { items: [], wasHeaderCensored: procName.wasCensored });
+                collectionGroups.set(key, { items: [], wasHeaderCensored: rawName !== ogRawName });
             }
             // Use existing group's wasHeaderCensored status if merging?
             // If new key matches old fuzzy key, we use old key.
@@ -137,10 +139,11 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
 
             collectionGroups.get(key).items.push({
                 timestamp,
-                text: procText.text,
-                originalLine: line,
+                text: rawText,
+                originalText: ogRawText,
                 name: key,
-                wasCensored: procText.wasCensored,
+                originalName: ogRawName,
+                wasCensored: rawText !== ogRawText,
             });
         } else {
             remainingLines.push(line);
@@ -154,13 +157,14 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
         const groupData = collectionGroups.get(name);
         const groupItems = groupData.items;
         const firstTimestamp = groupItems.length > 0 ? groupItems[0].timestamp : "00:00";
+        const originalName = groupItems.length > 0 ? groupItems[0].originalName : name;
 
         newRows.push({
             id: generateId("col-header"),
             type: "header",
             subtype: "collection",
             name: name,
-            originalName: name,
+            originalName: originalName,
             timestamp: firstTimestamp,
             isEnabled: true,
             // If header name was censored
@@ -175,7 +179,7 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
                 parentName: name,
                 timestamp: item.timestamp,
                 text: item.text,
-                originalText: item.text,
+                originalText: item.originalText,
                 isEnabled: true,
                 isEditing: false,
                 wasCensored: item.wasCensored,
@@ -186,99 +190,105 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
     let inHbdSection = false;
     let currentChapter = null;
 
-    remainingLines.forEach((line) => {
-        if (hbdHeaderRegex.test(line) || line.includes(`*${birthdayText}*`)) {
-            inHbdSection = true;
-            currentChapter = null;
-            if (!newControls[birthdayText]) {
-                newControls[birthdayText] = { isEnabled: true, type: "hbd" };
-            }
+    remainingLines
+        .filter((line) => genericCensor(line).trim().length > 0)
+        .forEach((line) => {
+            if (hbdHeaderRegex.test(line) || line.includes(`*${birthdayText}*`)) {
+                inHbdSection = true;
+                currentChapter = null;
+                if (!newControls[birthdayText]) {
+                    newControls[birthdayText] = { isEnabled: true, type: "hbd" };
+                }
 
-            newRows.push({
-                id: generateId("hbd-header"),
-                type: "header",
-                subtype: "hbd",
-                name: birthdayText,
-                originalName: birthdayText,
-                isEnabled: true,
-            });
-            return;
-        }
-
-        const chapterMatch = line.match(chapterRegex);
-        if (chapterMatch) {
-            const timestamp = chapterMatch[1];
-            const rawName = chapterMatch[2];
-            const rawText = chapterMatch[3];
-
-            const procName = processText(rawName);
-            currentChapter = procName.text;
-
-            if (!newControls[currentChapter]) {
-                newControls[currentChapter] = { isEnabled: true, type: "chapter" };
-            }
-
-            newRows.push({
-                id: generateId("chap-header"),
-                type: "header",
-                subtype: "chapter",
-                name: currentChapter,
-                originalName: currentChapter,
-                timestamp: timestamp,
-                isEnabled: true,
-                wasCensored: procName.wasCensored,
-            });
-
-            if (rawText && rawText.trim().length > 0) {
-                const procText = processText(rawText);
                 newRows.push({
-                    id: generateId("tag"),
-                    type: "tag",
+                    id: generateId("hbd-header"),
+                    type: "header",
+                    subtype: "hbd",
+                    name: birthdayText,
+                    originalName: birthdayText,
+                    isEnabled: true,
+                });
+                return;
+            }
+
+            const { text } = processText(line);
+            const chapterMatch = text.match(chapterRegex);
+            const ogChapterMatch = line.match(chapterRegex);
+            if (chapterMatch) {
+                const timestamp = chapterMatch[1];
+                const rawName = chapterMatch[2];
+                const rawText = chapterMatch[3];
+
+                const ogRawName = ogChapterMatch[2];
+                const ogRawText = ogChapterMatch[3];
+
+                currentChapter = rawName;
+
+                if (!newControls[currentChapter]) {
+                    newControls[currentChapter] = { isEnabled: true, type: "chapter" };
+                }
+
+                newRows.push({
+                    id: generateId("chap-header"),
+                    type: "header",
                     subtype: "chapter",
-                    parentName: currentChapter,
+                    name: currentChapter,
+                    originalName: currentChapter,
                     timestamp: timestamp,
-                    text: procText.text,
-                    originalText: procText.text,
                     isEnabled: true,
-                    isEditing: false,
-                    wasCensored: procText.wasCensored,
+                    wasCensored: rawName !== ogRawName,
                 });
-            }
-        } else {
-            const timestampMatch = line.match(/^([\d:]+)\s+(.*)/);
-            if (timestampMatch) {
-                const timestamp = timestampMatch[1];
-                const rawText = timestampMatch[2];
-                const procText = processText(rawText);
 
-                newRows.push({
-                    id: generateId("tag"),
-                    type: "tag",
-                    subtype: inHbdSection ? "hbd" : "normal",
-                    parentName: inHbdSection ? birthdayText : currentChapter,
-                    timestamp: timestamp,
-                    text: procText.text,
-                    originalText: procText.text,
-                    isEnabled: true,
-                    isEditing: false,
-                    wasCensored: procText.wasCensored,
-                });
+                if (rawText && rawText.trim().length > 0) {
+                    newRows.push({
+                        id: generateId("tag"),
+                        type: "tag",
+                        subtype: "chapter",
+                        parentName: currentChapter,
+                        timestamp: timestamp,
+                        text: rawText,
+                        originalText: ogRawText,
+                        isEnabled: true,
+                        isEditing: false,
+                        wasCensored: rawText !== ogRawText,
+                    });
+                }
             } else {
-                const procText = processText(line);
-                newRows.push({
-                    id: generateId("tag"),
-                    type: "tag",
-                    subtype: inHbdSection ? "hbd" : "normal",
-                    timestamp: "",
-                    text: procText.text,
-                    originalText: procText.text,
-                    isEnabled: true,
-                    isEditing: false,
-                    wasCensored: procText.wasCensored,
-                });
+                const timestampMatch = text.match(/^([\d:]+)\s+(.*)/);
+                const ogTimestampMatch = line.match(/^([\d:]+)\s+(.*)/);
+                if (timestampMatch) {
+                    const timestamp = timestampMatch[1];
+                    const rawText = timestampMatch[2];
+                    const ogRawText = ogTimestampMatch[2];
+
+                    newRows.push({
+                        id: generateId("tag"),
+                        type: "tag",
+                        subtype: inHbdSection ? "hbd" : "normal",
+                        parentName: inHbdSection ? birthdayText : currentChapter,
+                        timestamp: timestamp,
+                        text: rawText,
+                        originalText: ogRawText,
+                        isEnabled: true,
+                        isEditing: false,
+                        wasCensored: rawText !== ogRawText,
+                    });
+                } else {
+                    const procText = processText(line);
+                    newRows.push({
+                        id: generateId("tag"),
+                        type: "tag",
+                        subtype: inHbdSection ? "hbd" : "normal",
+                        timestamp: "",
+                        text: procText.text,
+                        originalText: line,
+                        isEnabled: true,
+                        isEditing: false,
+                        wasCensored: procText.wasCensored,
+                    });
+                }
             }
-        }
-    });
+        });
 
     return { newRows, newControls };
 };

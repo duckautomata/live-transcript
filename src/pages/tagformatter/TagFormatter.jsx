@@ -122,12 +122,14 @@ const TagRow = memo(
                                 />
                             </>
                         ) : (
-                            <Typography sx={{ fontWeight: "bold", textDecoration: headerDecoration }}>
-                                {isChapter && row.timestamp && (
-                                    <span style={{ marginRight: "8px", opacity: 0.8 }}>{row.timestamp}</span>
-                                )}
-                                *{row.name}*
-                            </Typography>
+                            <Tooltip title={row.originalName}>
+                                <Typography sx={{ fontWeight: "bold", textDecoration: headerDecoration }}>
+                                    {isChapter && row.timestamp && (
+                                        <span style={{ marginRight: "8px", opacity: 0.8 }}>{row.timestamp}</span>
+                                    )}
+                                    *{row.name}*
+                                </Typography>
+                            </Tooltip>
                         )}
                     </Box>
                     <IconButton
@@ -218,19 +220,21 @@ const TagRow = memo(
                         sx={{ flexGrow: 1 }}
                     />
                 ) : (
-                    <Typography
-                        variant="body1"
-                        sx={{
-                            fontFamily: "monospace",
-                            flexGrow: 1,
-                            textDecoration,
-                            textAlign: "left",
-                            wordBreak: "break-word", // Wrap long text
-                            minWidth: 0, // Allow shrinking to container
-                        }}
-                    >
-                        {row.text}
-                    </Typography>
+                    <Tooltip title={highlightColor ? row.originalText : undefined}>
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                fontFamily: "monospace",
+                                flexGrow: 1,
+                                textDecoration,
+                                textAlign: "left",
+                                wordBreak: "break-word", // Wrap long text
+                                minWidth: 0, // Allow shrinking to container
+                            }}
+                        >
+                            {row.text}
+                        </Typography>
+                    </Tooltip>
                 )}
 
                 <IconButton

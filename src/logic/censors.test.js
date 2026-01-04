@@ -44,6 +44,9 @@ describe("genericCensor", () => {
         ["02 a", "00:02 a"],
         ["00:03 a", "00:03 a"],
         ["00:00 a", "00:01 a"],
+        ["00:01 1", "00:01 1"],
+        ["1 1", "00:01 1"],
+        ["1:00:00 1 2 3", "1:00:00 1 2 3"],
     ])("tag time genericCensor(%s) -> %s", (text, expected) => {
         expect(genericCensor(text)).toBe(expected);
     });
@@ -115,6 +118,63 @@ describe("genericCensor", () => {
         [`-fucking-`, `-f-ing-`],
         [`_fucking_`, `_f-ing_`],
     ])("fucking genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
+        ["f*cking", "f-ing"],
+        ["af*cking", "af-ing"],
+        ["f*ckinga", "f-inga"],
+        ["af*ckinga", "af-inga"],
+        ["*cking", "*cking"],
+        ["f*ckin", "frickin"],
+        ["*ckin", "*ckin"],
+        ["f*cking f*cking", "f-ing f-ing"],
+        [`"f*cking"`, `"f-ing"`],
+        [`'f*cking'`, `'f-ing'`],
+        [`(f*cking)`, `(f-ing)`],
+        [`[f*cking]`, `[f-ing]`],
+        [`-f*cking-`, `-f-ing-`],
+        [`_f*cking_`, `_f-ing_`],
+    ])("f*cking genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
+        ["fu*king", "f-ing"],
+        ["afu*king", "af-ing"],
+        ["fu*kinga", "f-inga"],
+        ["afu*kinga", "af-inga"],
+        ["u*king", "u*king"],
+        ["fu*kin", "frickin"],
+        ["u*kin", "u*kin"],
+        ["fu*king fu*king", "f-ing f-ing"],
+        [`"fu*king"`, `"f-ing"`],
+        [`'fu*king'`, `'f-ing'`],
+        [`(fu*king)`, `(f-ing)`],
+        [`[fu*king]`, `[f-ing]`],
+        [`-fu*king-`, `-f-ing-`],
+        [`_fu*king_`, `_f-ing_`],
+    ])("fu*king genericCensor(%s) -> %s", (text, expected) => {
+        expect(genericCensor(text)).toBe(expected);
+    });
+
+    test.each([
+        ["f**king", "f-ing"],
+        ["af**king", "af-ing"],
+        ["f**kinga", "f-inga"],
+        ["af**kinga", "af-inga"],
+        ["**king", "**king"],
+        ["f**kin", "frickin"],
+        ["**kin", "**kin"],
+        ["f**king f**king", "f-ing f-ing"],
+        [`"f**king"`, `"f-ing"`],
+        [`'f**king'`, `'f-ing'`],
+        [`(f**king)`, `(f-ing)`],
+        [`[f**king]`, `[f-ing]`],
+        [`-f**king-`, `-f-ing-`],
+        [`_f**king_`, `_f-ing_`],
+    ])("f**king genericCensor(%s) -> %s", (text, expected) => {
         expect(genericCensor(text)).toBe(expected);
     });
 
@@ -515,6 +575,9 @@ describe("genericCensor", () => {
 
         // Section 5
         ["fuck", "frick"],
+        ["f*ck", "frick"],
+        ["fu*k", "frick"],
+        ["f**k", "frick"],
         ["shit", "rot"],
         ["asshole", "mean person"],
         ["asshat", "mean person"],
@@ -595,6 +658,7 @@ describe("genericCensor", () => {
         ["bisexual", "loving"],
         ["trans", "loving"],
         ["queer", "loving"],
+        ["red", "crimson"],
         // ["ass", "rear"],
     ];
 

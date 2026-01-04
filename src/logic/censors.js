@@ -132,7 +132,14 @@ const replacements = [
 
     // --- SECTION 5: General Profanity ---
     [new RegExp(`(f)uck(ing)`, "gi"), "$1-$2"],
+    [new RegExp(`(f)\\*ck(ing)`, "gi"), "$1-$2"],
+    [new RegExp(`(f)u\\*k(ing)`, "gi"), "$1-$2"],
+    [new RegExp(`(f)uc\\*(ing)`, "gi"), "$1-$2"],
+    [new RegExp(`(f)\\*\\*k(ing)`, "gi"), "$1-$2"],
     [new RegExp(`${P}fuck`, "gi"), "$1frick"],
+    [new RegExp(`${P}f\\*ck`, "gi"), "$1frick"],
+    [new RegExp(`${P}fu\\*k`, "gi"), "$1frick"],
+    [new RegExp(`${P}f\\*\\*k`, "gi"), "$1frick"],
     [new RegExp(`${P}shit`, "gi"), "$1rot"],
     [new RegExp(`${P}(a)ss(hole|hat)`, "gi"), "$1mean person"],
     [new RegExp(`${P}([a-zA-Z]*)-ass${P}`, "gi"), "$1$2$3"],
@@ -191,6 +198,7 @@ const replacements = [
     [new RegExp(`${P}baccarat`, "gi"), "$1bet"],
     [new RegExp(`${P}blackjack`, "gi"), "$1bet"],
     [new RegExp(`${P}gambl(e|ing)`, "gi"), "$1bet"],
+    [new RegExp(`${P}red${P}`, "gi"), "$1crimson$2"],
 
     // --- SECTION 9: Names ---
     [new RegExp(`${P}snuffy`, "gi"), "$1Snum"],
