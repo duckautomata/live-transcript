@@ -653,4 +653,30 @@ describe("mintCensor", () => {
     ])("memboo emote mintCensor(%s) -> %s", (text, expected) => {
         expect(mintCensor(text)).toBe(expected);
     });
+
+    test.each([
+        ["~1", "~1"],
+        [":~1", ":~1"],
+        ["~1:", ":"],
+        [":~1:", "::"],
+        [":membootest~1:", ":_test:"],
+        [":membootest~11:", ":_test:"],
+        [":membootest~10000:", ":_test:"],
+        [":membootest~~10000:", ":_test~:"],
+        ["tra:membootest~1:", "tra:_test:"],
+        [":MEMBOOtest~1:", ":_test:"],
+        [":Membootest~1:", ":_test:"],
+        [":membootest~1: a :membootest~1:", ":_test: a :_test:"],
+        [":membootest~1:'d", ":_test:'d"],
+        [":membootest~1:ed", ":_test:ed"],
+        [":membootest~1:ing", ":_test:ing"],
+        ['":membootest~1:"', '":_test:"'],
+        ["':membootest~1:'", "':_test:'"],
+        ["(:membootest~1:)", "(:_test:)"],
+        ["[:membootest~1:]", "[:_test:]"],
+        ["-:membootest~1:-", "-:_test:-"],
+        ["_:membootest~1:_", "_:_test:_"],
+    ])("memboo duplicate emote mintCensor(%s) -> %s", (text, expected) => {
+        expect(mintCensor(text)).toBe(expected);
+    });
 });

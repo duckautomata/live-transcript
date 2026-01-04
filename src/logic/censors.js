@@ -214,7 +214,10 @@ const replacements = [
 ];
 
 /** @type {[string|RegExp, string][]} */
-const mintReplacements = [[/:memboo/gi, ":_"]];
+const mintReplacements = [
+    [/:memboo/gi, ":_"],
+    [/~\d+:/gi, ":"],
+];
 
 /**
  * Generic text censorship based on a list of predefined replacements.
