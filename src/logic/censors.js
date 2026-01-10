@@ -35,7 +35,8 @@ const replacements = [
     [new RegExp(`${P}cult`, "gi"), "$1group"],
     [new RegExp(`${P}trap${P}`, "gi"), "$1ambush$2"],
     [new RegExp(`${P}gay${P}`, "gi"), "$1loving$2"],
-    [new RegExp(`${P}lesbian${P}`, "gi"), "$1loving$2"],
+    [new RegExp(`${P}twink${P}`, "gi"), "$1boy$2"],
+    [new RegExp(`${P}lesbian${P}`, "gi"), "$1girl$2"],
     [new RegExp(`${P}homosexual${P}`, "gi"), "$1loving$2"],
     [new RegExp(`${P}bisexual${P}`, "gi"), "$1loving$2"],
     [new RegExp(`${P}trans${P}`, "gi"), "$1loving$2"],
@@ -56,8 +57,8 @@ const replacements = [
     [new RegExp(`${P}bomb`, "gi"), "$1tnt"],
     [new RegExp(`${P}grenade`, "gi"), "$1hand-tnt"],
     [new RegExp(`${P}missile`, "gi"), "$1rocket"],
-    [new RegExp(`${P}(g)u(n)`, "gi"), "$1pew-pew"],
-    [new RegExp(`${P}(ter)r(or)i(st)`, "gi"), "$1demolition person"],
+    [new RegExp(`${P}gun`, "gi"), "$1pew-pew"],
+    [new RegExp(`${P}terrorist`, "gi"), "$1demolition person"],
 
     // --- SECTION 4: Sexual Content & Anatomy ---
     [new RegExp(`${P}ntr`, "gi"), "$1cheating"],
@@ -143,7 +144,7 @@ const replacements = [
     [new RegExp(`${P}shit`, "gi"), "$1rot"],
     [new RegExp(`${P}(a)ss(hole|hat)`, "gi"), "$1mean person"],
     [new RegExp(`${P}([a-zA-Z]*)-ass${P}`, "gi"), "$1$2$3"],
-    // [new RegExp(`${P}ass${P}`, "gi"), "$1rear$2"],
+    [new RegExp(`${P}ass${P}`, "gi"), "$1rear$2"],
     [new RegExp(`${P}bastard`, "gi"), "$1rat"],
     [new RegExp(`${P}damn`, "gi"), "$1darn"],
     [new RegExp(`${P}crap`, "gi"), "$1nonsense"],
@@ -198,6 +199,8 @@ const replacements = [
     [new RegExp(`${P}baccarat`, "gi"), "$1bet"],
     [new RegExp(`${P}blackjack`, "gi"), "$1bet"],
     [new RegExp(`${P}gambl(e|ing)`, "gi"), "$1bet"],
+    [new RegExp(`${P}mom${P}`, "gi"), "$1female caregiver$2"],
+    [new RegExp(`${P}mother${P}`, "gi"), "$1female caregiver$2"],
     [new RegExp(`${P}red${P}`, "gi"), "$1crimson$2"],
 
     // --- SECTION 9: Names ---
@@ -205,6 +208,7 @@ const replacements = [
     [new RegExp(`${P}snuffies`, "gi"), "$1Snum's"],
     [new RegExp(`${P}snuffles`, "gi"), "$1Snum's"],
     [new RegExp(`${P}snuff`, "gi"), "$1extinguish"],
+    [new RegExp(`${P}smut${P}`, "gi"), "$1messy$2"],
     [new RegExp(`${P}sloppy`, "gi"), "$1messy"],
     [new RegExp(`${P}sloppies`, "gi"), "$1messy"],
 

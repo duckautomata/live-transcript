@@ -653,13 +653,17 @@ describe("genericCensor", () => {
     const fullWords = [
         ["trap", "ambush"],
         ["gay", "loving"],
-        ["lesbian", "loving"],
+        ["twink", "boy"],
+        ["lesbian", "girl"],
         ["homosexual", "loving"],
         ["bisexual", "loving"],
         ["trans", "loving"],
         ["queer", "loving"],
+        ["ass", "rear"],
+        ["mom", "female caregiver"],
+        ["mother", "female caregiver"],
         ["red", "crimson"],
-        // ["ass", "rear"],
+        ["smut", "messy"],
     ];
 
     // word in any position
