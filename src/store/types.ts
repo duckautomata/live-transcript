@@ -21,11 +21,13 @@ export interface AudioSlice {
 
 export interface ClipperSlice {
     clipPopupOpen: boolean;
+    clipMode: boolean;
     clipStartIndex: number;
     clipEndIndex: number;
     clipInvalidBefore?: number;
     clipInvalidAfter?: number;
     setClipPopupOpen: (isOpen: boolean) => void;
+    toggleClipMode: () => void;
     setClipStartIndex: (index: number) => void;
     setClipEndIndex: (index: number) => void;
     recalculateClipRange: () => void;

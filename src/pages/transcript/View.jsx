@@ -1,5 +1,6 @@
 import {
     Box,
+    Button,
     IconButton,
     InputAdornment,
     Tab,
@@ -9,7 +10,7 @@ import {
     Typography,
     useMediaQuery,
 } from "@mui/material";
-import { Clear, ExpandLess, ExpandMore, Info, Search } from "@mui/icons-material";
+import { Clear, ExpandLess, ExpandMore, Info, Search, ContentCut } from "@mui/icons-material";
 import { useState, useMemo } from "react";
 import LineMenu from "../../components/LineMenu";
 import DevHeaderInfo from "../../components/DevHeaderInfo";
@@ -42,6 +43,9 @@ export default function View({ wsKey }) {
     const useVirtualList = useAppStore((state) => state.useVirtualList);
     const setUseVirtualList = useAppStore((state) => state.setUseVirtualList);
     const formattedRows = useAppStore((state) => state.formattedRows);
+    const clipMode = useAppStore((state) => state.clipMode);
+    const toggleClipMode = useAppStore((state) => state.toggleClipMode);
+    const clipStartIndex = useAppStore((state) => state.clipStartIndex);
 
     const [searchTerm, setSearchTerm] = useState("");
     const [pendingJumpId, setPendingJumpId] = useState(-1);
@@ -365,11 +369,41 @@ export default function View({ wsKey }) {
                                                 <Clear />
                                             </IconButton>
                                         )}
+                                        <Tooltip title={clipMode ? "Exit Clip Mode" : "Enter Clip Mode"}>
+                                            <Button
+                                                onClick={toggleClipMode}
+                                                color={clipMode ? "secondary" : "primary"}
+                                                variant={clipMode ? "contained" : "text"}
+                                                startIcon={<ContentCut />}
+                                                size="small"
+                                                sx={{ ml: 1, whiteSpace: "nowrap" }}
+                                            >
+                                                {isMobile ? "Clip" : "Clip Mode"}
+                                            </Button>
+                                        </Tooltip>
                                         <Tooltip title={isHeaderMinimized ? "Show Header" : "Minimize Header"}>
                                             <IconButton onClick={() => setIsHeaderMinimized(!isHeaderMinimized)}>
                                                 {isHeaderMinimized ? <ExpandMore /> : <ExpandLess />}
                                             </IconButton>
                                         </Tooltip>
+                                    </Box>
+                                )}
+                                {clipMode && (
+                                    <Box
+                                        sx={{
+                                            width: "100%",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            mb: 1,
+                                            px: 2,
+                                            textAlign: "center",
+                                        }}
+                                    >
+                                        <Typography variant="body2" color="secondary" sx={{ fontWeight: "bold" }}>
+                                            {clipStartIndex === -1
+                                                ? "Click on the line to set it as one end of the clip"
+                                                : "Click on another line to set it as the start/end of the clip. Or click on the reset button to reset the clip selection"}
+                                        </Typography>
                                     </Box>
                                 )}
                                 {!isHeaderMinimized && (

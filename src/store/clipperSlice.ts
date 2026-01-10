@@ -3,6 +3,7 @@ import { maxClipSize } from "../config";
 
 export const createClipperSlice: AppSliceCreator<ClipperSlice> = (set, get) => ({
     clipPopupOpen: false,
+    clipMode: false,
     clipStartIndex: -1,
     clipEndIndex: -1,
     clipInvalidBefore: -1,
@@ -10,7 +11,16 @@ export const createClipperSlice: AppSliceCreator<ClipperSlice> = (set, get) => (
     setClipPopupOpen: (isOpen) => {
         set({
             clipPopupOpen: isOpen,
-            // Reset bounds when opening/closing if needed, but mostly relevant during clipping
+            // If opening popup, ensure clipMode is false to avoid UI clutter
+            clipMode: isOpen ? false : get().clipMode,
+        });
+    },
+    toggleClipMode: () => {
+        const current = get().clipMode;
+        set({
+            clipMode: !current,
+            clipStartIndex: !current ? -1 : -1,
+            clipEndIndex: -1,
         });
     },
     setClipStartIndex: (index) => {

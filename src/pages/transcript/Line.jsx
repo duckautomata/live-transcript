@@ -1,10 +1,10 @@
 import { IconButton, Typography, Tooltip } from "@mui/material";
-import { forwardRef, Fragment, memo, useState } from "react";
+import { forwardRef, Fragment, memo, useMemo, useState } from "react";
 import Segment from "./Segment";
 import { useTheme, keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
 import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
-import { MoreHoriz } from "@mui/icons-material";
+import { MoreHoriz, ContentCut, RestartAlt } from "@mui/icons-material";
 import { maxClipSize } from "../../config";
 import { useAppStore } from "../../store/store";
 import { useShallow } from "zustand/shallow";
@@ -55,6 +55,9 @@ const Line = memo(
             const setTagPopupTimestamp = useAppStore((state) => state.setTagPopupTimestamp);
             const setTagPopupText = useAppStore((state) => state.setTagPopupText);
             const setLineMenuId = useAppStore((state) => state.setLineMenuId);
+            const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
+            const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
+            const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
 
             const startTime = useAppStore((state) => state.startTime);
             const timeFormat = useAppStore((state) => state.timeFormat);
@@ -63,10 +66,26 @@ const Line = memo(
 
             const isMediaMissing = mediaType !== "none" && props.mediaAvailable === false;
 
-            const { isSelected, isInClipRange, isPlaying, isClipable, isClipStart } = useAppStore(
+            const {
+                isSelected,
+                isInClipRange,
+                isPlaying,
+                isClipable,
+                isClipStart,
+                clipMode,
+                clipStartIndex,
+                isRangeValid,
+            } = useAppStore(
                 useShallow((state) => {
-                    const { lineMenuId, clipStartIndex, clipEndIndex, audioId, clipInvalidBefore, clipInvalidAfter } =
-                        state;
+                    const {
+                        lineMenuId,
+                        clipStartIndex,
+                        clipEndIndex,
+                        audioId,
+                        clipInvalidBefore,
+                        clipInvalidAfter,
+                        clipMode,
+                    } = state;
 
                     const isBetween = (start, end, current) =>
                         (start <= current && current <= end) || (end <= current && current <= start);
@@ -91,6 +110,9 @@ const Line = memo(
                             Math.abs(clipStartIndex - id) < maxClipSize,
                         isPlaying: audioId === id,
                         isClipable: clipStartIndex >= 0 && Math.abs(clipStartIndex - id) < maxClipSize && isRangeValid,
+                        clipMode,
+                        clipStartIndex,
+                        isRangeValid,
                     };
                 }),
             );
@@ -101,8 +123,28 @@ const Line = memo(
                 setTagPopupOpen(true);
             };
 
+            const isClipTargetValid = useMemo(() => {
+                if (isMediaMissing) return false;
+                if (clipStartIndex === -1) return true;
+                return isRangeValid && Math.abs(clipStartIndex - id) < maxClipSize;
+            }, [isMediaMissing, clipStartIndex, isRangeValid, id]);
+
             const onIdClick = () => {
-                setLineMenuId(id);
+                if (clipMode) {
+                    if (!isClipTargetValid) return;
+
+                    if (clipStartIndex === -1) {
+                        setClipStartIndex(id);
+                    } else if (clipStartIndex === id) {
+                        setClipStartIndex(-1);
+                    } else {
+                        setClipEndIndex(id);
+                        setClipPopupOpen(true);
+                        // Note: setClipPopupOpen(true) will implicitly set clipMode to false via the slice setter
+                    }
+                } else {
+                    setLineMenuId(id);
+                }
             };
 
             const convertTime = (time) => {
@@ -132,9 +174,13 @@ const Line = memo(
 
             const iconColor = isMediaMissing
                 ? theme.palette.id.loading
-                : isClipable
-                  ? theme.palette.id.clip
-                  : theme.palette.id.main;
+                : clipMode
+                  ? isClipTargetValid
+                      ? theme.palette.secondary.main
+                      : theme.palette.action.disabled
+                  : isClipable
+                    ? theme.palette.id.clip
+                    : theme.palette.id.main;
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
             const iconSx = density === "compact" ? { padding: 0 } : {};
@@ -166,8 +212,19 @@ const Line = memo(
                             onMouseEnter={() => setIdOver(true)}
                             onMouseLeave={() => setIdOver(false)}
                             id={`line-button-${id}`}
+                            disabled={clipMode && !isClipTargetValid}
                         >
-                            <MoreHoriz style={{ color: iconColor }} />
+                            {clipMode ? (
+                                isClipStart ? (
+                                    <RestartAlt style={{ color: iconColor }} />
+                                ) : isClipTargetValid ? (
+                                    <ContentCut style={{ color: iconColor }} />
+                                ) : (
+                                    <MoreHoriz style={{ color: iconColor }} />
+                                )
+                            ) : (
+                                <MoreHoriz style={{ color: iconColor }} />
+                            )}
                         </IconButton>
                     </Tooltip>{" "}
                     [
