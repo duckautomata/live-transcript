@@ -84,7 +84,7 @@ import { useAppStore } from "../store/store";
  */
 const HelpImage = ({ src, width = "100%", alt = "" }) => (
     <Paper
-        elevation={3}
+        elevation={6}
         sx={{
             my: 2,
             p: 0.5,

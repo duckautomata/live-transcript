@@ -30,7 +30,6 @@ export default function TranscriptVirtual({
     pendingJumpId,
     setPendingJumpId,
     tagsMap,
-    hasOverflow,
 }) {
     const isMobile = useMediaQuery("(max-width:768px)");
     const virtuosoRef = useRef(null);
@@ -151,34 +150,7 @@ export default function TranscriptVirtual({
                     initialTopMostItemIndex={initialJumpIndex !== -1 ? initialJumpIndex : displayData.length - 1}
                     style={{ height: "100%" }}
                     components={{
-                        Footer: () => (
-                            <>
-                                {hasOverflow ? (
-                                    <Box
-                                        sx={{
-                                            pb: 6,
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            alignItems: "center",
-                                            width: "100%",
-                                        }}
-                                    >
-                                        {hasOverflow && (
-                                            <Typography
-                                                variant="body2"
-                                                color="warning.main"
-                                                sx={{ fontStyle: "italic", py: 1, mt: 1 }}
-                                            >
-                                                Warning: Tags exist beyond the transcript
-                                            </Typography>
-                                        )}
-                                        <Box sx={{ height: 50 }} />
-                                    </Box>
-                                ) : (
-                                    <Box sx={{ height: 50 }} />
-                                )}
-                            </>
-                        ),
+                        Footer: () => <Box sx={{ height: 50 }} />,
                     }}
                     defaultItemHeight={30}
                     rangeChanged={(range) => {

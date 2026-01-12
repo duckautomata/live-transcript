@@ -130,14 +130,15 @@ export default function View({ wsKey }) {
     };
 
     // Memoize tags map for performance
-    const { tagsMap, hasOverflow } = useMemo(() => {
+    const tagsMap = useMemo(() => {
         const map = new Map();
-        let overflow = false;
-        if (!formattedRows || !displayData || displayData.length === 0) return { tagsMap: map, hasOverflow: false };
+        if (!formattedRows || !displayData || displayData.length === 0) return map;
 
+        const firstLine = displayData[0];
         const lastLine = displayData[displayData.length - 1];
+        const firstLineTimestamp = firstLine.timestamp;
         const lastLineTimestamp = lastLine.timestamp;
-        const THRESHOLD = 5; // Seconds beyond last line
+        // const THRESHOLD = 5; // Seconds beyond last line
 
         // Optimized approach:
         // 1. Iterate tags.
@@ -150,9 +151,8 @@ export default function View({ wsKey }) {
                 const relativeSeconds = timeToSeconds(row.timestamp);
                 const absoluteTimestamp = (startTime || 0) + relativeSeconds;
 
-                // Check for overflow (Tags beyond the transcript end)
-                if (absoluteTimestamp > lastLineTimestamp + THRESHOLD) {
-                    overflow = true;
+                // Filter out tags before first line or after last line
+                if (absoluteTimestamp < firstLineTimestamp || absoluteTimestamp > lastLineTimestamp) {
                     return;
                 }
 
@@ -202,6 +202,8 @@ export default function View({ wsKey }) {
 
                     // Find closest segment in bestLine
                     let bestSegIndex = 0;
+                    let minDifference = Math.abs(bestLine.timestamp - absoluteTimestamp);
+
                     if (bestLine.segments && bestLine.segments.length > 0) {
                         let minSegDiff = Math.abs(bestLine.segments[0].timestamp - absoluteTimestamp);
 
@@ -212,6 +214,12 @@ export default function View({ wsKey }) {
                                 bestSegIndex = i;
                             }
                         }
+                        minDifference = minSegDiff;
+                    }
+
+                    // Filter out tags that are too far from the closest line/segment
+                    if (minDifference > 8) {
+                        return;
                     }
 
                     // Assign Tag
@@ -223,7 +231,7 @@ export default function View({ wsKey }) {
                 }
             }
         });
-        return { tagsMap: map, hasOverflow: overflow };
+        return map;
     }, [formattedRows, displayData, startTime]);
 
     const streamInfoTooltip = (
@@ -261,7 +269,6 @@ export default function View({ wsKey }) {
                         pendingJumpId={pendingJumpId}
                         setPendingJumpId={setPendingJumpId}
                         tagsMap={tagsMap}
-                        hasOverflow={hasOverflow}
                     />
                 );
             case 0:
@@ -272,7 +279,6 @@ export default function View({ wsKey }) {
                         pendingJumpId={pendingJumpId}
                         setPendingJumpId={setPendingJumpId}
                         tagsMap={tagsMap}
-                        hasOverflow={hasOverflow}
                     />
                 );
         }

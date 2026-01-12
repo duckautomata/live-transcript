@@ -6,30 +6,24 @@ import { useAppStore } from "./store/store";
 export const server = "https://api.dokiscripts.com";
 export const wsServer = "wss://api.dokiscripts.com";
 export const maxClipSize = 30;
-export const keys = () => {
-    const keys = ["doki", "mint"];
-    if (useAppStore.getState().devMode) {
-        keys.push("test");
-    }
 
-    return keys;
-};
 export const keyIcons = (size) => {
-    if (size) {
-        const icons = [
+    const icons = [
+        {
+            name: "Doki",
+            icon: <Avatar src={dokiIcon} alt="doki" sx={{ width: size, height: size }} />,
+            value: "doki",
+        },
+        {
+            name: "Mint",
+            icon: <Avatar src={mintIcon} alt="mint" sx={{ width: size, height: size }} />,
+            value: "mint",
+        },
+    ];
+
+    if (useAppStore.getState().devMode) {
+        icons.push(
             {
-                name: "Doki",
-                icon: <Avatar src={dokiIcon} alt="doki" sx={{ width: size, height: size }} />,
-                value: "doki",
-            },
-            {
-                name: "Mint",
-                icon: <Avatar src={mintIcon} alt="mint" sx={{ width: size, height: size }} />,
-                value: "mint",
-            },
-        ];
-        if (useAppStore.getState().devMode) {
-            icons.push({
                 name: "Test",
                 icon: (
                     <Avatar alt="test" sx={{ width: size, height: size }}>
@@ -37,18 +31,23 @@ export const keyIcons = (size) => {
                     </Avatar>
                 ),
                 value: "test",
-            });
-        }
-        return icons;
+            },
+            {
+                name: "Mock",
+                icon: (
+                    <Avatar alt="mock" sx={{ width: size, height: size, backgroundColor: "Highlight" }}>
+                        M
+                    </Avatar>
+                ),
+                value: "mock",
+            },
+        );
     }
-
-    const icons = [
-        { name: "Doki", icon: <Avatar src={dokiIcon} alt="doki" />, value: "doki" },
-        { name: "Mint", icon: <Avatar src={mintIcon} alt="mint" />, value: "mint" },
-    ];
-    if (useAppStore.getState().devMode) {
-        icons.push({ name: "Test", icon: <Avatar alt="test">T</Avatar>, value: "test" });
-    }
-
     return icons;
+};
+
+export const keys = () => {
+    const keys = keyIcons(120).map((streamer) => streamer.value);
+
+    return keys;
 };

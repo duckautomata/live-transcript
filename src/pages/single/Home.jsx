@@ -1,13 +1,14 @@
 import {
-    List,
-    ListItem,
-    ListItemText,
     Typography,
     Box,
-    ListItemButton,
-    ListItemIcon,
     useMediaQuery,
     Button,
+    Card,
+    CardActionArea,
+    CardContent,
+    Grid,
+    Container,
+    Fade,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { keyIcons } from "../../config";
@@ -19,40 +20,101 @@ export default function Home() {
     const devMode = useAppStore((state) => state.devMode);
 
     const handleStreamerChange = (value) => {
-        navigate(`${value}/`);
+        navigate(`/${value}/`);
     };
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", p: 4, gap: 2 }}>
-            {isMobile ? (
-                <Typography color="primary" variant="h4" component="h4" gutterBottom>
+        <Container
+            maxWidth="lg"
+            sx={{
+                minHeight: "80vh",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                py: 4,
+            }}
+        >
+            <Box sx={{ mb: 6, textAlign: "center" }}>
+                <Typography
+                    variant={isMobile ? "h3" : "h2"}
+                    component="h1"
+                    fontWeight="bold"
+                    sx={{
+                        background: (theme) =>
+                            `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.alt})`,
+                        backgroundClip: "text",
+                        textFillColor: "transparent",
+                        mb: 2,
+                    }}
+                >
                     Live Transcripts {devMode ? "(Dev Mode)" : ""}
                 </Typography>
-            ) : (
-                <Typography color="primary" variant="h2" component="h2" gutterBottom>
-                    Live Transcripts {devMode ? "(Dev Mode)" : ""}
+                <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: "auto" }}>
+                    Select a streamer to view real-time transcripts.
                 </Typography>
-            )}
+            </Box>
 
-            <List sx={{ width: "100%" }}>
-                <ListItemText primary="Available Transcripts" sx={{ ml: 1, display: "block" }} />
-                {keyIcons().map((streamer) => (
-                    <ListItem key={streamer.value} disablePadding>
-                        <ListItemButton
-                            onClick={() => handleStreamerChange(streamer.value)}
-                            sx={{ overflow: "hidden" }}
-                        >
-                            <ListItemIcon>{streamer.icon}</ListItemIcon>
-                            <ListItemText primary={streamer.name} />
-                        </ListItemButton>
-                    </ListItem>
+            <Grid container spacing={4} justifyContent="center" alignItems="stretch">
+                {keyIcons(120).map((streamer, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={streamer.value} sx={{ display: "flex" }}>
+                        <Fade in={true} timeout={500 + index * 200}>
+                            <Card
+                                sx={{
+                                    width: "100%",
+                                    borderRadius: 4,
+                                    transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
+                                    "&:hover": {
+                                        transform: "translateY(-8px)",
+                                        boxShadow: (theme) => theme.shadows[10],
+                                    },
+                                    background: (theme) => theme.palette.background.paper,
+                                }}
+                                elevation={4}
+                            >
+                                <CardActionArea
+                                    onClick={() => handleStreamerChange(streamer.value)}
+                                    sx={{
+                                        height: "100%",
+                                        p: 3,
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <Box sx={{ mb: 3 }}>{streamer.icon}</Box>
+                                    <CardContent sx={{ p: 0, textAlign: "center" }}>
+                                        <Typography gutterBottom variant="h4" component="div" fontWeight="medium">
+                                            {streamer.name}
+                                        </Typography>
+                                    </CardContent>
+                                </CardActionArea>
+                            </Card>
+                        </Fade>
+                    </Grid>
                 ))}
-            </List>
+            </Grid>
 
-            <Typography paddingTop={10}>Looking for the transcript of a past stream instead?</Typography>
-            <Button href="/archived-transcript" variant="outlined">
-                Go to Archived-Transcript
-            </Button>
-        </Box>
+            <Box sx={{ mt: 8, textAlign: "center" }}>
+                <Typography variant="body1" color="text.secondary" gutterBottom>
+                    Looking for past streams?
+                </Typography>
+                <Button
+                    href="/archived-transcript"
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                        mt: 1,
+                        borderRadius: 2,
+                        px: 4,
+                        textTransform: "none",
+                        fontSize: "1.1rem",
+                    }}
+                >
+                    Browse Archived Transcripts
+                </Button>
+            </Box>
+        </Container>
     );
 }

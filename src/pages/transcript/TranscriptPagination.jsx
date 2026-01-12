@@ -14,7 +14,7 @@ import Line from "./Line";
  * @param {Map<string, any[]>} props.tagsMap
  * @param {boolean} props.hasOverflow
  */
-export default function TranscriptPagination({ displayData, pendingJumpId, setPendingJumpId, tagsMap, hasOverflow }) {
+export default function TranscriptPagination({ displayData, pendingJumpId, setPendingJumpId, tagsMap }) {
     const [page, setPage] = useState(1);
     const lineRefs = useRef(new Map());
 
@@ -89,11 +89,6 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
                             showFirstButton
                             showLastButton
                         />
-                        {hasOverflow && (
-                            <Typography variant="body2" color="warning.main" sx={{ fontStyle: "italic", py: 1, mt: 1 }}>
-                                Warning: Tags exist beyond the transcript
-                            </Typography>
-                        )}
                     </Box>
                     {displayedLines.map((line) => (
                         <Line
