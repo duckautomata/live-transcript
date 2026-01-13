@@ -153,6 +153,40 @@ const ClipperPopup = ({ wsKey }) => {
         }
     };
 
+    const handleManualStartChange = (e) => {
+        const val = parseFloat(e.target.value);
+        if (isNaN(val) || val < 0) return;
+
+        // If trying to go past end, clamp or ignore?
+        // Best to just ignore invalid updates that cross over
+        if (val >= trimRegion.end) return;
+
+        setTrimRegion((prev) => ({ ...prev, start: val }));
+
+        if (regions.current) {
+            const region = regions.current.getRegions()[0];
+            if (region) {
+                region.setOptions({ start: val });
+            }
+        }
+    };
+
+    const handleManualEndChange = (e) => {
+        const val = parseFloat(e.target.value);
+        if (isNaN(val) || val > duration) return;
+
+        if (val <= trimRegion.start) return;
+
+        setTrimRegion((prev) => ({ ...prev, end: val }));
+
+        if (regions.current) {
+            const region = regions.current.getRegions()[0];
+            if (region) {
+                region.setOptions({ end: val });
+            }
+        }
+    };
+
     const handleReset = () => {
         // cleanup wavesurfer
         if (wavesurfer.current) {
@@ -255,6 +289,9 @@ const ClipperPopup = ({ wsKey }) => {
 
     // Keyboard controls
     useEffect(() => {
+        /**
+         * @param {KeyboardEvent} e
+         */
         const handleKeyDown = (e) => {
             if (step !== "preview" || !isLoaded) return;
 
@@ -272,6 +309,9 @@ const ClipperPopup = ({ wsKey }) => {
                     wavesurfer.current?.playPause();
                 }
             } else if (e.code === "KeyA") {
+                if (e.ctrlKey || e.metaKey) {
+                    return;
+                }
                 // Set start to current time
                 const region = getRegion();
                 const currentTime = wavesurfer.current?.getCurrentTime();
@@ -283,6 +323,9 @@ const ClipperPopup = ({ wsKey }) => {
                     }
                 }
             } else if (e.code === "KeyD") {
+                if (e.ctrlKey || e.metaKey) {
+                    return;
+                }
                 // Set end to current time
                 const region = getRegion();
                 const currentTime = wavesurfer.current?.getCurrentTime();
@@ -294,6 +337,9 @@ const ClipperPopup = ({ wsKey }) => {
                     }
                 }
             } else if (e.code === "KeyR") {
+                if (e.shiftKey) {
+                    return;
+                }
                 // Reset trim
                 if (regions.current && wavesurfer.current) {
                     const dur = wavesurfer.current.getDuration();
@@ -485,25 +531,40 @@ const ClipperPopup = ({ wsKey }) => {
                                 sx={{
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: 3,
+                                    gap: { xs: 2, sm: 3 },
                                     width: "100%",
                                     justifyContent: "center",
+                                    flexDirection: { xs: "column", sm: "row" },
                                 }}
                             >
-                                <Typography variant="body2">
-                                    Start: <strong>{trimRegion.start.toFixed(2)}s</strong>
-                                </Typography>
-                                <Typography variant="body2">
-                                    End: <strong>{trimRegion.end.toFixed(2)}s</strong>
-                                </Typography>
-                                <Typography variant="body2">
+                                <Box sx={{ display: "flex", gap: 2 }}>
+                                    <TextField
+                                        label="Start"
+                                        type="number"
+                                        size="small"
+                                        value={trimRegion.start}
+                                        onChange={handleManualStartChange}
+                                        inputProps={{ step: 0.01, min: 0, max: trimRegion.end }}
+                                        sx={{ width: 100 }}
+                                    />
+                                    <TextField
+                                        label="End"
+                                        type="number"
+                                        size="small"
+                                        value={trimRegion.end}
+                                        onChange={handleManualEndChange}
+                                        inputProps={{ step: 0.01, min: trimRegion.start, max: duration }}
+                                        sx={{ width: 100 }}
+                                    />
+                                </Box>
+                                <Typography variant="body2" sx={{ minWidth: "120px", textAlign: "center" }}>
                                     Duration: <strong>{(trimRegion.end - trimRegion.start).toFixed(2)}s</strong>
                                 </Typography>
                                 <Button
                                     size="small"
                                     onClick={handleResetTrim}
                                     color="inherit"
-                                    sx={{ ml: 2 }}
+                                    sx={{ ml: { xs: 0, sm: 2 } }}
                                     startIcon={<RestartAlt />}
                                 >
                                     Reset Trim

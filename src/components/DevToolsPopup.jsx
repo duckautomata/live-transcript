@@ -228,7 +228,7 @@ export default function DevToolsPopup({ open, setOpen }) {
 
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-            <DialogTitle>Dev Tools</DialogTitle>
+            <DialogTitle data-testid="devtools-title">Dev Tools</DialogTitle>
             <DialogContent>
                 <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                     <Tabs value={tabValue} onChange={handleTabChange} aria-label="dev tools tabs">
@@ -241,7 +241,12 @@ export default function DevToolsPopup({ open, setOpen }) {
                 <TabPanel value={tabValue} index={0}>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                         <Box>
-                            <Button variant="contained" color="error" onClick={handleClearTranscript}>
+                            <Button
+                                variant="contained"
+                                color="error"
+                                onClick={handleClearTranscript}
+                                data-testid="devtools-clear-transcript"
+                            >
                                 Clear Transcript
                             </Button>
                         </Box>
@@ -252,6 +257,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 <TextField
                                     label="Active Title"
                                     size="small"
+                                    data-testid="devtools-active-title"
                                     value={activeTitle}
                                     onChange={(e) => setActiveTitle(e.target.value)}
                                     sx={{ minWidth: 200 }}
@@ -259,6 +265,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 <TextField
                                     label="Start Time"
                                     size="small"
+                                    data-testid="devtools-start-time"
                                     value={startTime}
                                     onChange={(e) => setStartTime(Number(e.target.value))}
                                     type="number"
@@ -266,6 +273,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 <FormControl size="small" sx={{ minWidth: 120 }}>
                                     <InputLabel>Media Type</InputLabel>
                                     <Select
+                                        data-testid="devtools-media-type"
                                         value={mediaType}
                                         label="Media Type"
                                         onChange={(e) => setMediaType(e.target.value)}
@@ -276,7 +284,13 @@ export default function DevToolsPopup({ open, setOpen }) {
                                     </Select>
                                 </FormControl>
                                 <FormControlLabel
-                                    control={<Switch checked={isLive} onChange={(e) => setIsLive(e.target.checked)} />}
+                                    control={
+                                        <Switch
+                                            data-testid="devtools-is-live"
+                                            checked={isLive}
+                                            onChange={(e) => setIsLive(e.target.checked)}
+                                        />
+                                    }
                                     label="Is Live"
                                 />
                             </Box>
@@ -288,6 +302,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 <TextField
                                     label="ID"
                                     size="small"
+                                    data-testid="devtools-line-id"
                                     value={lineId}
                                     onChange={(e) => setLineId(e.target.value)}
                                     type="number"
@@ -295,6 +310,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 <TextField
                                     label="Timestamp"
                                     size="small"
+                                    data-testid="devtools-line-timestamp"
                                     value={lineTimestamp}
                                     onChange={(e) => setLineTimestamp(e.target.value)}
                                     type="number"
@@ -306,6 +322,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                     <TextField
                                         label="Text"
                                         size="small"
+                                        data-testid="devtools-segment-text"
                                         fullWidth
                                         value={seg.text}
                                         onChange={(e) => handleSegmentChange(index, "text", e.target.value)}
@@ -313,20 +330,25 @@ export default function DevToolsPopup({ open, setOpen }) {
                                     <TextField
                                         label="Ts"
                                         size="small"
+                                        data-testid="devtools-segment-timestamp"
                                         sx={{ width: 100 }}
                                         value={seg.timestamp}
                                         onChange={(e) => handleSegmentChange(index, "timestamp", e.target.value)}
                                     />
-                                    <IconButton size="small" onClick={() => handleRemoveSegment(index)}>
+                                    <IconButton
+                                        size="small"
+                                        data-testid="devtools-remove-segment"
+                                        onClick={() => handleRemoveSegment(index)}
+                                    >
                                         <Delete />
                                     </IconButton>
                                 </Box>
                             ))}
-                            <Button startIcon={<Add />} onClick={handleAddSegment}>
+                            <Button data-testid="devtools-add-segment" startIcon={<Add />} onClick={handleAddSegment}>
                                 Add Segment
                             </Button>
                             <Box sx={{ mt: 2 }}>
-                                <Button variant="contained" onClick={handleAddLine}>
+                                <Button data-testid="devtools-add-line" variant="contained" onClick={handleAddLine}>
                                     Add Line
                                 </Button>
                             </Box>
@@ -336,6 +358,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                             <Typography variant="h6">Simulation</Typography>
                             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                                 <TextField
+                                    data-testid="devtools-sim-start-id"
                                     label="Start ID"
                                     size="small"
                                     value={simStartId}
@@ -343,6 +366,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                     type="number"
                                 />
                                 <TextField
+                                    data-testid="devtools-sim-interval"
                                     label="Interval (ms)"
                                     size="small"
                                     value={simInterval}
@@ -351,6 +375,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 />
                                 {!isSimulating ? (
                                     <Button
+                                        data-testid="devtools-start-sim"
                                         variant="contained"
                                         color="success"
                                         startIcon={<PlayArrow />}
@@ -360,6 +385,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                     </Button>
                                 ) : (
                                     <Button
+                                        data-testid="devtools-stop-sim"
                                         variant="contained"
                                         color="warning"
                                         startIcon={<Stop />}
@@ -375,6 +401,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                             <Typography variant="h6">Media Availability</Typography>
                             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                                 <TextField
+                                    data-testid="devtools-media-ids"
                                     label="Line IDs (comma-separated)"
                                     size="small"
                                     value={mediaIds}
@@ -382,6 +409,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                     sx={{ flexGrow: 1 }}
                                 />
                                 <FormControlLabel
+                                    data-testid="devtools-media-available"
                                     control={
                                         <Switch
                                             checked={mediaAvailable}
@@ -390,7 +418,11 @@ export default function DevToolsPopup({ open, setOpen }) {
                                     }
                                     label={mediaAvailable ? "Available" : "Unavailable"}
                                 />
-                                <Button variant="contained" onClick={handleSetMediaAvailability}>
+                                <Button
+                                    data-testid="devtools-set-media-availability"
+                                    variant="contained"
+                                    onClick={handleSetMediaAvailability}
+                                >
                                     Set
                                 </Button>
                             </Box>
@@ -400,13 +432,19 @@ export default function DevToolsPopup({ open, setOpen }) {
                             <Typography variant="h6">Delete Line</Typography>
                             <Box sx={{ display: "flex", gap: 2 }}>
                                 <TextField
+                                    data-testid="devtools-delete-id"
                                     label="ID to Delete"
                                     size="small"
                                     value={deleteId}
                                     onChange={(e) => setDeleteId(e.target.value)}
                                     type="number"
                                 />
-                                <Button variant="contained" color="error" onClick={handleDeleteLine}>
+                                <Button
+                                    data-testid="devtools-delete-line"
+                                    variant="contained"
+                                    color="error"
+                                    onClick={handleDeleteLine}
+                                >
                                     Delete
                                 </Button>
                             </Box>
@@ -507,7 +545,9 @@ export default function DevToolsPopup({ open, setOpen }) {
                 </TabPanel>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Close</Button>
+                <Button data-testid="devtools-close" onClick={handleClose}>
+                    Close
+                </Button>
             </DialogActions>
         </Dialog>
     );

@@ -132,6 +132,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     return (
         <Menu
             id="line-menu"
+            data-testid="line-menu"
             anchorEl={lineAnchorEl}
             open={open}
             onClose={handleClose}

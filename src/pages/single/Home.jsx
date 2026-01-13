@@ -74,6 +74,7 @@ export default function Home() {
                             >
                                 <CardActionArea
                                     onClick={() => handleStreamerChange(streamer.value)}
+                                    data-testid={streamer.testId}
                                     sx={{
                                         height: "100%",
                                         p: 3,
@@ -104,6 +105,7 @@ export default function Home() {
                     href="/archived-transcript"
                     variant="outlined"
                     size="large"
+                    data-testid="archive-btn"
                     sx={{
                         mt: 1,
                         borderRadius: 2,

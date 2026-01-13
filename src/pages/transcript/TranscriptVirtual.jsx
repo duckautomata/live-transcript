@@ -180,6 +180,7 @@ export default function TranscriptVirtual({
             >
                 <Paper
                     elevation={4}
+                    data-testid="transcript-virtual-toolbar"
                     sx={{
                         pointerEvents: "auto",
                         display: "flex",
@@ -195,6 +196,7 @@ export default function TranscriptVirtual({
                     <Tooltip title="Jump to Top">
                         <IconButton
                             size="small"
+                            data-testid="transcript-jumpToTop"
                             onClick={() => {
                                 setAtLiveEdge(false);
                                 virtuosoRef.current?.scrollToIndex({
@@ -305,6 +307,7 @@ export default function TranscriptVirtual({
                                 <IconButton
                                     size="small"
                                     color="primary"
+                                    data-testid="transcript-jumpToBottom"
                                     onClick={() => {
                                         if (isOnline && isLive) {
                                             setAtLiveEdge(true);

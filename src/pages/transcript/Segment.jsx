@@ -15,12 +15,13 @@ const SegmentTheme = styled("span")(({ theme }) => ({
 /**
  * A single segment of text within a transcript line.
  * @param {object} props
+ * @param {number} props.id - The id of the segment.
  * @param {number} props.timestamp - The Unix timestamp of the segment.
  * @param {string} props.text - The text content of the segment.
  * @param {function(number, string): void} props.onClick - Callback when the segment is clicked.
  * @param {object[]} [props.tags] - List of tags associated with this segment.
  */
-function Segment({ timestamp, text, onClick, tags }) {
+function Segment({ id, timestamp, text, onClick, tags }) {
     const theme = useTheme();
     const enableTagHelper = useAppStore((state) => state.enableTagHelper);
 
@@ -75,7 +76,12 @@ function Segment({ timestamp, text, onClick, tags }) {
     }
 
     const content = (
-        <SegmentTheme theme={theme} onClick={() => onClick(timestamp, text)} style={decorationStyle}>
+        <SegmentTheme
+            data-testid={`transcript-segment-${id}`}
+            theme={theme}
+            onClick={() => onClick(timestamp, text)}
+            style={decorationStyle}
+        >
             {text}
         </SegmentTheme>
     );

@@ -47,9 +47,9 @@ export default function Sidebar({ wsKey, children }) {
     const drawerWidthCollapsed = 60;
 
     const pages = [
-        { name: "View", icon: <LiveTvIcon />, value: "" },
-        { name: "Graph", icon: <AssessmentIcon />, value: "graph" },
-        { name: "Tag Formatter", icon: <Construction />, value: "tagFixer" },
+        { name: "View", icon: <LiveTvIcon />, value: "", testId: "page-button-view" },
+        { name: "Graph", icon: <AssessmentIcon />, value: "graph", testId: "page-button-graph" },
+        { name: "Tag Formatter", icon: <Construction />, value: "tagFixer", testId: "page-button-tagFixer" },
     ];
 
     const handleCollapseToggle = () => {
@@ -144,7 +144,11 @@ export default function Sidebar({ wsKey, children }) {
                         boxShadow: 2,
                     }}
                 >
-                    <ListItemButton onClick={() => setMobileOpen(true)} sx={{ borderRadius: "50%", p: 1 }}>
+                    <ListItemButton
+                        data-testid="sidebar-open-button"
+                        onClick={() => setMobileOpen(true)}
+                        sx={{ borderRadius: "50%", p: 1 }}
+                    >
                         <MenuIcon />
                     </ListItemButton>
                 </Box>
@@ -169,7 +173,11 @@ export default function Sidebar({ wsKey, children }) {
                     <List>
                         {/* Collapse/Expand Button */}
                         <ListItem disablePadding>
-                            <ListItemButton onClick={handleCollapseToggle} sx={{ justifyContent: "center" }}>
+                            <ListItemButton
+                                data-testid="sidebar-collapse-button"
+                                onClick={handleCollapseToggle}
+                                sx={{ justifyContent: "center" }}
+                            >
                                 <ListItemIcon sx={{ minWidth: 0 }}>
                                     <MenuIcon />
                                 </ListItemIcon>
@@ -248,6 +256,7 @@ export default function Sidebar({ wsKey, children }) {
                                                     paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
                                                     overflow: "hidden",
                                                 }}
+                                                data-testid={page.testId}
                                             >
                                                 <ListItemIcon>{page.icon}</ListItemIcon>
                                                 {((!isMobile && sidebarOpen) || isMobile) && (
@@ -273,6 +282,7 @@ export default function Sidebar({ wsKey, children }) {
                                 <ListItem disablePadding>
                                     <Tooltip title={!isMobile && !sidebarOpen ? "Dev Tools" : ""} placement="right">
                                         <ListItemButton
+                                            data-testid="page-button-devTools"
                                             onClick={() => setDevToolsOpen(true)}
                                             sx={{
                                                 paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,

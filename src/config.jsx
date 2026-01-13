@@ -13,11 +13,13 @@ export const keyIcons = (size) => {
             name: "Doki",
             icon: <Avatar src={dokiIcon} alt="doki" sx={{ width: size, height: size }} />,
             value: "doki",
+            testId: "key-icon-doki",
         },
         {
             name: "Mint",
             icon: <Avatar src={mintIcon} alt="mint" sx={{ width: size, height: size }} />,
             value: "mint",
+            testId: "key-icon-mint",
         },
     ];
 
@@ -31,6 +33,7 @@ export const keyIcons = (size) => {
                     </Avatar>
                 ),
                 value: "test",
+                testId: "key-icon-test",
             },
             {
                 name: "Mock",
@@ -40,6 +43,7 @@ export const keyIcons = (size) => {
                     </Avatar>
                 ),
                 value: "mock",
+                testId: "key-icon-mock",
             },
         );
     }

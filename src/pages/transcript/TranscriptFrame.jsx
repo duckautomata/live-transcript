@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     Box,
     Paper,
@@ -8,41 +8,14 @@ import {
     CircularProgress,
     Dialog,
     DialogContent,
-    Tooltip,
 } from "@mui/material";
-import { BrokenImage } from "@mui/icons-material";
+
 import { VirtuosoGrid } from "react-virtuoso";
 import styled from "@emotion/styled";
 import { server } from "../../config";
-import { orange, purple, blue } from "@mui/material/colors";
-import { useAppStore } from "../../store/store";
-import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
 import Line from "./Line";
-const FrameImage = ({ src, alt, style, ...props }) => {
-    const [error, setError] = useState(false);
-
-    if (error) {
-        return (
-            <Box
-                sx={{
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    bgcolor: "action.disabledBackground",
-                    color: "text.secondary",
-                }}
-            >
-                <BrokenImage sx={{ fontSize: 40 }} />
-                <Typography variant="body2">Image Unavailable</Typography>
-            </Box>
-        );
-    }
-
-    return <img src={src} alt={alt} onError={() => setError(true)} style={style} {...props} />;
-};
+import FrameItem from "./FrameItem";
+import FrameImage from "./FrameImage";
 
 const ItemContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(0.5),
@@ -69,11 +42,11 @@ const ListContainer = styled(Box)(() => ({
 export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const timeFormat = useAppStore((state) => state.timeFormat);
-    const startTime = useAppStore((state) => state.startTime);
 
     const [selectedLine, setSelectedLine] = useState(null);
+    const selectedLineRef = useRef(null);
     const [lastSelectedId, setLastSelectedId] = useState(null);
+    const virtuosoRef = useRef(null);
 
     const reversedDisplayData = useMemo(() => {
         return [...displayData].reverse();
@@ -84,30 +57,24 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap 
         return "200px"; // Fixed width on desktop
     }, [isMobile]);
 
-    const formatTimestamp = (timestamp) => {
-        if (timeFormat === "relative") {
-            return unixToRelative(timestamp, startTime);
-        } else if (timeFormat === "local") {
-            return unixToLocal(timestamp);
-        } else if (timeFormat === "UTC") {
-            return unixToUTC(timestamp);
-        }
-        return unixToLocal(timestamp);
-    };
-
     const handleFrameClick = (line) => {
         setSelectedLine(line);
         setLastSelectedId(line.id);
     };
 
     useEffect(() => {
-        if (!selectedLine) return;
+        selectedLineRef.current = selectedLine;
+    }, [selectedLine]);
 
+    useEffect(() => {
         const handleKeyDown = (e) => {
+            const currentSelected = selectedLineRef.current;
+            if (!currentSelected) return;
+
             if (["ArrowRight", "ArrowLeft"].includes(e.key)) {
                 e.preventDefault();
 
-                const currentIndex = reversedDisplayData.findIndex((l) => l.id === selectedLine.id);
+                const currentIndex = reversedDisplayData.findIndex((l) => l.id === currentSelected.id);
                 if (currentIndex === -1) return;
 
                 let nextIndex = currentIndex;
@@ -120,7 +87,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap 
                 const isNewer = e.key === "ArrowRight";
 
                 if (isShift) {
-                    const targetTime = selectedLine.timestamp + (isNewer ? tenMinutes : -tenMinutes);
+                    const targetTime = currentSelected.timestamp + (isNewer ? tenMinutes : -tenMinutes);
 
                     // Find closest frame to targetTime in the correct direction
                     let closestIdx = currentIndex;
@@ -164,13 +131,14 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap 
                     const nextLine = reversedDisplayData[nextIndex];
                     setSelectedLine(nextLine);
                     setLastSelectedId(nextLine.id);
+                    virtuosoRef.current?.scrollToIndex({ index: nextIndex, align: "center" });
                 }
             }
         };
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [selectedLine, reversedDisplayData]);
+    }, [reversedDisplayData]);
 
     const handleClose = () => {
         setSelectedLine(null);
@@ -191,6 +159,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap 
                 </Box>
             ) : (
                 <VirtuosoGrid
+                    ref={virtuosoRef}
                     style={{ height: "100%" }}
                     data={reversedDisplayData}
                     components={{
@@ -202,120 +171,16 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap 
                         ),
                     }}
                     itemClassName="frame-item"
-                    itemContent={(index, line) => {
-                        let borderColor = "transparent";
-                        const tooltipLines = [];
-
-                        if (tagsMap && line.segments) {
-                            let isChapter = false;
-                            let isCollection = false;
-                            let isTag = false;
-
-                            line.segments.forEach((seg, i) => {
-                                const key = `${line.id}_${i}`;
-                                const tags = tagsMap.get(key);
-                                if (tags) {
-                                    tags.forEach((t) => {
-                                        if (t.type === "header") {
-                                            if (t.subtype === "chapter") isChapter = true;
-                                            if (t.subtype === "collection") isCollection = true;
-                                            tooltipLines.push(`[${t.subtype}] ${t.name}`);
-                                        } else {
-                                            if (t.subtype === "collection") isCollection = true;
-                                            isTag = true;
-                                            tooltipLines.push(t.text);
-                                        }
-                                    });
-                                }
-                            });
-
-                            if (isChapter) borderColor = orange[500];
-                            else if (isCollection) borderColor = purple[500];
-                            else if (isTag) borderColor = blue[500];
-                        }
-
-                        const tooltipContent =
-                            tooltipLines.length > 0 ? (
-                                <Box>
-                                    {tooltipLines.map((txt, idx) => (
-                                        <Typography key={idx} variant="body2">
-                                            {txt}
-                                        </Typography>
-                                    ))}
-                                </Box>
-                            ) : (
-                                ""
-                            );
-
-                        return (
-                            <Box sx={{ width: "100%" }}>
-                                <Tooltip title={tooltipContent} arrow placement="top">
-                                    <Paper
-                                        elevation={2}
-                                        sx={{
-                                            cursor: "pointer",
-                                            overflow: "hidden",
-                                            position: "relative",
-                                            outline:
-                                                line.id === lastSelectedId
-                                                    ? `3px solid ${theme.palette.primary.main}`
-                                                    : "none",
-                                            border: `4px solid ${borderColor}`,
-                                            "&:hover": {
-                                                outline: `3px solid ${theme.palette.primary.light}`,
-                                            },
-                                            aspectRatio: "16/9",
-                                            boxSizing: "border-box", // Ensure border doesn't break size
-                                        }}
-                                        onClick={() => handleFrameClick(line)}
-                                    >
-                                        {line.mediaAvailable ? (
-                                            <FrameImage
-                                                src={`${server}/${wsKey}/frame?id=${line.id}&stream_id=${activeId}`}
-                                                alt={`Frame ${line.id}`}
-                                                loading="lazy"
-                                                style={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    objectFit: "cover",
-                                                    display: "block",
-                                                }}
-                                            />
-                                        ) : (
-                                            <Box
-                                                sx={{
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    bgcolor: "action.disabledBackground",
-                                                }}
-                                            >
-                                                <CircularProgress size={24} color="secondary" />
-                                            </Box>
-                                        )}
-                                        <Box
-                                            sx={{
-                                                position: "absolute",
-                                                bottom: 0,
-                                                left: 0,
-                                                right: 0,
-                                                bgcolor: "rgba(0, 0, 0, 0.6)",
-                                                color: "white",
-                                                p: 0.5,
-                                                textAlign: "center",
-                                            }}
-                                        >
-                                            <Typography variant="caption" sx={{ display: "block", lineHeight: 1 }}>
-                                                {formatTimestamp(line.timestamp)}
-                                            </Typography>
-                                        </Box>
-                                    </Paper>
-                                </Tooltip>
-                            </Box>
-                        );
-                    }}
+                    itemContent={(index, line) => (
+                        <FrameItem
+                            line={line}
+                            tagsMap={tagsMap}
+                            activeId={activeId}
+                            wsKey={wsKey}
+                            lastSelectedId={lastSelectedId}
+                            onFrameClick={handleFrameClick}
+                        />
+                    )}
                 />
             )}
 

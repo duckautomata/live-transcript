@@ -6,3 +6,7 @@ public
 .husky
 package-lock.json
 .yarnrc.yml
+live-transcript
+node_modules
+playwright-report
+test-results

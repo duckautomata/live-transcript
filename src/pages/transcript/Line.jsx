@@ -1,5 +1,5 @@
 import { IconButton, Typography, Tooltip } from "@mui/material";
-import { forwardRef, Fragment, memo, useMemo, useState } from "react";
+import { forwardRef, Fragment, memo, useMemo } from "react";
 import Segment from "./Segment";
 import { useTheme, keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
@@ -48,8 +48,6 @@ const Line = memo(
          */
         ({ id, lineTimestamp, segments, highlight, tagsMap, ...props }, ref) => {
             const theme = useTheme();
-
-            const [idOver, setIdOver] = useState(false);
 
             const setTagPopupOpen = useAppStore((state) => state.setTagPopupOpen);
             const setTagPopupTimestamp = useAppStore((state) => state.setTagPopupTimestamp);
@@ -159,18 +157,18 @@ const Line = memo(
                 }
             };
 
-            const colorBackground = () => {
+            const backgroundColor = (() => {
                 if (highlight) {
                     return theme.palette.action.selected; // Use a distinct highlight color
                 }
                 if (isClipStart || isInClipRange) {
                     return theme.palette.lineground.clip;
                 }
-                if (idOver || isSelected || isPlaying) {
+                if (isSelected || isPlaying) {
                     return theme.palette.lineground.main;
                 }
-                return "none";
-            };
+                return "transparent";
+            })();
 
             const iconColor = isMediaMissing
                 ? theme.palette.id.loading
@@ -196,9 +194,14 @@ const Line = memo(
                     whiteSpace="pre-wrap"
                     align="left"
                     id={id}
-                    style={{
-                        background: colorBackground(),
+                    role="transcript-line"
+                    data-testid={`transcript-line-${id}`}
+                    sx={{
+                        backgroundColor,
                         wordBreak: "break-word",
+                        "&:hover": {
+                            textDecoration: "underline",
+                        },
                     }}
                 >
                     <Tooltip title={isMediaMissing ? "Media isn't available yet" : ""}>
@@ -209,9 +212,8 @@ const Line = memo(
                                 animation: isMediaMissing ? `${loadingAnimation} 1.5s infinite ease-in-out` : "none",
                             }}
                             onClick={onIdClick}
-                            onMouseEnter={() => setIdOver(true)}
-                            onMouseLeave={() => setIdOver(false)}
                             id={`line-button-${id}`}
+                            data-testid={isMediaMissing ? `line-button-${id}-loading` : `line-button-${id}`}
                             disabled={clipMode && !isClipTargetValid}
                         >
                             {clipMode ? (
@@ -238,6 +240,7 @@ const Line = memo(
                             return (
                                 <Fragment key={`line-${id}-segment-${index}`}>
                                     <Segment
+                                        id={index}
                                         timestamp={segment?.timestamp}
                                         text={segment?.text}
                                         onClick={onSegmentClick}
@@ -250,6 +253,7 @@ const Line = memo(
                         })
                     ) : (
                         <Segment
+                            id={0}
                             timestamp={lineTimestamp}
                             text={"          "}
                             onClick={onSegmentClick}

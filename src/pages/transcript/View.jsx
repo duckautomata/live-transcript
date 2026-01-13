@@ -357,6 +357,8 @@ export default function View({ wsKey }) {
                                             label="Search Transcript"
                                             variant="outlined"
                                             size="small"
+                                            data-testid="search-transcript"
+                                            id="search-transcript"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                             slotProps={{
@@ -371,12 +373,17 @@ export default function View({ wsKey }) {
                                             sx={{ width: isMobile ? "100%" : "50%" }}
                                         />
                                         {searchTerm && (
-                                            <IconButton onClick={() => setSearchTerm("")} aria-label="clear search">
+                                            <IconButton
+                                                onClick={() => setSearchTerm("")}
+                                                aria-label="clear search"
+                                                data-testid="clear-search"
+                                            >
                                                 <Clear />
                                             </IconButton>
                                         )}
                                         <Tooltip title={clipMode ? "Exit Clip Mode" : "Enter Clip Mode"}>
                                             <Button
+                                                data-testid="clip-mode-button"
                                                 onClick={toggleClipMode}
                                                 color={clipMode ? "secondary" : "primary"}
                                                 variant={clipMode ? "contained" : "text"}
@@ -425,6 +432,7 @@ export default function View({ wsKey }) {
                                             allowScrollButtonsMobile
                                         >
                                             <Tab
+                                                data-testid="transcript-tab-pagination"
                                                 label={
                                                     <Box
                                                         sx={{
@@ -455,6 +463,7 @@ export default function View({ wsKey }) {
                                                 sx={{ minHeight: "48px", py: 1, minWidth: "auto", px: 2 }}
                                             />
                                             <Tab
+                                                data-testid="transcript-tab-virtual"
                                                 label={
                                                     <Box
                                                         sx={{
@@ -486,6 +495,7 @@ export default function View({ wsKey }) {
                                             />
                                             {mediaType === "video" && (
                                                 <Tab
+                                                    data-testid="transcript-tab-visual"
                                                     label={
                                                         <Box
                                                             sx={{

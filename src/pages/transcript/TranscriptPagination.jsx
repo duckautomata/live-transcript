@@ -88,6 +88,7 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
                             onChange={handleChange}
                             showFirstButton
                             showLastButton
+                            data-testid="transcript-pagination"
                         />
                     </Box>
                     {displayedLines.map((line) => (
