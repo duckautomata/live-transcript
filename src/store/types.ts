@@ -97,12 +97,12 @@ export interface SettingsSlice {
 }
 
 export interface PerformanceMetric {
-    id: number;
+    type?: "line" | "ping";
+    id?: number;
     receivedAt: number;
-    serverEmittedAt: number;
-    uploadTime: number;
+    uploadTime?: number;
     latency: number;
-    interArrival: number;
+    interArrival?: number;
 }
 
 export interface PerformanceSlice {

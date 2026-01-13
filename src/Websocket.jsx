@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { useEffect, useRef } from "react";
-import useWebSocket from "react-use-websocket";
+import useWebSocket, { ReadyState } from "react-use-websocket";
 import { LOG_MSG, LOG_WARN, LOG_ERROR } from "./logic/debug";
 import { wsServer } from "./config";
 import { useAppStore } from "./store/store";
@@ -28,7 +28,6 @@ import { useAppStore } from "./store/store";
  * @property {number} lineId
  * @property {number} timestamp
  * @property {number} uploadTime
- * @property {number} emittedTime
  * @property {boolean} mediaAvailable
  * @property {Segment[]} segments
  */
@@ -89,7 +88,7 @@ export const Websocket = ({ wsKey }) => {
     const hasConnected = useRef(false);
 
     /** @type {{ lastJsonMessage: WebSocketMessage }} */
-    const { lastJsonMessage } = useWebSocket(WS_URL, {
+    const { lastJsonMessage, sendMessage, readyState } = useWebSocket(WS_URL, {
         share: false,
         shouldReconnect: () => true,
         reconnectAttempts: 10,
@@ -119,6 +118,16 @@ export const Websocket = ({ wsKey }) => {
     }, [wsKey]);
 
     useEffect(() => {
+        const interval = setInterval(() => {
+            if (readyState === ReadyState.OPEN) {
+                sendMessage(JSON.stringify({ event: "ping", data: { timestamp: Date.now() } }));
+            }
+        }, 45000);
+
+        return () => clearInterval(interval);
+    }, [readyState, sendMessage]);
+
+    useEffect(() => {
         if (!lastJsonMessage) {
             return;
         }
@@ -141,6 +150,16 @@ export const Websocket = ({ wsKey }) => {
             case "newMedia":
                 handleNewMedia(data);
                 break;
+            case "pong": {
+                const { timestamp } = data;
+                const latency = Date.now() - timestamp;
+                addMetric({
+                    type: "ping",
+                    latency,
+                    receivedAt: Date.now(),
+                });
+                break;
+            }
             default:
                 LOG_WARN("Unknown message event:", event, lastJsonMessage);
                 break;
@@ -189,14 +208,14 @@ export const Websocket = ({ wsKey }) => {
         lastReceiveTime.current = now;
         setLastLineReceivedAt(now);
 
-        const { lineId, timestamp, uploadTime, emittedTime, segments, mediaAvailable } = data;
+        const { lineId, timestamp, uploadTime, segments, mediaAvailable } = data;
 
         addMetric({
+            type: "line",
             id: lineId,
             receivedAt: now,
-            serverEmittedAt: emittedTime,
             uploadTime: uploadTime,
-            latency: now - emittedTime,
+            latency: 0, // No emittedTime to calc latency against
             interArrival,
         });
 

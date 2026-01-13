@@ -204,11 +204,18 @@ export default function DevToolsPopup({ open, setOpen }) {
 
     // Chart Data Preparation
     const now = Date.now();
+
+    const pingMetrics = metrics.filter((m) => m.type === "ping");
+    const lineMetrics = metrics.filter((m) => m.type === "line");
+
     // Convert ms to seconds
-    const latencyData = metrics.map((m) => m.latency / 1000);
-    const jitterData = metrics.map((m) => m.interArrival / 1000);
-    const uploadTimeData = metrics.map((m) => (m.uploadTime || 0) / 1000);
-    const xAxisData = metrics.map((m) => (m.receivedAt - now) / 1000);
+    const latencyData = pingMetrics.map((m) => m.latency / 1000);
+    const latencyX = pingMetrics.map((m) => (m.receivedAt - now) / 1000);
+
+    const jitterData = lineMetrics.map((m) => (m.interArrival || 0) / 1000);
+    const lineX = lineMetrics.map((m) => (m.receivedAt - now) / 1000);
+
+    const uploadTimeData = lineMetrics.map((m) => (m.uploadTime || 0) / 1000);
 
     const formatRelativeTime = (seconds) => {
         const abs = Math.abs(seconds);
@@ -502,7 +509,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                     <Typography variant="h6">Server Upload Time (s)</Typography>
                     {uploadTimeData.length > 0 ? (
                         <LineChart
-                            xAxis={[{ data: xAxisData, valueFormatter: formatRelativeTime, label: "Time ago (mm:ss)" }]}
+                            xAxis={[{ data: lineX, valueFormatter: formatRelativeTime, label: "Time ago (mm:ss)" }]}
                             yAxis={[{ min: 0 }]}
                             series={[
                                 { data: uploadTimeData, label: "Upload Time", color: "#8884d8", curve: "catmullRom" },
@@ -518,7 +525,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                     </Typography>
                     {latencyData.length > 0 ? (
                         <LineChart
-                            xAxis={[{ data: xAxisData, valueFormatter: formatRelativeTime, label: "Time ago (mm:ss)" }]}
+                            xAxis={[{ data: latencyX, valueFormatter: formatRelativeTime, label: "Time ago (mm:ss)" }]}
                             yAxis={[{ min: 0 }]}
                             series={[{ data: latencyData, label: "Latency", curve: "catmullRom" }]}
                             height={250}
@@ -532,7 +539,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                     </Typography>
                     {jitterData.length > 0 ? (
                         <LineChart
-                            xAxis={[{ data: xAxisData, valueFormatter: formatRelativeTime, label: "Time ago (mm:ss)" }]}
+                            xAxis={[{ data: lineX, valueFormatter: formatRelativeTime, label: "Time ago (mm:ss)" }]}
                             yAxis={[{ min: 0 }]}
                             series={[
                                 { data: jitterData, label: "Inter-arrival", color: "#82ca9d", curve: "catmullRom" },
