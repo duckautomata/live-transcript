@@ -66,6 +66,9 @@ const UpdateAlert = () => {
             >
                 <AlertTitle>Update Available</AlertTitle>
                 Refresh the page or click the update button to update the website.
+                <div style={{ textDecoration: "underline", marginTop: "4px" }}>
+                    If this message persists, please manually clear your cache and hard refresh.
+                </div>
             </Alert>
         </Snackbar>
     );
