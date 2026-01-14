@@ -54,9 +54,7 @@ const UpdateAlert = () => {
                         variant="contained"
                         size="small"
                         disabled={refreshing}
-                        startIcon={
-                            refreshing ? <CircularProgress size={20} color="inherit" /> : <SystemUpdateIcon />
-                        }
+                        startIcon={refreshing ? <CircularProgress size={20} color="inherit" /> : <SystemUpdateIcon />}
                         onClick={handleRefresh}
                         sx={{
                             backgroundColor: "#FFFFFF",
