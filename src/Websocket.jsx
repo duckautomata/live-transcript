@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { LOG_MSG, LOG_WARN, LOG_ERROR } from "./logic/debug";
 import { wsServer } from "./config";
@@ -82,15 +82,53 @@ export const Websocket = ({ wsKey }) => {
     const recalculateClipRange = useAppStore((state) => state.recalculateClipRange);
     const addMetric = useAppStore((state) => state.addMetric);
     const setLastLineReceivedAt = useAppStore((state) => state.setLastLineReceivedAt);
+    const resetTranscript = useAppStore((state) => state.resetTranscript);
+    const setAudioId = useAppStore((state) => state.setAudioId);
 
     const lastReceiveTime = useRef(Date.now());
 
     const hasConnected = useRef(false);
 
-    /** @type {{ lastJsonMessage: WebSocketMessage }} */
-    const { lastJsonMessage, sendMessage, readyState } = useWebSocket(WS_URL, {
+    const [shouldConnect, setShouldConnect] = useState(true);
+    const disconnectTimeout = useRef(null);
+    const readyStateRef = useRef(ReadyState.CLOSED);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            const isVisible = !document.hidden;
+            if (isVisible) {
+                if (disconnectTimeout.current) {
+                    clearTimeout(disconnectTimeout.current);
+                    disconnectTimeout.current = null;
+                    if (readyStateRef.current === ReadyState.OPEN) {
+                        setServerStatus("online");
+                    }
+                } else {
+                    setShouldConnect(true);
+                }
+            } else {
+                disconnectTimeout.current = setTimeout(
+                    () => {
+                        setServerStatus("connecting");
+                        setShouldConnect(false);
+                        disconnectTimeout.current = null;
+                    },
+                    10 * 60 * 1000,
+                ); // 10 minutes
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, []);
+
+    // If the page is not visible, pass null to useWebSocket to close/prevent connection
+    // When it becomes visible again, the URL is passed, causing a reconnect
+    const { lastJsonMessage, sendMessage, readyState } = useWebSocket(shouldConnect ? WS_URL : null, {
         share: false,
-        shouldReconnect: () => true,
+        shouldReconnect: () => shouldConnect, // Only reconnect if we want to be connected
         reconnectAttempts: 10,
         reconnectInterval: 3000,
         onOpen: () => {
@@ -98,6 +136,11 @@ export const Websocket = ({ wsKey }) => {
             hasConnected.current = true;
         },
         onClose: () => {
+            if (document.hidden) {
+                return;
+                // If not visible, we don't need to update status or can leave it as is
+                // because the user isn't looking.
+            }
             if (hasConnected.current) {
                 setServerStatus("reconnecting");
             } else {
@@ -105,6 +148,9 @@ export const Websocket = ({ wsKey }) => {
             }
         },
         onError: () => {
+            if (document.hidden) {
+                return;
+            }
             if (hasConnected.current) {
                 setServerStatus("reconnecting");
             } else {
@@ -113,8 +159,15 @@ export const Websocket = ({ wsKey }) => {
         },
         onReconnectStop: () => setServerStatus("offline"),
     });
+
+    useEffect(() => {
+        readyStateRef.current = readyState;
+    }, [readyState]);
     useEffect(() => {
         hasConnected.current = false;
+        resetTranscript();
+        setServerStatus("connecting");
+        setAudioId(-1);
     }, [wsKey]);
 
     useEffect(() => {
@@ -145,7 +198,9 @@ export const Websocket = ({ wsKey }) => {
                 break;
             case "sync":
                 resetState(data);
-                setServerStatus("online");
+                if (!document.hidden) {
+                    setServerStatus("online");
+                }
                 break;
             case "newMedia":
                 handleNewMedia(data);

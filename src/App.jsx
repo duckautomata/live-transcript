@@ -1,6 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
-import { useEffect, useState } from "react";
 import "./App.css";
 import { CssBaseline, useMediaQuery } from "@mui/material";
 import { ThemeProvider } from "@emotion/react";
@@ -27,11 +24,7 @@ import { useTagIntegration } from "./hooks/useTagIntegration";
  */
 function App() {
     const location = useLocation();
-    const [wsKey, setWsKey] = useState(undefined);
     const theme = useAppStore((state) => state.theme);
-    const resetTranscript = useAppStore((state) => state.resetTranscript);
-    const setAudioId = useAppStore((state) => state.setAudioId);
-    const setServerStatus = useAppStore((state) => state.setServerStatus);
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
     let colorTheme = prefersDarkMode ? darkTheme : lightTheme;
     if (theme === "light") {
@@ -39,23 +32,8 @@ function App() {
     } else if (theme === "dark") {
         colorTheme = darkTheme;
     }
-
-    useEffect(() => {
-        let key;
-        keys().map((value) => {
-            if (location.pathname.split("/").at(1) === value) {
-                key = value;
-            }
-        });
-
-        if (key !== wsKey) {
-            resetTranscript();
-            setServerStatus("connecting");
-            setAudioId(-1);
-        }
-
-        setWsKey(key);
-    }, [location]);
+    const pathSegment = location.pathname.split("/")[1];
+    const wsKey = keys().find((k) => k === pathSegment);
 
     useTagIntegration(wsKey);
 
