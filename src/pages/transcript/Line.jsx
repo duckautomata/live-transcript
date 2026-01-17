@@ -173,12 +173,12 @@ const Line = memo(
             const iconColor = isMediaMissing
                 ? theme.palette.id.loading
                 : clipMode
-                  ? isClipTargetValid
-                      ? theme.palette.secondary.main
-                      : theme.palette.action.disabled
-                  : isClipable
-                    ? theme.palette.id.clip
-                    : theme.palette.id.main;
+                    ? isClipTargetValid
+                        ? theme.palette.secondary.main
+                        : theme.palette.action.disabled
+                    : isClipable
+                        ? theme.palette.id.clip
+                        : theme.palette.id.main;
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
             const iconSx = density === "compact" ? { padding: 0 } : {};
@@ -218,14 +218,14 @@ const Line = memo(
                         >
                             {clipMode ? (
                                 isClipStart ? (
-                                    <RestartAlt style={{ color: iconColor }} />
+                                    <RestartAlt style={{ color: iconColor }} data-testid="RestartAltIcon" />
                                 ) : isClipTargetValid ? (
-                                    <ContentCut style={{ color: iconColor }} />
+                                    <ContentCut style={{ color: iconColor }} data-testid="ContentCutIcon" />
                                 ) : (
-                                    <MoreHoriz style={{ color: iconColor }} />
+                                    <MoreHoriz style={{ color: iconColor }} data-testid="MoreHorizIcon" />
                                 )
                             ) : (
-                                <MoreHoriz style={{ color: iconColor }} />
+                                <MoreHoriz style={{ color: iconColor }} data-testid="MoreHorizIcon" />
                             )}
                         </IconButton>
                     </Tooltip>{" "}

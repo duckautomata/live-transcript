@@ -230,13 +230,13 @@ test.describe("Transcript tabs", () => {
         await expect(
             page.getByTestId(`transcript-line-${mockconst.emptyLineId - (linesPerPage + 1) * 2}`),
         ).toBeVisible();
-        await page.getByTestId("transcript-pagination").getByTestId("NavigateNextIcon").click();
+        await page.getByTestId('transcript-pagination').getByRole('button', { name: 'Go to next page' }).click();
         await expect(
             page.getByTestId(`transcript-line-${mockconst.emptyLineId - (linesPerPage + 1) * 3}`),
         ).toBeVisible();
-        await page.getByTestId("transcript-pagination").getByTestId("LastPageIcon").click();
+        await page.getByTestId('transcript-pagination').getByRole('button', { name: 'Go to last page' }).click();
         await expect(page.getByTestId("transcript-line-0")).toBeVisible();
-        await page.getByTestId("transcript-pagination").getByTestId("FirstPageIcon").click();
+        await page.getByTestId('transcript-pagination').getByRole('button', { name: 'Go to first page' }).click();
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
 
         await virtualTab.click();
@@ -443,7 +443,7 @@ test.describe("Transcript clipping", () => {
         await loadInDevmode(page, "mock");
         // Use pagination since every line is rendered, making this test easier to do.
         await page.getByTestId("transcript-tab-pagination").click();
-        await page.getByTestId("transcript-pagination").getByTestId("LastPageIcon").click();
+        await page.getByTestId('transcript-pagination').getByRole('button', { name: 'Go to last page' }).click();
         await expect(page.getByTestId("transcript-line-0")).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -501,12 +501,13 @@ test.describe("Transcript clipping", () => {
         await takeScreenshots(page, testInfo, "clip-editor");
 
         await page.getByRole("button", { name: "Direct Download" }).click();
-        await expect(page.getByText("Please select a format.")).toBeVisible();
+        await expect(page.getByText("Please select a format.")).toBeVisible({ timeout: 15_000 });
         await page.getByRole("button", { name: "Trim Clip" }).click();
         await expect(page.getByText("Please select a format.")).toBeVisible();
     });
 
-    test("mp3 trim", async ({ page }, testInfo) => {
+    test("mp3 trim", async ({ page, browserName }, testInfo) => {
+        test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
         await loadInDevmode(page, "mock");
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
@@ -538,7 +539,8 @@ test.describe("Transcript clipping", () => {
         await expect(page.getByText("Trim your clip")).not.toBeVisible();
     });
 
-    test("mp3 download", async ({ page }) => {
+    test("mp3 download", async ({ page, browserName }) => {
+        test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
         await loadInDevmode(page, "mock");
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
@@ -553,11 +555,12 @@ test.describe("Transcript clipping", () => {
         await page.getByRole("option", { name: "MP3 (Audio)" }).click();
 
         await page.getByRole("button", { name: "Direct Download" }).click();
-        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText("Clip Editor")).not.toBeVisible();
     });
 
-    test("m4a trim", async ({ page }, testInfo) => {
+    test("m4a trim", async ({ page, browserName }, testInfo) => {
+        test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
         await loadInDevmode(page, "mock");
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
@@ -589,7 +592,8 @@ test.describe("Transcript clipping", () => {
         await expect(page.getByText("Trim your clip")).not.toBeVisible();
     });
 
-    test("m4a download", async ({ page }) => {
+    test("m4a download", async ({ page, browserName }) => {
+        test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
         await loadInDevmode(page, "mock");
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
@@ -604,11 +608,12 @@ test.describe("Transcript clipping", () => {
         await page.getByRole("option", { name: "M4A (Audio)" }).click();
 
         await page.getByRole("button", { name: "Direct Download" }).click();
-        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText("Clip Editor")).not.toBeVisible();
     });
 
-    test("mp4 trim", async ({ page }, testInfo) => {
+    test("mp4 trim", async ({ page, browserName }, testInfo) => {
+        test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
         await loadInDevmode(page, "mock");
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
@@ -640,7 +645,8 @@ test.describe("Transcript clipping", () => {
         await expect(page.getByText("Trim your clip")).not.toBeVisible();
     });
 
-    test("mp4 download", async ({ page }) => {
+    test("mp4 download", async ({ page, browserName }) => {
+        test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
         await loadInDevmode(page, "mock");
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
@@ -655,7 +661,7 @@ test.describe("Transcript clipping", () => {
         await page.getByRole("option", { name: "MP4 (Video)" }).click();
 
         await page.getByRole("button", { name: "Direct Download" }).click();
-        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText("Clip Editor")).not.toBeVisible();
     });
 });

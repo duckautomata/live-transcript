@@ -305,7 +305,7 @@ export default function DevToolsPopup({ open, setOpen }) {
 
                         <Box sx={{ border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
                             <Typography variant="h6">Add Line</Typography>
-                            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                            <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
                                 <TextField
                                     label="ID"
                                     size="small"
@@ -363,7 +363,7 @@ export default function DevToolsPopup({ open, setOpen }) {
 
                         <Box sx={{ border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
                             <Typography variant="h6">Simulation</Typography>
-                            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                            <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
                                 <TextField
                                     data-testid="devtools-sim-start-id"
                                     label="Start ID"
@@ -406,7 +406,7 @@ export default function DevToolsPopup({ open, setOpen }) {
 
                         <Box sx={{ border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
                             <Typography variant="h6">Media Availability</Typography>
-                            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                            <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
                                 <TextField
                                     data-testid="devtools-media-ids"
                                     label="Line IDs (comma-separated)"
@@ -437,7 +437,7 @@ export default function DevToolsPopup({ open, setOpen }) {
 
                         <Box sx={{ border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
                             <Typography variant="h6">Delete Line</Typography>
-                            <Box sx={{ display: "flex", gap: 2 }}>
+                            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
                                 <TextField
                                     data-testid="devtools-delete-id"
                                     label="ID to Delete"

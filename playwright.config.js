@@ -4,9 +4,9 @@ export default defineConfig({
     testDir: "./tests",
     fullyParallel: true,
     forbidOnly: !!process.env.CI,
-    retries: 4,
+    retries: 1,
     workers: process.env.CI ? 1 : undefined,
-    timeout: 15 * 1000,
+    timeout: 30 * 1000,
     reporter: "html",
     use: {
         baseURL: "http://localhost:4173/live-transcript/",
