@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { loadInDevmode } from "./helper";
+import * as mockconst from "./mockconst";
 
 test("graph page loads", async ({ page }) => {
-    await loadInDevmode(page, "mock/graph/");
-    await expect(page).toHaveURL(/mock\/graph/);
+    await loadInDevmode(page, `${mockconst.keyName}/graph/`);
+    await expect(page).toHaveURL(new RegExp(`${mockconst.keyName}/graph/`));
     await expect(page.getByLabel("Text to search")).toBeVisible();
 });

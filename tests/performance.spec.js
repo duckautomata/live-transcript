@@ -30,7 +30,7 @@ test.describe("Performance", () => {
         });
 
         const startTime = Date.now();
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         const loadTime = Date.now() - startTime;
 
         console.log(`Load time on 4G: ${loadTime}ms`);
@@ -39,7 +39,7 @@ test.describe("Performance", () => {
         await expect(page.getByRole("textbox", { name: "Search Transcript" })).toBeVisible({ timeout: 30000 });
 
         // Assert loaded
-        await expect(page).toHaveURL(/mock/);
+        await expect(page).toHaveURL(new RegExp(`${mockconst.keyName}`));
 
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
     });

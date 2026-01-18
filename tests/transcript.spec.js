@@ -10,8 +10,8 @@ import {
 import * as mockconst from "./mockconst";
 
 test("Transcript page loads", async ({ page }, testInfo) => {
-    await loadInDevmode(page, "mock");
-    await expect(page).toHaveURL(/mock/);
+    await loadInDevmode(page, mockconst.keyName);
+    await expect(page).toHaveURL(new RegExp(`${mockconst.keyName}`));
     await expect(page.getByText(mockconst.title)).toBeVisible();
 
     const paginationTab = page.getByTestId("transcript-tab-pagination");
@@ -33,7 +33,7 @@ test("Transcript page loads", async ({ page }, testInfo) => {
 
 test.describe("Transcript search", () => {
     test("filters transcript in all views", async ({ page }, testInfo) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
 
         const searchInput = page.locator("#search-transcript");
         await expect(searchInput).toBeVisible();
@@ -77,7 +77,7 @@ test.describe("Transcript search", () => {
     });
 
     test("keeps search text between tabs", async ({ page }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
 
         const searchInput = page.locator("#search-transcript");
         await expect(searchInput).toBeVisible();
@@ -113,7 +113,7 @@ test.describe("Transcript search", () => {
     });
 
     test("jump to line in virtual views", async ({ page }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
 
         const searchInput = page.locator("#search-transcript");
         await expect(searchInput).toBeVisible();
@@ -156,7 +156,7 @@ test.describe("Transcript search", () => {
     });
 
     test("jump to line in pagination view", async ({ page }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
 
         const searchInput = page.locator("#search-transcript");
         await expect(searchInput).toBeVisible();
@@ -214,7 +214,7 @@ test.describe("Transcript search", () => {
 
 test.describe("Transcript tabs", () => {
     test("move around transcript", async ({ page }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
 
         const paginationTab = page.getByTestId("transcript-tab-pagination");
         const virtualTab = page.getByTestId("transcript-tab-virtual");
@@ -226,18 +226,16 @@ test.describe("Transcript tabs", () => {
         await expect(
             page.getByTestId(`transcript-line-${mockconst.emptyLineId - (linesPerPage + 1) * 1}`),
         ).toBeVisible();
-        await page.getByTestId("transcript-pagination").getByRole("button", { name: "3" }).click();
-        await expect(
-            page.getByTestId(`transcript-line-${mockconst.emptyLineId - (linesPerPage + 1) * 2}`),
-        ).toBeVisible();
-        await page.getByTestId('transcript-pagination').getByRole('button', { name: 'Go to next page' }).click();
-        await expect(
-            page.getByTestId(`transcript-line-${mockconst.emptyLineId - (linesPerPage + 1) * 3}`),
-        ).toBeVisible();
-        await page.getByTestId('transcript-pagination').getByRole('button', { name: 'Go to last page' }).click();
-        await expect(page.getByTestId("transcript-line-0")).toBeVisible();
-        await page.getByTestId('transcript-pagination').getByRole('button', { name: 'Go to first page' }).click();
+        await page.getByTestId("transcript-pagination").getByRole("button", { name: "Go to previous page" }).click();
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+        await page.getByTestId("transcript-pagination").getByRole("button", { name: "Go to next page" }).click();
+        await expect(
+            page.getByTestId(`transcript-line-${mockconst.emptyLineId - (linesPerPage + 1) * 1}`),
+        ).toBeVisible();
+        await page.getByTestId("transcript-pagination").getByRole("button", { name: "Go to first page" }).click();
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+        await page.getByTestId("transcript-pagination").getByRole("button", { name: "Go to last page" }).click();
+        await expect(page.getByTestId("transcript-line-0")).toBeVisible();
 
         await virtualTab.click();
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
@@ -248,7 +246,7 @@ test.describe("Transcript tabs", () => {
     });
 
     test("tabs persistence", async ({ page }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
 
         const paginationTab = page.getByTestId("transcript-tab-pagination");
         const virtualTab = page.getByTestId("transcript-tab-virtual");
@@ -284,7 +282,7 @@ test.describe("Transcript tabs", () => {
     });
 
     test("virtual transcript handles pause and play", async ({ page, isMobile }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
 
         const searchInput = page.locator("#search-transcript");
         await expect(searchInput).toBeVisible();
@@ -317,7 +315,7 @@ test.describe("Transcript tabs", () => {
     });
 
     test("shows frame when mediatype is video", async ({ page, isMobile }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
 
         const searchInput = page.locator("#search-transcript");
         await expect(searchInput).toBeVisible();
@@ -338,7 +336,7 @@ test.describe("Transcript tabs", () => {
 
 test.describe("Transcript frame", () => {
     test("frame controlls", async ({ page }, testInfo) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await page.getByTestId("transcript-tab-visual").click();
         await expect(page.getByTestId(`transcript-frame-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId(`transcript-frame-${mockconst.emptyLineId}`).click();
@@ -353,7 +351,7 @@ test.describe("Transcript frame", () => {
 
 test.describe("Transcript line", () => {
     test("tag helper", async ({ page }, testInfo) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         const line = page.getByTestId(`transcript-line-${mockconst.emptyLineId}`);
         const segment = line.getByTestId("transcript-segment-0");
@@ -364,7 +362,7 @@ test.describe("Transcript line", () => {
     });
 
     test("disables audio when mediatype is none", async ({ page, isMobile }, testInfo) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await setMediaType(page, isMobile, "Audio");
         const button = page.getByTestId(`line-button-${mockconst.emptyLineId}`);
@@ -388,7 +386,7 @@ test.describe("Transcript line", () => {
 
 test.describe("Transcript clipping", () => {
     test("clip mode changes line buttons and colors", async ({ page }, testInfo) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
         await expect(
@@ -420,7 +418,7 @@ test.describe("Transcript clipping", () => {
     });
 
     test("clip mode reset clip", async ({ page }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toHaveCSS(
@@ -440,10 +438,10 @@ test.describe("Transcript clipping", () => {
     });
 
     test("clip range", async ({ page, isMobile }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         // Use pagination since every line is rendered, making this test easier to do.
         await page.getByTestId("transcript-tab-pagination").click();
-        await page.getByTestId('transcript-pagination').getByRole('button', { name: 'Go to last page' }).click();
+        await page.getByTestId("transcript-pagination").getByRole("button", { name: "Go to last page" }).click();
         await expect(page.getByTestId("transcript-line-0")).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -465,7 +463,7 @@ test.describe("Transcript clipping", () => {
     });
 
     test("canceling reset clip state", async ({ page }) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -491,7 +489,7 @@ test.describe("Transcript clipping", () => {
     });
 
     test("handle errors", async ({ page }, testInfo) => {
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -508,7 +506,7 @@ test.describe("Transcript clipping", () => {
 
     test("mp3 trim", async ({ page, browserName }, testInfo) => {
         test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -541,7 +539,7 @@ test.describe("Transcript clipping", () => {
 
     test("mp3 download", async ({ page, browserName }) => {
         test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -561,7 +559,7 @@ test.describe("Transcript clipping", () => {
 
     test("m4a trim", async ({ page, browserName }, testInfo) => {
         test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -594,7 +592,7 @@ test.describe("Transcript clipping", () => {
 
     test("m4a download", async ({ page, browserName }) => {
         test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -614,7 +612,7 @@ test.describe("Transcript clipping", () => {
 
     test("mp4 trim", async ({ page, browserName }, testInfo) => {
         test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
@@ -647,7 +645,7 @@ test.describe("Transcript clipping", () => {
 
     test("mp4 download", async ({ page, browserName }) => {
         test.skip(browserName !== "chromium", "Clipping is most stable on Chromium");
-        await loadInDevmode(page, "mock");
+        await loadInDevmode(page, mockconst.keyName);
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await page.getByTestId("clip-mode-button").click();
 
