@@ -43,10 +43,10 @@ const loadingAnimation = keyframes`
 const Line = memo(
     forwardRef(
         /**
-         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean }} props
+         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean, startTime?: number }} props
          * @param {Ref} ref
          */
-        ({ id, lineTimestamp, segments, highlight, tagsMap, ...props }, ref) => {
+        ({ id, lineTimestamp, segments, highlight, tagsMap, startTime, ...props }, ref) => {
             const theme = useTheme();
 
             const setTagPopupOpen = useAppStore((state) => state.setTagPopupOpen);
@@ -57,10 +57,12 @@ const Line = memo(
             const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
             const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
 
-            const startTime = useAppStore((state) => state.startTime);
+            const storeStartTime = useAppStore((state) => state.startTime);
             const timeFormat = useAppStore((state) => state.timeFormat);
             const density = useAppStore((state) => state.density);
             const mediaType = useAppStore((state) => state.mediaType);
+
+            const effectiveStartTime = startTime ?? storeStartTime;
 
             const isMediaMissing = mediaType !== "none" && props.mediaAvailable === false;
 
@@ -147,7 +149,7 @@ const Line = memo(
 
             const convertTime = (time) => {
                 if (timeFormat === "relative") {
-                    return unixToRelative(time, startTime);
+                    return unixToRelative(time, effectiveStartTime);
                 } else if (timeFormat === "local") {
                     return unixToLocal(time);
                 } else if (timeFormat === "UTC") {
@@ -173,12 +175,12 @@ const Line = memo(
             const iconColor = isMediaMissing
                 ? theme.palette.id.loading
                 : clipMode
-                    ? isClipTargetValid
-                        ? theme.palette.secondary.main
-                        : theme.palette.action.disabled
-                    : isClipable
-                        ? theme.palette.id.clip
-                        : theme.palette.id.main;
+                  ? isClipTargetValid
+                      ? theme.palette.secondary.main
+                      : theme.palette.action.disabled
+                  : isClipable
+                    ? theme.palette.id.clip
+                    : theme.palette.id.main;
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
             const iconSx = density === "compact" ? { padding: 0 } : {};

@@ -13,6 +13,15 @@ export interface TranscriptLine {
     mediaAvailable?: boolean;
 }
 
+export interface StreamInfo {
+    channelId: string;
+    activeId: string;
+    activeTitle: string;
+    startTime: number;
+    mediaType: "none" | "audio" | "video";
+    isLive: boolean;
+}
+
 // Slice Interfaces
 export interface AudioSlice {
     audioId: number;
@@ -71,6 +80,17 @@ export interface TranscriptSlice {
     resetTranscript: () => void;
 }
 
+export interface PastStreamSlice {
+    pastStreamViewing: string | null;
+    pastStreams: StreamInfo[];
+    pastStreamTranscript: TranscriptLine[];
+    setPastStreamViewing: (streamId: string) => void;
+    setPastStreams: (data: StreamInfo[]) => void;
+    setPastStreamTranscript: (data: TranscriptLine[]) => void;
+    resetPastStreams: () => void;
+    resetPastStreamTranscript: () => void;
+}
+
 export interface SettingsSlice {
     theme: "light" | "system" | "dark";
     density: "compact" | "standard" | "comfortable";
@@ -122,7 +142,8 @@ export type AppStore = AudioSlice &
     TranscriptSlice &
     SettingsSlice &
     PerformanceSlice &
-    TagFormatterSlice;
+    TagFormatterSlice &
+    PastStreamSlice;
 
 export interface TagFormatterSlice {
     formattedRows: any[];

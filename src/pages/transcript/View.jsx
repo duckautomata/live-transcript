@@ -11,10 +11,9 @@ import {
     useMediaQuery,
 } from "@mui/material";
 import { Clear, ExpandLess, ExpandMore, Info, Search, ContentCut } from "@mui/icons-material";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import LineMenu from "../../components/LineMenu";
 import DevHeaderInfo from "../../components/DevHeaderInfo";
-import { unixToLocal } from "../../logic/dateTime";
 import { useAppStore } from "../../store/store";
 import ViewSkeleton from "./ViewSkeleton";
 import TranscriptVirtual from "./TranscriptVirtual";
@@ -22,6 +21,8 @@ import TranscriptPagination from "./TranscriptPagination";
 import TranscriptFrame from "./TranscriptFrame";
 import ConnectionBanner from "../../components/ConnectionBanner";
 import { timeToSeconds } from "../../logic/tagHelpers";
+import ViewTitleSelection from "./ViewTitleSelection";
+import { server } from "../../config";
 
 /**
  * View component for the StreamLogs.
@@ -47,9 +48,70 @@ export default function View({ wsKey }) {
     const toggleClipMode = useAppStore((state) => state.toggleClipMode);
     const clipStartIndex = useAppStore((state) => state.clipStartIndex);
 
+    const pastStreams = useAppStore((state) => state.pastStreams);
+    const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
+    const setPastStreamViewing = useAppStore((state) => state.setPastStreamViewing);
+    const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
+    const setPastStreamTranscript = useAppStore((state) => state.setPastStreamTranscript);
+    const resetPastStreamTranscript = useAppStore((state) => state.resetPastStreamTranscript);
+
     const [searchTerm, setSearchTerm] = useState("");
     const [pendingJumpId, setPendingJumpId] = useState(-1);
     const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
+    const [isLoadingPastStream, setIsLoadingPastStream] = useState(false);
+    const [pastStreamError, setPastStreamError] = useState(null);
+
+    // Fetch past stream transcript when viewing a past stream
+    useEffect(() => {
+        let active = true;
+
+        const fetchTranscript = async () => {
+            if (!pastStreamViewing) {
+                resetPastStreamTranscript();
+                setIsLoadingPastStream(false);
+                setPastStreamError(null);
+                return;
+            }
+
+            setIsLoadingPastStream(true);
+            setPastStreamError(null);
+            try {
+                const response = await fetch(`${server}/${wsKey}/transcript/${pastStreamViewing}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch transcript");
+                }
+                const data = await response.json();
+                if (active) {
+                    setPastStreamTranscript(data);
+                }
+            } catch (error) {
+                if (active) {
+                    setPastStreamError(error.message);
+                }
+            } finally {
+                if (active) {
+                    setIsLoadingPastStream(false);
+                }
+            }
+        };
+
+        fetchTranscript();
+
+        return () => {
+            active = false;
+        };
+    }, [pastStreamViewing, wsKey, setPastStreamTranscript, resetPastStreamTranscript]);
+
+    // Validate pastStreamViewing is still in pastStreams
+    useEffect(() => {
+        if (pastStreamViewing && pastStreams.length > 0) {
+            const streamExists = pastStreams.some((s) => s.activeId === pastStreamViewing);
+            if (!streamExists) {
+                setPastStreamViewing(null);
+                resetPastStreamTranscript();
+            }
+        }
+    }, [pastStreamViewing, pastStreams, setPastStreamViewing, resetPastStreamTranscript]);
 
     // 0: Pagination, 1: Virtual, 2: Visual Frames
     const [tabValue, setTabValue] = useState(useVirtualList ? 1 : 0);
@@ -70,7 +132,6 @@ export default function View({ wsKey }) {
     const isMobile = useMediaQuery("(max-width:768px)");
     const isOnline = serverStatus === "online";
     const isEmpty = transcript.length === 0 && activeTitle === "";
-    const liveText = isLive ? "live" : "offline";
 
     // Height calculation
     const heightMap = {
@@ -81,30 +142,44 @@ export default function View({ wsKey }) {
     };
     const containerHeight = `calc(${heightMap[transcriptHeight] || "100vh"} - 24px)`;
 
+    // Use correct transcript based on mode
+    const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
+
+    const currentStreamInfo = useMemo(() => {
+        if (pastStreamViewing) {
+            return pastStreams.find((s) => s.activeId === pastStreamViewing);
+        }
+        return null;
+    }, [pastStreamViewing, pastStreams]);
+
+    const activeIsLive = pastStreamViewing ? (currentStreamInfo?.isLive ?? false) : isLive;
+    const activeStartTime = pastStreamViewing ? (currentStreamInfo?.startTime ?? 0) : startTime;
+
     // Filter transcript based on search term
+
     const filteredTranscript = useMemo(() => {
         if (!searchTerm) {
-            return transcript;
+            return activeTranscript;
         }
-        return transcript.filter((line) => {
+        return activeTranscript.filter((line) => {
             let text = "";
             line?.segments?.forEach((segment) => {
                 text += segment.text + " ";
             });
             return text.toLowerCase().includes(searchTerm.toLowerCase());
         });
-    }, [transcript, searchTerm]);
+    }, [activeTranscript, searchTerm]);
 
     const isOutOfSync = useMemo(() => {
-        if (transcript.length < 2) return false;
+        if (activeTranscript.length < 2) return false;
         // Check for holes in the sequence
-        for (let i = 1; i < transcript.length; i++) {
-            if (transcript[i].id !== transcript[i - 1].id + 1) {
+        for (let i = 1; i < activeTranscript.length; i++) {
+            if (activeTranscript[i].id !== activeTranscript[i - 1].id + 1) {
                 return true;
             }
         }
         return false;
-    }, [transcript]);
+    }, [activeTranscript]);
 
     const displayData = filteredTranscript;
 
@@ -149,7 +224,7 @@ export default function View({ wsKey }) {
         formattedRows.forEach((row) => {
             if (row.timestamp) {
                 const relativeSeconds = timeToSeconds(row.timestamp);
-                const absoluteTimestamp = (startTime || 0) + relativeSeconds;
+                const absoluteTimestamp = (activeStartTime || 0) + relativeSeconds;
 
                 // Filter out tags before first line or after last line
                 if (absoluteTimestamp < firstLineTimestamp || absoluteTimestamp > lastLineTimestamp) {
@@ -232,22 +307,7 @@ export default function View({ wsKey }) {
             }
         });
         return map;
-    }, [formattedRows, displayData, startTime]);
-
-    const streamInfoTooltip = (
-        <div>
-            <p style={{ margin: 0 }}>
-                <strong>Stream status:</strong> {liveText}
-            </p>
-            <p style={{ margin: "4px 0 0" }}>
-                <strong>Start Time:</strong> {unixToLocal(startTime)}
-            </p>
-            <p style={{ margin: "4px 0 0" }}>
-                <strong>Media Available:</strong>{" "}
-                {mediaType === "video" ? "Video and Audio" : mediaType === "audio" ? "Audio Only" : "None"}
-            </p>
-        </div>
-    );
+    }, [formattedRows, displayData, activeStartTime]);
 
     const showTitle = !isHeaderMinimized || isMobile;
 
@@ -255,20 +315,27 @@ export default function View({ wsKey }) {
         switch (tabValue) {
             case 2:
                 return (
-                    <TranscriptFrame displayData={displayData} activeId={activeId} wsKey={wsKey} tagsMap={tagsMap} />
+                    <TranscriptFrame
+                        displayData={displayData}
+                        activeId={pastStreamViewing || activeId}
+                        wsKey={wsKey}
+                        tagsMap={tagsMap}
+                        startTime={activeStartTime}
+                    />
                 );
             case 1:
                 return (
                     <TranscriptVirtual
                         displayData={displayData}
-                        transcriptLength={transcript.length}
+                        transcriptLength={activeTranscript.length}
                         searchTerm={searchTerm}
                         setSearchTerm={setSearchTerm}
-                        isLive={isLive}
+                        isLive={activeIsLive}
                         isOnline={isOnline}
                         pendingJumpId={pendingJumpId}
                         setPendingJumpId={setPendingJumpId}
                         tagsMap={tagsMap}
+                        startTime={activeStartTime}
                     />
                 );
             case 0:
@@ -279,6 +346,7 @@ export default function View({ wsKey }) {
                         pendingJumpId={pendingJumpId}
                         setPendingJumpId={setPendingJumpId}
                         tagsMap={tagsMap}
+                        startTime={activeStartTime}
                     />
                 );
         }
@@ -286,11 +354,11 @@ export default function View({ wsKey }) {
 
     return (
         <>
-            {serverStatus !== "online" && serverStatus !== "reconnecting" ? (
-                <ViewSkeleton serverStatus={serverStatus} />
+            {(serverStatus !== "online" && serverStatus !== "reconnecting") || isLoadingPastStream ? (
+                <ViewSkeleton serverStatus={isLoadingPastStream ? "loading" : serverStatus} />
             ) : (
                 <>
-                    {isEmpty ? (
+                    {isEmpty && !isLoadingPastStream ? (
                         <Box
                             sx={{
                                 display: "flex",
@@ -301,14 +369,25 @@ export default function View({ wsKey }) {
                                 height: containerHeight,
                             }}
                         >
-                            <Info color="primary" sx={{ fontSize: 60, mb: 2 }} />
-                            <Typography variant="h5" component="h2" sx={{ mb: 1 }}>
-                                No Data Available for {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}
-                            </Typography>
-                            <Typography color="text.secondary">No transcript data was found.</Typography>
-                            <Typography color="text.secondary">
-                                This usually happens when the server data is reset.
-                            </Typography>
+                            {pastStreamError ? (
+                                <>
+                                    <Typography variant="h6" color="error" gutterBottom>
+                                        Error Loading Transcript
+                                    </Typography>
+                                    <Typography variant="body1">{pastStreamError}</Typography>
+                                </>
+                            ) : (
+                                <>
+                                    <Info color="primary" sx={{ fontSize: 60, mb: 2 }} />
+                                    <Typography variant="h5" component="h2" sx={{ mb: 1 }}>
+                                        No Data Available for {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}
+                                    </Typography>
+                                    <Typography color="text.secondary">No transcript data was found.</Typography>
+                                    <Typography color="text.secondary">
+                                        This usually happens when the server data is reset.
+                                    </Typography>
+                                </>
+                            )}
                         </Box>
                     ) : (
                         <Box
@@ -322,19 +401,10 @@ export default function View({ wsKey }) {
                             <Box sx={{ flexShrink: 0 }}>
                                 {serverStatus === "reconnecting" && <ConnectionBanner />}
                                 <LineMenu wsKey={wsKey} jumpToLine={jumpToLine} />
-                                {showTitle && (
-                                    <Tooltip title={streamInfoTooltip}>
-                                        <Typography
-                                            color="primary"
-                                            variant="h5"
-                                            component="h5"
-                                            sx={{ wordBreak: "break-word", pl: isMobile ? 6 : 0 }}
-                                        >
-                                            {activeTitle}
-                                        </Typography>
-                                    </Tooltip>
+                                {showTitle && <ViewTitleSelection />}
+                                {!isHeaderMinimized && isLive && devMode && (
+                                    <DevHeaderInfo startTime={activeStartTime} />
                                 )}
-                                {!isHeaderMinimized && isLive && devMode && <DevHeaderInfo startTime={startTime} />}
                                 {isOutOfSync && (
                                     <Box sx={{ p: 2, pb: 0 }}>
                                         <Typography color="warning.main" sx={{ fontWeight: "bold" }}>
@@ -531,8 +601,24 @@ export default function View({ wsKey }) {
                                 )}
                                 <hr />
                             </Box>
-
-                            {renderContent()}
+                            {pastStreamError ? (
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        alignItems: "center",
+                                        textAlign: "center",
+                                        height: containerHeight,
+                                    }}
+                                >
+                                    <Typography variant="h6" color="error" gutterBottom>
+                                        Error Loading Transcript
+                                    </Typography>
+                                    <Typography variant="body1">{pastStreamError}</Typography>
+                                </Box>
+                            ) : (
+                                renderContent()
+                            )}
                         </Box>
                     )}
                 </>

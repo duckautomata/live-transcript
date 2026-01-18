@@ -34,6 +34,9 @@ const ClipperPopup = ({ wsKey }) => {
     const mediaType = useAppStore((state) => state.mediaType);
     const transcript = useAppStore((state) => state.transcript);
     const startTime = useAppStore((state) => state.startTime);
+    const activeId = useAppStore((state) => state.activeId);
+    const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
+    const selectedId = pastStreamViewing || activeId;
 
     const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
@@ -42,6 +45,7 @@ const ClipperPopup = ({ wsKey }) => {
     /** @type {['config' | 'preview', (step: 'config' | 'preview') => void]} */
     const [step, setStep] = useState("config");
     const [isCreating, setIsCreating] = useState(false);
+    const [isTrimming, setIsTrimming] = useState(false);
     const [clipId, setClipId] = useState(null);
     const [clipFilename, setClipFilename] = useState("");
 
@@ -55,6 +59,8 @@ const ClipperPopup = ({ wsKey }) => {
     const videoRef = useRef(null);
     const wavesurfer = useRef(null);
     const regions = useRef(null);
+    const isLooping = useRef(false);
+    const [loopingActive, setLoopingActive] = useState(false);
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [trimRegion, setTrimRegion] = useState({ start: 0, end: 0 });
@@ -84,31 +90,33 @@ const ClipperPopup = ({ wsKey }) => {
         const end = Math.max(clipStartIndex, clipEndIndex);
 
         try {
-            const response = await fetch(
-                `${server}/${wsKey}/clip?start=${start}&end=${end}&name=${clipName}&type=${fileFormat}`,
-            );
+            const response = await fetch(`${server}/${wsKey}/clip`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    stream_id: selectedId,
+                    start: start,
+                    end: end,
+                    type: fileFormat,
+                }),
+            });
 
-            // Expecting JSON { "id": "uuid" } or text with uuid
-            // For robustness, trying to handle if it returns text or json
-            let id = "";
-            let filename = "";
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                const data = await response.json();
-                id = data.id;
-                filename = data.filename;
-            } else {
-                id = await response.text();
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
             }
 
-            // Clean id if it has quotes or newlines
-            id = id.replace(/["\n]/g, "");
+            const data = await response.json();
+            // Expecting { "status": "success", "clip_id": "..." }
 
+            const id = data.clip_id;
             setClipId(id);
-            setClipFilename(filename || ""); // Set filename if available
 
             if (skipPreview) {
-                const url = `${server}/${wsKey}/download?id=${id}&filename=${filename || ""}`;
+                const url = `${server}/${wsKey}/download/${selectedId}/${id}.${fileFormat}?name=${encodeURIComponent(
+                    clipName,
+                )}`;
                 window.open(url, "_blank");
                 handleReset();
             } else {
@@ -121,22 +129,54 @@ const ClipperPopup = ({ wsKey }) => {
         }
     };
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!clipId) return;
 
-        let url = "";
+        setCreationError("");
+
         // If user has modified the region significantly or explicitly wants to trim
-        // We check if trim matches full duration approx
         const isTrimmed = trimRegion.start > 0.1 || trimRegion.end < duration - 0.1;
 
         if (isTrimmed) {
-            url = `${server}/${wsKey}/trim?id=${clipId}&start=${trimRegion.start}&end=${trimRegion.end}&filename=${clipFilename}`;
-        } else {
-            url = `${server}/${wsKey}/download?id=${clipId}&filename=${clipFilename}`;
-        }
+            setIsTrimming(true);
+            try {
+                const response = await fetch(`${server}/${wsKey}/trim`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        stream_id: selectedId,
+                        clip_id: clipId,
+                        start: trimRegion.start,
+                        end: trimRegion.end,
+                    }),
+                });
 
-        window.open(url, "_blank");
-        handleReset();
+                if (!response.ok) {
+                    throw new Error(`Trim failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                const newClipId = data.clip_id;
+
+                const url = `${server}/${wsKey}/download/${selectedId}/${newClipId}.${fileFormat}?name=${encodeURIComponent(
+                    clipName,
+                )}`;
+                window.open(url, "_blank");
+                handleReset();
+            } catch (error) {
+                setCreationError(`Unable to trim clip: ${error.message}`);
+            } finally {
+                setIsTrimming(false);
+            }
+        } else {
+            const url = `${server}/${wsKey}/download/${selectedId}/${clipId}.${fileFormat}?name=${encodeURIComponent(
+                clipName,
+            )}`;
+            window.open(url, "_blank");
+            handleReset();
+        }
     };
 
     const handleResetTrim = () => {
@@ -210,6 +250,7 @@ const ClipperPopup = ({ wsKey }) => {
         setClipFilename("");
         setIsLoaded(false);
         setCreationError("");
+        setIsTrimming(false);
     };
 
     // Initialize WaveSurfer when entering 'preview'
@@ -219,7 +260,9 @@ const ClipperPopup = ({ wsKey }) => {
             // Clear previous if any
             container.innerHTML = "";
 
-            const url = `${server}/${wsKey}/download?id=${clipId}&stream=true`;
+            // New stream URL format
+            const url = `${server}/${wsKey}/stream/${selectedId}/${clipId}.${fileFormat}`;
+            let audioUrl = url;
 
             const wsOptions = {
                 container: container,
@@ -231,22 +274,44 @@ const ClipperPopup = ({ wsKey }) => {
                 mediaControls: true,
             };
 
+            if (fileFormat === "mp4") {
+                audioUrl = `${server}/${wsKey}/stream/${selectedId}/${clipId}.m4a`;
+            }
             if (fileFormat === "mp4" && videoRef.current) {
                 videoRef.current.src = url;
             }
-
-            wsOptions.url = url;
+            wsOptions.url = audioUrl;
 
             const ws = WaveSurfer.create(wsOptions);
 
             // Sync video with audio
             if (fileFormat === "mp4" && videoRef.current) {
                 const vid = videoRef.current;
+                let lastSeek = 0;
+
                 ws.on("play", () => vid.play());
                 ws.on("pause", () => vid.pause());
                 ws.on("timeupdate", (currentTime) => {
-                    if (Math.abs(vid.currentTime - currentTime) > 0.2) {
-                        vid.currentTime = currentTime;
+                    if (ws.isPlaying()) {
+                        if (Math.abs(vid.currentTime - currentTime) > 0.2) {
+                            vid.currentTime = currentTime;
+                        }
+                    } else {
+                        // Throttle seeking during scrub to avoid "hundreds of requests"
+                        // 150ms = ~6-7 updates per second, smooth enough but not spammy
+                        const now = Date.now();
+                        if (now - lastSeek > 150) {
+                            vid.currentTime = currentTime;
+                            lastSeek = now;
+                        }
+                    }
+                });
+
+                // Ensure sync on click/end of drag
+                ws.on("interaction", (newTime) => {
+                    if (!ws.isPlaying()) {
+                        vid.currentTime = newTime;
+                        lastSeek = Date.now();
                     }
                 });
             }
@@ -276,16 +341,26 @@ const ClipperPopup = ({ wsKey }) => {
 
             wsRegions.on("region-clicked", (region, e) => {
                 e.stopPropagation(); // prevent seek
+                isLooping.current = false;
+                setLoopingActive(false);
                 region.play();
+            });
+
+            wsRegions.on("region-out", (region) => {
+                if (isLooping.current) {
+                    region.play();
+                }
             });
 
             wavesurfer.current = ws;
 
             return () => {
+                isLooping.current = false;
+                setLoopingActive(false);
                 ws.destroy();
             };
         }
-    }, [step, clipId, wsKey, fileFormat]);
+    }, [step, clipId, wsKey, fileFormat, selectedId]);
 
     // Keyboard controls
     useEffect(() => {
@@ -303,9 +378,13 @@ const ClipperPopup = ({ wsKey }) => {
                 if (e.shiftKey) {
                     const region = getRegion();
                     if (region) {
+                        isLooping.current = true;
+                        setLoopingActive(true);
                         region.play();
                     }
                 } else {
+                    isLooping.current = false;
+                    setLoopingActive(false);
                     wavesurfer.current?.playPause();
                 }
             } else if (e.code === "KeyA") {
@@ -428,35 +507,37 @@ const ClipperPopup = ({ wsKey }) => {
                             {infoText}
                         </Typography>
 
-                        <TextField
-                            label="Clip Name"
-                            value={clipName}
-                            onChange={(e) => setClipName(e.target.value)}
-                            fullWidth
-                            autoFocus
-                        />
+                        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
+                            <TextField
+                                label="Clip Name"
+                                value={clipName}
+                                onChange={(e) => setClipName(e.target.value)}
+                                sx={{ flexGrow: 1 }}
+                                autoFocus
+                            />
 
-                        <FormControl fullWidth error={formatError}>
-                            <InputLabel id="format-select-label">File Format</InputLabel>
-                            <Select
-                                labelId="format-select-label"
-                                value={fileFormat}
-                                label="File Format"
-                                onChange={(e) => {
-                                    setFileFormat(e.target.value);
-                                    setFormatError(false);
-                                }}
-                            >
-                                <MenuItem value="mp3">MP3 (Audio)</MenuItem>
-                                <MenuItem value="m4a">M4A (Audio)</MenuItem>
-                                <MenuItem value="mp4" disabled={!hasVideo}>
-                                    MP4 (Video)
-                                </MenuItem>
-                            </Select>
-                            {formatError && <FormHelperText>Please select a format.</FormHelperText>}
-                        </FormControl>
+                            <FormControl error={formatError} sx={{ minWidth: 150 }}>
+                                <InputLabel id="format-select-label">File Format</InputLabel>
+                                <Select
+                                    labelId="format-select-label"
+                                    value={fileFormat}
+                                    label="File Format"
+                                    onChange={(e) => {
+                                        setFileFormat(e.target.value);
+                                        setFormatError(false);
+                                    }}
+                                >
+                                    <MenuItem value="mp3">MP3 (Audio)</MenuItem>
+                                    <MenuItem value="m4a">M4A (Audio)</MenuItem>
+                                    <MenuItem value="mp4" disabled={!hasVideo}>
+                                        MP4 (Video)
+                                    </MenuItem>
+                                </Select>
+                                {formatError && <FormHelperText>Please select a format.</FormHelperText>}
+                            </FormControl>
+                        </Box>
                         {creationError && (
-                            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                            <Typography variant="body2" color="error" sx={{ mt: 1, textAlign: "center" }}>
                                 {creationError}
                             </Typography>
                         )}
@@ -470,6 +551,15 @@ const ClipperPopup = ({ wsKey }) => {
                             {clipFilename && (
                                 <Typography component="span" variant="body2" color="textSecondary" sx={{ ml: 1 }}>
                                     Current File: {clipFilename}.{fileFormat}
+                                </Typography>
+                            )}
+                            {loopingActive && (
+                                <Typography
+                                    component="span"
+                                    variant="body2"
+                                    sx={{ ml: 2, fontWeight: "bold", color: "primary.main" }}
+                                >
+                                    Looping, pause to stop
                                 </Typography>
                             )}
                         </Typography>
@@ -602,6 +692,11 @@ const ClipperPopup = ({ wsKey }) => {
                             </Box>{" "}
                             (Reset)
                         </Typography>
+                        {creationError && (
+                            <Typography variant="body2" color="error" sx={{ mt: 1, textAlign: "center" }}>
+                                {creationError}
+                            </Typography>
+                        )}
                     </Box>
                 )}
             </DialogContent>
@@ -631,8 +726,14 @@ const ClipperPopup = ({ wsKey }) => {
                         </Button>
                     </>
                 ) : (
-                    <Button onClick={handleDownload} variant="contained" color="primary" disabled={!isLoaded}>
-                        Download Clip
+                    <Button
+                        onClick={handleDownload}
+                        variant="contained"
+                        color="primary"
+                        disabled={!isLoaded || isTrimming}
+                        startIcon={isTrimming && <CircularProgress size={20} />}
+                    >
+                        {isTrimming ? "Trimming..." : "Download Clip"}
                     </Button>
                 )}
             </DialogActions>

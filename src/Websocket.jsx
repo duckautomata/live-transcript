@@ -11,6 +11,7 @@ import { useAppStore } from "./store/store";
  * @typedef {import('./store/types').Segment} Segment
  * @typedef {import('./store/types').TranscriptSlice['mediaType']} MediaType
  * @typedef {import('./store/types').ServerSlice['serverStatus']} ServerStatus
+ * @typedef {import('./store/types').StreamInfo} StreamInfo
  */
 
 /**
@@ -42,6 +43,11 @@ import { useAppStore } from "./store/store";
  */
 
 /**
+ * @typedef {object} EventPastStreamData
+ * @property {StreamInfo[]} streams
+ */
+
+/**
  * @typedef {object} EventStatusData
  * @property {string} activeId
  * @property {string} activeTitle
@@ -54,13 +60,13 @@ import { useAppStore } from "./store/store";
  */
 
 /**
- * @typedef {"newLine" | "newStream" | "status" | "sync" | "newMedia"} Events
+ * @typedef {"newLine" | "newStream" | "pastStreams" | "status" | "sync" | "newMedia"} Events
  */
 
 /**
  * @typedef {object} WebSocketMessage
  * @property {Events} event
- * @property {EventSyncData | EventNewLineData | EventNewStreamData | EventStatusData | EventNewMediaData} [data]
+ * @property {EventSyncData | EventNewLineData | EventNewStreamData | EventPastStreamData | EventStatusData | EventNewMediaData} [data]
  */
 
 /**
@@ -83,7 +89,9 @@ export const Websocket = ({ wsKey }) => {
     const addMetric = useAppStore((state) => state.addMetric);
     const setLastLineReceivedAt = useAppStore((state) => state.setLastLineReceivedAt);
     const resetTranscript = useAppStore((state) => state.resetTranscript);
+    const resetPastStreams = useAppStore((state) => state.resetPastStreams);
     const setAudioId = useAppStore((state) => state.setAudioId);
+    const setPastStreams = useAppStore((state) => state.setPastStreams);
 
     const lastReceiveTime = useRef(Date.now());
 
@@ -166,6 +174,7 @@ export const Websocket = ({ wsKey }) => {
     useEffect(() => {
         hasConnected.current = false;
         resetTranscript();
+        resetPastStreams();
         setServerStatus("connecting");
         setAudioId(-1);
     }, [wsKey]);
@@ -192,6 +201,9 @@ export const Websocket = ({ wsKey }) => {
                 break;
             case "newStream":
                 setNewActiveStream(data);
+                break;
+            case "pastStreams":
+                updatePastStreams(data);
                 break;
             case "status":
                 setStreamStatus(data);
@@ -301,6 +313,23 @@ export const Websocket = ({ wsKey }) => {
         setMediaType(data.mediaType);
         setIsLive(data.isLive);
         setTranscript([]);
+    };
+
+    /**
+     * @param {EventPastStreamData | null} data
+     */
+    const updatePastStreams = (data) => {
+        if (!data) {
+            LOG_ERROR("updatePastStreams data is null");
+            return;
+        }
+
+        LOG_MSG("updatePastStreams data", data);
+        if (data.streams?.length > 0) {
+            setPastStreams(data.streams);
+        } else {
+            setPastStreams([]);
+        }
     };
 
     /**

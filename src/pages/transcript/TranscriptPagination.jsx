@@ -13,8 +13,9 @@ import Line from "./Line";
  * @param {function(number)} props.setPendingJumpId
  * @param {Map<string, any[]>} props.tagsMap
  * @param {boolean} props.hasOverflow
+ * @param {number} props.startTime
  */
-export default function TranscriptPagination({ displayData, pendingJumpId, setPendingJumpId, tagsMap }) {
+export default function TranscriptPagination({ displayData, pendingJumpId, setPendingJumpId, tagsMap, startTime }) {
     const [page, setPage] = useState(1);
     const lineRefs = useRef(new Map());
 
@@ -106,6 +107,7 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
                             segments={line.segments}
                             mediaAvailable={line.mediaAvailable}
                             tagsMap={tagsMap}
+                            startTime={startTime}
                         />
                     ))}
                     <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

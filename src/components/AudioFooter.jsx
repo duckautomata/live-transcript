@@ -16,11 +16,16 @@ export default function AudioFooter({ wsKey, width }) {
     const audioId = useAppStore((state) => state.audioId);
     const setAudioId = useAppStore((state) => state.setAudioId);
     const transcript = useAppStore((state) => state.transcript);
+    const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
+    const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
+    const activeId = useAppStore((state) => state.activeId);
+    const selectedId = pastStreamViewing || activeId;
+    const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
     const theme = useTheme();
     const isMobile = useMediaQuery("(max-width:768px)");
 
-    const playUrl = `${server}/${wsKey}/audio?id=${audioId}&stream=true`;
-    const downloadUrl = `${server}/${wsKey}/audio?id=${audioId}`;
+    const playUrl = `${server}/${wsKey}/stream/${selectedId}/${audioId}.m4a`;
+    const downloadUrl = `${server}/${wsKey}/download/${selectedId}/${audioId}.m4a`;
     const desktopWidth = 400;
 
     const handleClose = () => {
@@ -31,7 +36,7 @@ export default function AudioFooter({ wsKey, width }) {
         window.open(downloadUrl, "_blank");
     };
 
-    if (audioId < 0 || audioId >= transcript.length) {
+    if (audioId < 0 || audioId >= activeTranscript.length) {
         return null;
     }
 
@@ -72,7 +77,9 @@ export default function AudioFooter({ wsKey, width }) {
                             </Tooltip>,
                         ]}
                         onClickNext={() =>
-                            setAudioId(audioId < transcript.length - 1 ? audioId + 1 : transcript.length - 1)
+                            setAudioId(
+                                audioId < activeTranscript.length - 1 ? audioId + 1 : activeTranscript.length - 1,
+                            )
                         }
                         onClickPrevious={() => setAudioId(audioId > 0 ? audioId - 1 : 0)}
                     />

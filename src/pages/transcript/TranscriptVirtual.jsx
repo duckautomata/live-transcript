@@ -19,6 +19,7 @@ import Line from "./Line";
  * @param {function(number)} props.setPendingJumpId
  * @param {Map<string, any[]>} props.tagsMap
  * @param {boolean} props.hasOverflow
+ * @param {number} props.startTime
  */
 export default function TranscriptVirtual({
     displayData,
@@ -30,6 +31,7 @@ export default function TranscriptVirtual({
     pendingJumpId,
     setPendingJumpId,
     tagsMap,
+    startTime,
 }) {
     const isMobile = useMediaQuery("(max-width:768px)");
     const virtuosoRef = useRef(null);
@@ -144,6 +146,7 @@ export default function TranscriptVirtual({
                             highlight={highlightedId === line.id}
                             mediaAvailable={line.mediaAvailable}
                             tagsMap={tagsMap}
+                            startTime={startTime}
                         />
                     )}
                     followOutput={atLiveEdge ? "auto" : false}

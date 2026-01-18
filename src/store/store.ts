@@ -11,6 +11,7 @@ import { createTranscriptSlice } from "./transcriptSlice";
 import { createSettingsSlice } from "./settingsSlice";
 import { createPerformanceSlice } from "./performanceSlice";
 import { createTagFormatterSlice } from "./tagFormatterSlice";
+import { createPastStreamSlice } from "./pastStreamSlice";
 
 export const useAppStore = create<AppStore>()(
     persist(
@@ -24,6 +25,7 @@ export const useAppStore = create<AppStore>()(
             ...createSettingsSlice(set, get, api),
             ...createPerformanceSlice(set, get, api),
             ...createTagFormatterSlice(set, get, api),
+            ...createPastStreamSlice(set, get, api),
         }),
         {
             name: "live-transcript-settings", // The key in localStorage

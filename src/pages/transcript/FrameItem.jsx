@@ -6,14 +6,16 @@ import FrameImage from "./FrameImage";
 import { useAppStore } from "../../store/store";
 import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
 
-const FrameItem = memo(({ line, tagsMap, activeId, wsKey, lastSelectedId, onFrameClick }) => {
+const FrameItem = memo(({ line, tagsMap, activeId, wsKey, lastSelectedId, onFrameClick, startTime }) => {
     const theme = useTheme();
     const timeFormat = useAppStore((state) => state.timeFormat);
-    const startTime = useAppStore((state) => state.startTime);
+    const storeStartTime = useAppStore((state) => state.startTime);
+
+    const effectiveStartTime = startTime ?? storeStartTime;
 
     const formatTimestamp = (timestamp) => {
         if (timeFormat === "relative") {
-            return unixToRelative(timestamp, startTime);
+            return unixToRelative(timestamp, effectiveStartTime);
         } else if (timeFormat === "local") {
             return unixToLocal(timestamp);
         } else if (timeFormat === "UTC") {
@@ -87,7 +89,7 @@ const FrameItem = memo(({ line, tagsMap, activeId, wsKey, lastSelectedId, onFram
                 >
                     {line.mediaAvailable ? (
                         <FrameImage
-                            src={`${server}/${wsKey}/frame?id=${line.id}&stream_id=${activeId}`}
+                            src={`${server}/${wsKey}/frame/${activeId}/${line.id}.jpg`}
                             alt={`Frame ${line.id}`}
                             loading="lazy"
                             style={{

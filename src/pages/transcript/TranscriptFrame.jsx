@@ -38,8 +38,9 @@ const ListContainer = styled(Box)(() => ({
  * @param {string} props.activeId
  * @param {string} props.wsKey
  * @param {Map<string, any[]>} props.tagsMap
+ * @param {number} props.startTime
  */
-export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap }) {
+export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap, startTime }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -179,6 +180,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap 
                             wsKey={wsKey}
                             lastSelectedId={lastSelectedId}
                             onFrameClick={handleFrameClick}
+                            startTime={startTime}
                         />
                     )}
                 />
@@ -202,7 +204,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap 
                             >
                                 {selectedLine.mediaAvailable ? (
                                     <FrameImage
-                                        src={`${server}/${wsKey}/frame?id=${selectedLine.id}&stream_id=${activeId}`}
+                                        src={`${server}/${wsKey}/frame/${activeId}/${selectedLine.id}.jpg`}
                                         alt={`Frame ${selectedLine.id}`}
                                         style={{ width: "100%", height: "100%", objectFit: "contain" }}
                                     />
@@ -217,6 +219,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap 
                                     segments={selectedLine.segments}
                                     mediaAvailable={selectedLine.mediaAvailable}
                                     tagsMap={tagsMap}
+                                    startTime={startTime}
                                 />
                             </Paper>
                         </Box>

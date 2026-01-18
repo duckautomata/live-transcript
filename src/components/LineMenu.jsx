@@ -12,7 +12,10 @@ import { useAppStore } from "../store/store";
 export default function LineMenu({ wsKey, jumpToLine }) {
     const lineMenuId = useAppStore((state) => state.lineMenuId);
     const activeId = useAppStore((state) => state.activeId);
+    const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
     const transcript = useAppStore((state) => state.transcript);
+    const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
+    const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
     const startTime = useAppStore((state) => state.startTime);
     const mediaType = useAppStore((state) => state.mediaType);
     const clipStartIndex = useAppStore((state) => state.clipStartIndex);
@@ -21,23 +24,24 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
     const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
     const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
+    const selectedId = pastStreamViewing || activeId;
 
     const lineAnchorEl = document.getElementById(`line-button-${lineMenuId}`);
     const open = lineMenuId > -1 ? Boolean(lineAnchorEl) : false;
 
-    const downloadUrl = `${server}/${wsKey}/audio?id=${lineMenuId}`;
+    const downloadUrl = `${server}/${wsKey}/download/${selectedId}/${lineMenuId}.m4a`;
 
-    const selectedLine = transcript.filter((line) => line.id === lineMenuId)[0];
+    const selectedLine = activeTranscript.filter((line) => line.id === lineMenuId)[0];
     const ts = selectedLine?.timestamp;
     const formattedTime = unixToRelative(ts, startTime);
 
     let openUrl = "";
-    if (/^\d+$/.test(activeId)) {
+    if (/^\d+$/.test(selectedId)) {
         // twitch
-        openUrl = `https://www.twitch.tv/videos/${activeId}?t=${formattedTime}`;
+        openUrl = `https://www.twitch.tv/videos/${selectedId}?t=${formattedTime}`;
     } else {
         // yt
-        openUrl = `https://www.youtube.com/live/${activeId}?t=${formattedTime}`;
+        openUrl = `https://www.youtube.com/live/${selectedId}?t=${formattedTime}`;
     }
 
     const handleClose = () => {
@@ -83,7 +87,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     // Media availability check
     const isMediaAvailable = (id) => {
         if (mediaType === "none") return true;
-        const line = transcript.find((l) => l.id === id);
+        const line = activeTranscript.find((l) => l.id === id);
         return line?.mediaAvailable !== false;
     };
 
@@ -92,7 +96,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
         const min = Math.min(start, end);
         const max = Math.max(start, end);
         // Find if ANY line in range has mediaAvailable === false.
-        const missingMediaLine = transcript.find((l) => l.id >= min && l.id <= max && l.mediaAvailable === false);
+        const missingMediaLine = activeTranscript.find((l) => l.id >= min && l.id <= max && l.mediaAvailable === false);
         return !missingMediaLine;
     };
 
