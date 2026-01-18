@@ -1,6 +1,6 @@
 /**
  * NOTE:
- * The tests require at least 2 pages of trancript lines in order for the pagination tests to work.
+ * The tests require at least 2 pages of transcript lines in order for the pagination tests to work.
  * Best to keep the number of searchTerm results < 5 since virtual lists do not show all results. Best if 1-3 results.
  * searchLineId just needs to be one of the searchTerm results, order doesn't matter.
  */
