@@ -37,6 +37,7 @@ export default function View({ wsKey }) {
     const isLive = useAppStore((state) => state.isLive);
     const startTime = useAppStore((state) => state.startTime);
     const mediaType = useAppStore((state) => state.mediaType);
+    const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
     const transcript = useAppStore((state) => state.transcript);
     const serverStatus = useAppStore((state) => state.serverStatus);
     const transcriptHeight = useAppStore((state) => state.transcriptHeight);
@@ -316,6 +317,7 @@ export default function View({ wsKey }) {
             case 2:
                 return (
                     <TranscriptFrame
+                        mediaBaseUrl={mediaBaseUrl}
                         displayData={displayData}
                         activeId={pastStreamViewing || activeId}
                         wsKey={wsKey}

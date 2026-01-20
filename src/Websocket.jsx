@@ -16,12 +16,13 @@ import { useAppStore } from "./store/store";
 
 /**
  * @typedef {object} EventSyncData
- * @property {string} [activeId]
- * @property {string} [activeTitle]
- * @property {number} [startTime]
- * @property {MediaType} [mediaType]
- * @property {boolean} [isLive]
- * @property {TranscriptLine[]} [transcript]
+ * @property {string} activeId
+ * @property {string} activeTitle
+ * @property {string} startTime
+ * @property {MediaType} mediaType
+ * @property {boolean} isLive
+ * @property {string} mediaBaseUrl
+ * @property {TranscriptLine[]} transcript
  */
 
 /**
@@ -37,8 +38,9 @@ import { useAppStore } from "./store/store";
  * @typedef {object} EventNewStreamData
  * @property {string} activeId
  * @property {string} activeTitle
- * @property {number} startTime
+ * @property {string} startTime
  * @property {MediaType} mediaType
+ * @property {string} mediaBaseUrl
  * @property {boolean} isLive
  */
 
@@ -55,8 +57,9 @@ import { useAppStore } from "./store/store";
  */
 
 /**
- * @typedef {object} EventNewMediaData
- * @property {number[]} ids
+ * @typedef {Object} EventNewMediaData
+ * @property {string} streamId
+ * @property {import("./store/types").Files} files - A map where keys are Line IDs and values are File IDs
  */
 
 /**
@@ -81,6 +84,7 @@ export const Websocket = ({ wsKey }) => {
     const setActiveTitle = useAppStore((state) => state.setActiveTitle);
     const setStartTime = useAppStore((state) => state.setStartTime);
     const setMediaType = useAppStore((state) => state.setMediaType);
+    const setMediaBaseUrl = useAppStore((state) => state.setMediaBaseUrl);
     const setIsLive = useAppStore((state) => state.setIsLive);
     const setTranscript = useAppStore((state) => state.setTranscript);
     const addTranscriptLine = useAppStore((state) => state.addTranscriptLine);
@@ -244,11 +248,13 @@ export const Websocket = ({ wsKey }) => {
         }
 
         LOG_MSG("resetState data", data);
+        const mediaBaseUrl = data.mediaBaseUrl ?? "";
 
         setActiveId(data.activeId ?? "");
         setActiveTitle(data.activeTitle ?? "");
         setStartTime(data.startTime ? +data.startTime : 0);
         setMediaType(data.mediaType ?? "none");
+        setMediaBaseUrl(mediaBaseUrl.replace(/\/+$/, "")); // removes any trailing / in url
         setIsLive(data.isLive ?? false);
 
         /** @type {TranscriptLine[]} */
@@ -306,11 +312,13 @@ export const Websocket = ({ wsKey }) => {
         }
 
         LOG_MSG("setNewActiveStream data", data);
+        const mediaBaseUrl = data.mediaBaseUrl ?? "";
 
         setActiveId(data.activeId);
         setActiveTitle(data.activeTitle);
         setStartTime(+data.startTime);
         setMediaType(data.mediaType);
+        setMediaBaseUrl(mediaBaseUrl.replace(/\/+$/, "")); // removes any trailing / in url
         setIsLive(data.isLive);
         setTranscript([]);
     };
@@ -359,11 +367,11 @@ export const Websocket = ({ wsKey }) => {
 
         LOG_MSG("handleNewMedia data", data);
 
-        if (data?.ids && Array.isArray(data.ids)) {
-            updateLineMedia(data.ids);
+        if (data?.files && typeof data.files === "object") {
+            updateLineMedia(data.streamId, data.files);
             recalculateClipRange();
         } else {
-            LOG_ERROR("handleNewMedia data.ids is not an array", data);
+            LOG_ERROR("handleNewMedia data.files is missing or not an object", data);
         }
     };
 };

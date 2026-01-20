@@ -8,12 +8,14 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
     activeTitle: "",
     startTime: 0,
     mediaType: "none",
+    mediaBaseUrl: "",
     isLive: false,
     transcript: [],
     setActiveId: (id) => set({ activeId: id }),
     setActiveTitle: (title) => set({ activeTitle: title }),
     setStartTime: (time) => set({ startTime: time }),
     setMediaType: (type) => set({ mediaType: type }),
+    setMediaBaseUrl: (mediaUrl) => set({ mediaBaseUrl: mediaUrl }),
     setIsLive: (live) => set({ isLive: live }),
     setTranscript: (data) => set({ transcript: data }),
     addTranscriptLine: (newLine) => {
@@ -27,11 +29,15 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
             return { transcript: [...state.transcript, newLine] };
         });
     },
-    updateLineMedia: (ids, available = true) => {
+    updateLineMedia: (streamId, files, available = true) => {
         set((state) => ({
-            transcript: state.transcript.map((line) =>
-                ids.includes(line.id) ? { ...line, mediaAvailable: available } : line,
-            ),
+            transcript: state.transcript.map((line) => {
+                if (state.activeId != streamId) {
+                    return line;
+                }
+                const fileId = files[line.id];
+                return fileId ? { ...line, mediaAvailable: available, fileId: fileId } : line;
+            }),
         }));
     },
     resetTranscript: () =>
@@ -40,6 +46,7 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
             activeTitle: "",
             startTime: 0,
             mediaType: "none",
+            mediaBaseUrl: "",
             isLive: false,
             transcript: [],
         }),

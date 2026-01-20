@@ -1,7 +1,8 @@
 import { Menu, MenuItem } from "@mui/material";
 import { unixToRelative } from "../logic/dateTime";
-import { maxClipSize, server } from "../config";
+import { maxClipSize } from "../config";
 import { useAppStore } from "../store/store";
+import { downloadAudioUrl } from "../logic/mediaUrls";
 
 /**
  * A context menu for a specific line in the transcript.
@@ -18,6 +19,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
     const startTime = useAppStore((state) => state.startTime);
     const mediaType = useAppStore((state) => state.mediaType);
+    const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
     const clipStartIndex = useAppStore((state) => state.clipStartIndex);
     const setLineMenuId = useAppStore((state) => state.setLineMenuId);
     const setAudioId = useAppStore((state) => state.setAudioId);
@@ -28,12 +30,10 @@ export default function LineMenu({ wsKey, jumpToLine }) {
 
     const lineAnchorEl = document.getElementById(`line-button-${lineMenuId}`);
     const open = lineMenuId > -1 ? Boolean(lineAnchorEl) : false;
-
-    const downloadUrl = `${server}/${wsKey}/download/${selectedId}/${lineMenuId}.m4a`;
-
     const selectedLine = activeTranscript.filter((line) => line.id === lineMenuId)[0];
     const ts = selectedLine?.timestamp;
     const formattedTime = unixToRelative(ts, startTime);
+    const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, selectedLine?.fileId, lineMenuId);
 
     let openUrl = "";
     if (/^\d+$/.test(selectedId)) {

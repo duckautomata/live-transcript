@@ -3,8 +3,8 @@ import "react-h5-audio-player/lib/styles.css";
 import "./AudioFooter.css";
 import { AppBar, Box, IconButton, Toolbar, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import { Close, Download } from "@mui/icons-material";
-import { server } from "../config";
 import { useAppStore } from "../store/store";
+import { downloadAudioUrl, playAudioUrl } from "../logic/mediaUrls";
 
 /**
  * A floating footer providing audio controls and playback.
@@ -15,17 +15,19 @@ import { useAppStore } from "../store/store";
 export default function AudioFooter({ wsKey, width }) {
     const audioId = useAppStore((state) => state.audioId);
     const setAudioId = useAppStore((state) => state.setAudioId);
+    const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
     const transcript = useAppStore((state) => state.transcript);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
     const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
     const activeId = useAppStore((state) => state.activeId);
     const selectedId = pastStreamViewing || activeId;
     const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
+    const activeLine = activeTranscript.find((line) => line.id === audioId);
     const theme = useTheme();
     const isMobile = useMediaQuery("(max-width:768px)");
 
-    const playUrl = `${server}/${wsKey}/stream/${selectedId}/${audioId}.m4a`;
-    const downloadUrl = `${server}/${wsKey}/download/${selectedId}/${audioId}.m4a`;
+    const playUrl = playAudioUrl(mediaBaseUrl, wsKey, selectedId, activeLine?.fileId);
+    const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, activeLine?.fileId, audioId);
     const desktopWidth = 400;
 
     const handleClose = () => {
@@ -36,7 +38,7 @@ export default function AudioFooter({ wsKey, width }) {
         window.open(downloadUrl, "_blank");
     };
 
-    if (audioId < 0 || audioId >= activeTranscript.length) {
+    if (!playUrl || audioId < 0 || audioId >= activeTranscript.length) {
         return null;
     }
 

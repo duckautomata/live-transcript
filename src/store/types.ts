@@ -8,6 +8,7 @@ export interface Segment {
 
 export interface TranscriptLine {
     id: number;
+    fileId: string;
     segments: Segment[];
     timestamp: number;
     mediaAvailable?: boolean;
@@ -21,6 +22,10 @@ export interface StreamInfo {
     mediaType: "none" | "audio" | "video";
     isLive: boolean;
 }
+
+export type Files = {
+    [key: number]: string;
+};
 
 // Slice Interfaces
 export interface AudioSlice {
@@ -67,16 +72,18 @@ export interface TranscriptSlice {
     activeTitle: string;
     startTime: number;
     mediaType: "none" | "audio" | "video";
+    mediaBaseUrl: string;
     isLive: boolean;
     transcript: TranscriptLine[];
     setActiveId: (id: string) => void;
     setActiveTitle: (title: string) => void;
     setStartTime: (time: number) => void;
     setMediaType: (type: TranscriptSlice["mediaType"]) => void;
+    setMediaBaseUrl: (url: string) => void;
     setIsLive: (live: boolean) => void;
     setTranscript: (data: TranscriptLine[]) => void;
     addTranscriptLine: (newLine: TranscriptLine) => void;
-    updateLineMedia: (ids: number[], available?: boolean) => void;
+    updateLineMedia: (streamId: string, files: Files, available?: boolean) => void;
     resetTranscript: () => void;
 }
 

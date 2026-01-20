@@ -21,6 +21,7 @@ import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js";
 import { RestartAlt } from "@mui/icons-material";
 import { unixToRelative } from "../logic/dateTime";
+import { downloadClipUrl, playClipUrl } from "../logic/mediaUrls";
 
 /**
  * A popup dialog for configuring and downloading media clips.
@@ -32,6 +33,7 @@ const ClipperPopup = ({ wsKey }) => {
     const clipStartIndex = useAppStore((state) => state.clipStartIndex);
     const clipEndIndex = useAppStore((state) => state.clipEndIndex);
     const mediaType = useAppStore((state) => state.mediaType);
+    const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
     const transcript = useAppStore((state) => state.transcript);
     const startTime = useAppStore((state) => state.startTime);
     const activeId = useAppStore((state) => state.activeId);
@@ -114,9 +116,7 @@ const ClipperPopup = ({ wsKey }) => {
             setClipId(id);
 
             if (skipPreview) {
-                const url = `${server}/${wsKey}/download/${selectedId}/${id}.${fileFormat}?name=${encodeURIComponent(
-                    clipName,
-                )}`;
+                const url = downloadClipUrl(mediaBaseUrl, wsKey, selectedId, id, fileFormat, clipName);
                 window.open(url, "_blank");
                 handleReset();
             } else {
@@ -148,6 +148,7 @@ const ClipperPopup = ({ wsKey }) => {
                     body: JSON.stringify({
                         stream_id: selectedId,
                         clip_id: clipId,
+                        file_format: fileFormat,
                         start: trimRegion.start,
                         end: trimRegion.end,
                     }),
@@ -160,9 +161,7 @@ const ClipperPopup = ({ wsKey }) => {
                 const data = await response.json();
                 const newClipId = data.clip_id;
 
-                const url = `${server}/${wsKey}/download/${selectedId}/${newClipId}.${fileFormat}?name=${encodeURIComponent(
-                    clipName,
-                )}`;
+                const url = downloadClipUrl(mediaBaseUrl, wsKey, selectedId, newClipId, fileFormat, clipName);
                 window.open(url, "_blank");
                 handleReset();
             } catch (error) {
@@ -171,9 +170,7 @@ const ClipperPopup = ({ wsKey }) => {
                 setIsTrimming(false);
             }
         } else {
-            const url = `${server}/${wsKey}/download/${selectedId}/${clipId}.${fileFormat}?name=${encodeURIComponent(
-                clipName,
-            )}`;
+            const url = downloadClipUrl(mediaBaseUrl, wsKey, selectedId, clipId, fileFormat, clipName);
             window.open(url, "_blank");
             handleReset();
         }
@@ -261,7 +258,7 @@ const ClipperPopup = ({ wsKey }) => {
             container.innerHTML = "";
 
             // New stream URL format
-            const url = `${server}/${wsKey}/stream/${selectedId}/${clipId}.${fileFormat}`;
+            const url = playClipUrl(mediaBaseUrl, wsKey, selectedId, clipId, fileFormat);
             let audioUrl = url;
 
             const wsOptions = {
@@ -275,7 +272,7 @@ const ClipperPopup = ({ wsKey }) => {
             };
 
             if (fileFormat === "mp4") {
-                audioUrl = `${server}/${wsKey}/stream/${selectedId}/${clipId}.m4a`;
+                audioUrl = playClipUrl(mediaBaseUrl, wsKey, selectedId, clipId, "m4a");
             }
             if (fileFormat === "mp4" && videoRef.current) {
                 videoRef.current.src = url;
@@ -360,7 +357,7 @@ const ClipperPopup = ({ wsKey }) => {
                 ws.destroy();
             };
         }
-    }, [step, clipId, wsKey, fileFormat, selectedId]);
+    }, [step, clipId, wsKey, fileFormat, selectedId, mediaBaseUrl]);
 
     // Keyboard controls
     useEffect(() => {

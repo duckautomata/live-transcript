@@ -1,12 +1,12 @@
 import { memo } from "react";
 import { Box, Paper, Tooltip, Typography, CircularProgress, useTheme } from "@mui/material";
 import { orange, purple, blue } from "@mui/material/colors";
-import { server } from "../../config";
 import FrameImage from "./FrameImage";
 import { useAppStore } from "../../store/store";
 import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
+import { getFrameUrl } from "../../logic/mediaUrls";
 
-const FrameItem = memo(({ line, tagsMap, activeId, wsKey, lastSelectedId, onFrameClick, startTime }) => {
+const FrameItem = memo(({ mediaBaseUrl, line, tagsMap, activeId, wsKey, lastSelectedId, onFrameClick, startTime }) => {
     const theme = useTheme();
     const timeFormat = useAppStore((state) => state.timeFormat);
     const storeStartTime = useAppStore((state) => state.startTime);
@@ -89,7 +89,7 @@ const FrameItem = memo(({ line, tagsMap, activeId, wsKey, lastSelectedId, onFram
                 >
                     {line.mediaAvailable ? (
                         <FrameImage
-                            src={`${server}/${wsKey}/frame/${activeId}/${line.id}.jpg`}
+                            src={getFrameUrl(mediaBaseUrl, wsKey, activeId, line.fileId)}
                             alt={`Frame ${line.id}`}
                             loading="lazy"
                             style={{

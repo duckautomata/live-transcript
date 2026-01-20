@@ -12,10 +12,14 @@ import {
 
 import { VirtuosoGrid } from "react-virtuoso";
 import styled from "@emotion/styled";
-import { server } from "../../config";
 import Line from "./Line";
 import FrameItem from "./FrameItem";
 import FrameImage from "./FrameImage";
+import { getFrameUrl } from "../../logic/mediaUrls";
+
+/**
+ * @typedef {import('../../store/types').TranscriptLine} TranscriptLine
+ */
 
 const ItemContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(0.5),
@@ -34,16 +38,18 @@ const ListContainer = styled(Box)(() => ({
  * TranscriptFrame component for displaying the transcript as a grid of frames.
  *
  * @param {object} props
- * @param {object[]} props.displayData
+ * @param {string} props.mediaBaseUrl
+ * @param {TranscriptLine[]} props.displayData
  * @param {string} props.activeId
  * @param {string} props.wsKey
  * @param {Map<string, any[]>} props.tagsMap
  * @param {number} props.startTime
  */
-export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap, startTime }) {
+export default function TranscriptFrame({ mediaBaseUrl, displayData, activeId, wsKey, tagsMap, startTime }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
+    /** @type {[TranscriptLine, (line: TranscriptLine) => void]} */
     const [selectedLine, setSelectedLine] = useState(null);
     const selectedLineRef = useRef(null);
     const [lastSelectedId, setLastSelectedId] = useState(null);
@@ -58,6 +64,10 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap,
         return "200px"; // Fixed width on desktop
     }, [isMobile]);
 
+    /**
+     *
+     * @param {TranscriptLine} line
+     */
     const handleFrameClick = (line) => {
         setSelectedLine(line);
         setLastSelectedId(line.id);
@@ -174,6 +184,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap,
                     itemClassName="frame-item"
                     itemContent={(index, line) => (
                         <FrameItem
+                            mediaBaseUrl={mediaBaseUrl}
                             line={line}
                             tagsMap={tagsMap}
                             activeId={activeId}
@@ -204,7 +215,7 @@ export default function TranscriptFrame({ displayData, activeId, wsKey, tagsMap,
                             >
                                 {selectedLine.mediaAvailable ? (
                                     <FrameImage
-                                        src={`${server}/${wsKey}/frame/${activeId}/${selectedLine.id}.jpg`}
+                                        src={getFrameUrl(mediaBaseUrl, wsKey, activeId, selectedLine.fileId)}
                                         alt={`Frame ${selectedLine.id}`}
                                         style={{ width: "100%", height: "100%", objectFit: "contain" }}
                                     />
