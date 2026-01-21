@@ -292,8 +292,8 @@ export default function TranscriptVirtual({
                                         : atLiveEdge
                                           ? "Live"
                                           : unreadCount > 0
-                                            ? `Paused (${unreadCount})`
-                                            : "Paused"}
+                                            ? `Click to Resume (${unreadCount})`
+                                            : "Click to Resume"}
                                 </Typography>
                             </Box>
                         </Tooltip>

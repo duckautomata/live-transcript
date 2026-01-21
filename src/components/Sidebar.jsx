@@ -189,11 +189,19 @@ export default function Sidebar({ wsKey, children }) {
                                 <ListItemButton
                                     onClick={handleHomeButton}
                                     sx={{
-                                        paddingLeft: !isMobile && !sidebarOpen ? 2.4 : undefined,
+                                        minHeight: 48,
+                                        justifyContent: sidebarOpen ? "initial" : "center",
+                                        px: 2.5,
                                         overflow: "hidden",
                                     }}
                                 >
-                                    <ListItemIcon>
+                                    <ListItemIcon
+                                        sx={{
+                                            minWidth: 0,
+                                            mr: sidebarOpen ? 3 : "auto",
+                                            justifyContent: "center",
+                                        }}
+                                    >
                                         <Home />
                                     </ListItemIcon>
                                     {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Home" />}
@@ -220,11 +228,21 @@ export default function Sidebar({ wsKey, children }) {
                                                     selected={wsKey === streamer.value}
                                                     onClick={() => handleStreamerChange(streamer.value)}
                                                     sx={{
-                                                        paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
+                                                        minHeight: 48,
+                                                        justifyContent: sidebarOpen ? "initial" : "center",
+                                                        px: 2.5,
                                                         overflow: "hidden",
                                                     }}
                                                 >
-                                                    <ListItemIcon>{streamer.icon}</ListItemIcon>
+                                                    <ListItemIcon
+                                                        sx={{
+                                                            minWidth: 0,
+                                                            mr: sidebarOpen ? 3 : "auto",
+                                                            justifyContent: "center",
+                                                        }}
+                                                    >
+                                                        {streamer.icon}
+                                                    </ListItemIcon>
                                                     {((!isMobile && sidebarOpen) || isMobile) && (
                                                         <ListItemText primary={streamer.name} />
                                                     )}
@@ -253,12 +271,22 @@ export default function Sidebar({ wsKey, children }) {
                                                 selected={window.location.pathname.split("/")[3] === page.value}
                                                 onClick={() => handlePageChange(page.value)}
                                                 sx={{
-                                                    paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
+                                                    minHeight: 48,
+                                                    justifyContent: sidebarOpen ? "initial" : "center",
+                                                    px: 2.5,
                                                     overflow: "hidden",
                                                 }}
                                                 data-testid={page.testId}
                                             >
-                                                <ListItemIcon>{page.icon}</ListItemIcon>
+                                                <ListItemIcon
+                                                    sx={{
+                                                        minWidth: 0,
+                                                        mr: sidebarOpen ? 3 : "auto",
+                                                        justifyContent: "center",
+                                                    }}
+                                                >
+                                                    {page.icon}
+                                                </ListItemIcon>
                                                 {((!isMobile && sidebarOpen) || isMobile) && (
                                                     <ListItemText primary={page.name} />
                                                 )}
@@ -285,11 +313,19 @@ export default function Sidebar({ wsKey, children }) {
                                             data-testid="page-button-devTools"
                                             onClick={() => setDevToolsOpen(true)}
                                             sx={{
-                                                paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined,
+                                                minHeight: 48,
+                                                justifyContent: sidebarOpen ? "initial" : "center",
+                                                px: 2.5,
                                                 overflow: "hidden",
                                             }}
                                         >
-                                            <ListItemIcon>
+                                            <ListItemIcon
+                                                sx={{
+                                                    minWidth: 0,
+                                                    mr: sidebarOpen ? 3 : "auto",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
                                                 <DeveloperMode />
                                             </ListItemIcon>
                                             {((!isMobile && sidebarOpen) || isMobile) && (
@@ -311,9 +347,20 @@ export default function Sidebar({ wsKey, children }) {
                                             "noopener noreferrer",
                                         );
                                     }}
-                                    sx={{ paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined, overflow: "hidden" }}
+                                    sx={{
+                                        minHeight: 48,
+                                        justifyContent: sidebarOpen ? "initial" : "center",
+                                        px: 2.5,
+                                        overflow: "hidden",
+                                    }}
                                 >
-                                    <ListItemIcon>
+                                    <ListItemIcon
+                                        sx={{
+                                            minWidth: 0,
+                                            mr: sidebarOpen ? 3 : "auto",
+                                            justifyContent: "center",
+                                        }}
+                                    >
                                         <GitHub />
                                     </ListItemIcon>
                                     {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="GitHub" />}
@@ -325,9 +372,20 @@ export default function Sidebar({ wsKey, children }) {
                             <Tooltip title={!isMobile && !sidebarOpen ? "Help" : ""} placement="right">
                                 <ListItemButton
                                     onClick={() => setHelpOpen(true)}
-                                    sx={{ paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined, overflow: "hidden" }}
+                                    sx={{
+                                        minHeight: 48,
+                                        justifyContent: sidebarOpen ? "initial" : "center",
+                                        px: 2.5,
+                                        overflow: "hidden",
+                                    }}
                                 >
-                                    <ListItemIcon>
+                                    <ListItemIcon
+                                        sx={{
+                                            minWidth: 0,
+                                            mr: sidebarOpen ? 3 : "auto",
+                                            justifyContent: "center",
+                                        }}
+                                    >
                                         <Help />
                                     </ListItemIcon>
                                     {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Help" />}
@@ -339,9 +397,20 @@ export default function Sidebar({ wsKey, children }) {
                             <Tooltip title={!isMobile && !sidebarOpen ? "Settings" : ""} placement="right">
                                 <ListItemButton
                                     onClick={() => setSettingsOpen(true)}
-                                    sx={{ paddingLeft: !isMobile && !sidebarOpen ? 2 : undefined, overflow: "hidden" }}
+                                    sx={{
+                                        minHeight: 48,
+                                        justifyContent: sidebarOpen ? "initial" : "center",
+                                        px: 2.5,
+                                        overflow: "hidden",
+                                    }}
                                 >
-                                    <ListItemIcon>
+                                    <ListItemIcon
+                                        sx={{
+                                            minWidth: 0,
+                                            mr: sidebarOpen ? 3 : "auto",
+                                            justifyContent: "center",
+                                        }}
+                                    >
                                         <SettingsIcon />
                                     </ListItemIcon>
                                     {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Settings" />}
