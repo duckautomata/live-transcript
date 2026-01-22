@@ -117,7 +117,7 @@ const ClipperPopup = ({ wsKey }) => {
 
             if (skipPreview) {
                 const url = downloadClipUrl(mediaBaseUrl, wsKey, selectedId, id, fileFormat, clipName);
-                window.open(url, "_blank");
+                window.location.href = url;
                 handleReset();
             } else {
                 setStep("preview");
@@ -162,7 +162,7 @@ const ClipperPopup = ({ wsKey }) => {
                 const newClipId = data.clip_id;
 
                 const url = downloadClipUrl(mediaBaseUrl, wsKey, selectedId, newClipId, fileFormat, clipName);
-                window.open(url, "_blank");
+                window.location.href = url;
                 handleReset();
             } catch (error) {
                 setCreationError(`Unable to trim clip: ${error.message}`);
@@ -171,7 +171,7 @@ const ClipperPopup = ({ wsKey }) => {
             }
         } else {
             const url = downloadClipUrl(mediaBaseUrl, wsKey, selectedId, clipId, fileFormat, clipName);
-            window.open(url, "_blank");
+            window.location.href = url;
             handleReset();
         }
     };

@@ -66,7 +66,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
         handleClose();
     };
     const handleDownload = () => {
-        window.open(downloadUrl, "_blank");
+        window.location.href = downloadUrl;
         handleClose();
     };
     const handlePlay = () => {

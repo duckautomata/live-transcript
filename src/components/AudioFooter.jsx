@@ -30,12 +30,21 @@ export default function AudioFooter({ wsKey, width }) {
     const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, activeLine?.fileId, audioId);
     const desktopWidth = 400;
 
+    const prevAudioId = audioId > 0 ? audioId - 1 : -1;
+    const nextAudioId = audioId < activeTranscript.length - 1 ? audioId + 1 : -1;
+
+    const prevLine = activeTranscript.find((line) => line.id === prevAudioId);
+    const nextLine = activeTranscript.find((line) => line.id === nextAudioId);
+
+    const prevPlayUrl = playAudioUrl(mediaBaseUrl, wsKey, selectedId, prevLine?.fileId);
+    const nextPlayUrl = playAudioUrl(mediaBaseUrl, wsKey, selectedId, nextLine?.fileId);
+
     const handleClose = () => {
         setAudioId(-1);
     };
 
     const handleDownload = () => {
-        window.open(downloadUrl, "_blank");
+        window.location.href = downloadUrl;
     };
 
     if (!playUrl || audioId < 0 || audioId >= activeTranscript.length) {
@@ -55,6 +64,8 @@ export default function AudioFooter({ wsKey, width }) {
         >
             <Toolbar>
                 <Box sx={{ flexGrow: 1, display: "flex" }}>
+                    {prevPlayUrl && <audio src={prevPlayUrl} preload="auto" muted style={{ display: "none" }} />}
+                    {nextPlayUrl && <audio src={nextPlayUrl} preload="auto" muted style={{ display: "none" }} />}
                     <AudioPlayer
                         autoPlay
                         src={playUrl}
