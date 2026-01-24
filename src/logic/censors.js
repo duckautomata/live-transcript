@@ -122,6 +122,7 @@ const replacements = [
     [new RegExp(`${P}throb`, "gi"), "$1boop"],
     [new RegExp(`${P}condom`, "gi"), "$1protection"],
     [new RegExp(`${P}strip`, "gi"), "$1layer"],
+    [new RegExp(`${P}twerk`, "gi"), "$1dance"],
     [new RegExp(`${P}bitch`, "gi"), "$1mean person"],
     [new RegExp(`${P}slut`, "gi"), "$1revolving door"],
     [new RegExp(`${P}panty`, "gi"), "$1undergarment"],

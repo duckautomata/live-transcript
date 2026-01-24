@@ -564,6 +564,7 @@ describe("genericCensor", () => {
         ["throb", "boop"],
         ["condom", "protection"],
         ["strip", "layer"],
+        ["twerk", "dance"],
         ["bitch", "mean person"],
         ["slut", "revolving door"],
         ["panty", "undergarment"],
