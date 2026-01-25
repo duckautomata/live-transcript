@@ -386,7 +386,7 @@ export default function View({ wsKey }) {
                                     </Typography>
                                     <Typography color="text.secondary">No transcript data was found.</Typography>
                                     <Typography color="text.secondary">
-                                        This usually happens when the server data is reset.
+                                        This usually means the database was reset.
                                     </Typography>
                                 </>
                             )}

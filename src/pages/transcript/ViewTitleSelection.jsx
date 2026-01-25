@@ -66,7 +66,7 @@ export default function ViewTitleSelection() {
                             fontWeight: 400,
                             "&:before": { borderBottom: "none" },
                             "&:after": { borderBottom: "none" },
-                            "& .MuiSelect-select": { paddingRight: 4, whiteSpace: "normal" }, // increased paddingRight for arrow
+                            "& .MuiSelect-select": { paddingRight: 4, whiteSpace: "normal", wordBreak: "break-word" }, // increased paddingRight for arrow
                         }}
                         MenuProps={{
                             PaperProps: {
@@ -78,7 +78,10 @@ export default function ViewTitleSelection() {
                     >
                         <MenuItem value="live">
                             <Box sx={{ display: "flex", flexDirection: "column" }}>
-                                <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                                <Typography
+                                    variant="body1"
+                                    sx={{ fontWeight: "bold", whiteSpace: "normal", wordBreak: "break-word" }}
+                                >
                                     {activeTitle || "Live Stream"}
                                 </Typography>
                                 {/* Only show "Live" details if we are actually viewing the live stream in the dropdown item */}
@@ -90,7 +93,7 @@ export default function ViewTitleSelection() {
                         {sortedPastStreams.map((stream) => (
                             <MenuItem key={stream.activeId} value={stream.activeId}>
                                 <Box sx={{ display: "flex", flexDirection: "column" }}>
-                                    <Typography variant="body1" sx={{ whiteSpace: "normal" }}>
+                                    <Typography variant="body1" sx={{ whiteSpace: "normal", wordBreak: "break-word" }}>
                                         {stream.activeTitle || "Untitled Stream"}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
