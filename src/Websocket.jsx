@@ -63,7 +63,7 @@ import { useAppStore } from "./store/store";
  */
 
 /**
- * @typedef {"newLine" | "newStream" | "pastStreams" | "status" | "sync" | "newMedia"} Events
+ * @typedef {"newLine" | "newStream" | "pastStreams" | "status" | "sync" | "partialSync" | "newMedia"} Events
  */
 
 /**
@@ -101,6 +101,8 @@ export const Websocket = ({ wsKey }) => {
 
     const hasConnected = useRef(false);
 
+    const hasReceivedPartialSync = useRef(false);
+
     const [shouldConnect, setShouldConnect] = useState(true);
     const disconnectTimeout = useRef(null);
     const readyStateRef = useRef(ReadyState.CLOSED);
@@ -124,6 +126,7 @@ export const Websocket = ({ wsKey }) => {
                         setServerStatus("connecting");
                         setShouldConnect(false);
                         disconnectTimeout.current = null;
+                        hasReceivedPartialSync.current = false;
                     },
                     10 * 60 * 1000,
                 ); // 10 minutes
@@ -147,6 +150,7 @@ export const Websocket = ({ wsKey }) => {
             window.perfConnectStartTime = performance.now();
             setServerStatus("loading");
             hasConnected.current = true;
+            hasReceivedPartialSync.current = false;
         },
         onClose: () => {
             if (document.hidden) {
@@ -159,6 +163,7 @@ export const Websocket = ({ wsKey }) => {
             } else {
                 setServerStatus("connecting");
             }
+            hasReceivedPartialSync.current = false;
         },
         onError: () => {
             if (document.hidden) {
@@ -169,6 +174,7 @@ export const Websocket = ({ wsKey }) => {
             } else {
                 setServerStatus("connecting");
             }
+            hasReceivedPartialSync.current = false;
         },
         onReconnectStop: () => setServerStatus("offline"),
     });
@@ -178,6 +184,7 @@ export const Websocket = ({ wsKey }) => {
     }, [readyState]);
     useEffect(() => {
         hasConnected.current = false;
+        hasReceivedPartialSync.current = false;
         resetTranscript();
         resetPastStreams();
         setServerStatus("connecting");
@@ -213,6 +220,22 @@ export const Websocket = ({ wsKey }) => {
             case "status":
                 setStreamStatus(data);
                 break;
+            case "partialSync":
+                resetState(data);
+                {
+                    const syncReceivedAt = performance.now();
+                    if (window.perfConnectStartTime) {
+                        const delta = syncReceivedAt - window.perfConnectStartTime;
+                        LOG_MSG(`[PERF] WebSocket Connect -> PartialSync: ${delta.toFixed(2)}ms`);
+                    }
+                    window.perfSyncReceivedAt = syncReceivedAt;
+                    hasReceivedPartialSync.current = true;
+                }
+
+                if (!document.hidden) {
+                    setServerStatus("online");
+                }
+                break;
             case "sync":
                 resetState(data);
                 {
@@ -221,7 +244,9 @@ export const Websocket = ({ wsKey }) => {
                         const delta = syncReceivedAt - window.perfConnectStartTime;
                         LOG_MSG(`[PERF] WebSocket Connect -> Sync: ${delta.toFixed(2)}ms`);
                     }
-                    window.perfSyncReceivedAt = syncReceivedAt;
+                    if (!hasReceivedPartialSync.current) {
+                        window.perfSyncReceivedAt = syncReceivedAt;
+                    }
                 }
 
                 if (!document.hidden) {
@@ -266,13 +291,7 @@ export const Websocket = ({ wsKey }) => {
         setMediaType(data.mediaType ?? "none");
         setMediaBaseUrl(mediaBaseUrl.replace(/\/+$/, "")); // removes any trailing / in url
         setIsLive(data.isLive ?? false);
-
-        /** @type {TranscriptLine[]} */
-        let newTranscript = [];
-        if (data.transcript) {
-            newTranscript = [...data.transcript];
-        }
-        setTranscript(newTranscript);
+        setTranscript(data.transcript || []);
     };
 
     /**
