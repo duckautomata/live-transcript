@@ -144,6 +144,7 @@ export const Websocket = ({ wsKey }) => {
         reconnectAttempts: 10,
         reconnectInterval: 3000,
         onOpen: () => {
+            window.perfConnectStartTime = performance.now();
             setServerStatus("loading");
             hasConnected.current = true;
         },
@@ -214,6 +215,15 @@ export const Websocket = ({ wsKey }) => {
                 break;
             case "sync":
                 resetState(data);
+                {
+                    const syncReceivedAt = performance.now();
+                    if (window.perfConnectStartTime) {
+                        const delta = syncReceivedAt - window.perfConnectStartTime;
+                        LOG_MSG(`[PERF] WebSocket Connect -> Sync: ${delta.toFixed(2)}ms`);
+                    }
+                    window.perfSyncReceivedAt = syncReceivedAt;
+                }
+
                 if (!document.hidden) {
                     setServerStatus("online");
                 }

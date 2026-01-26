@@ -1,6 +1,7 @@
 import { Box, Pagination, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Line from "./Line";
+import { LOG_MSG } from "../../logic/debug";
 
 /** @typedef {import("../../store/types").TranscriptLine} TranscriptLine */
 
@@ -42,6 +43,15 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
         end = start + linesPerPage;
         displayedLines = displayData.slice(Math.max(0, start), Math.min(displayData.length, end)).reverse();
     }
+
+    useEffect(() => {
+        if (window.perfSyncReceivedAt && displayData.length > 0) {
+            const renderCompletedAt = performance.now();
+            const delta = renderCompletedAt - window.perfSyncReceivedAt;
+            LOG_MSG(`[PERF] Sync -> Full Render (Pagination): ${delta.toFixed(2)}ms`);
+            window.perfSyncReceivedAt = null;
+        }
+    }, [displayData]);
 
     // Handle Pending Jump
     useEffect(() => {

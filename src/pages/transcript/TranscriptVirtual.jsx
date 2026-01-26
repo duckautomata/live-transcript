@@ -3,6 +3,7 @@ import { Box, IconButton, Paper, Divider, Tooltip, Typography, useMediaQuery } f
 import { VerticalAlignTop, VerticalAlignBottom, Pause, PlayArrow, Search } from "@mui/icons-material";
 import { Virtuoso } from "react-virtuoso";
 import Line from "./Line";
+import { LOG_MSG } from "../../logic/debug";
 
 /**
  * TranscriptVirtual component for efficiently rendering the transcript logs.
@@ -107,6 +108,15 @@ export default function TranscriptVirtual({
             }
         }
     }, [displayData, pendingJumpId, setPendingJumpId]);
+
+    useEffect(() => {
+        if (window.perfSyncReceivedAt && displayData.length > 0) {
+            const renderCompletedAt = performance.now();
+            const delta = renderCompletedAt - window.perfSyncReceivedAt;
+            LOG_MSG(`[PERF] Sync -> Full Render: ${delta.toFixed(2)}ms`);
+            window.perfSyncReceivedAt = null; // Clear to avoid repeated logs
+        }
+    }, [displayData]);
 
     return (
         <Box sx={{ flexGrow: 1, position: "relative", minHeight: 0 }}>
@@ -224,8 +234,8 @@ export default function TranscriptVirtual({
                                 {searchTerm
                                     ? `${displayData.length} / ${transcriptLength} found`
                                     : !atLiveEdge && visibleRange.endIndex < transcriptLength - 1
-                                      ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcriptLength}`
-                                      : `${transcriptLength} lines`}
+                                        ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcriptLength}`
+                                        : `${transcriptLength} lines`}
                             </Typography>
 
                             <Divider orientation="vertical" flexItem sx={{ height: 20, my: "auto" }} />
@@ -238,8 +248,8 @@ export default function TranscriptVirtual({
                                 searchTerm
                                     ? "Click to clear search and jump to live"
                                     : atLiveEdge
-                                      ? "Click to pause auto-scroll"
-                                      : "Click to resume auto-scroll live updates"
+                                        ? "Click to pause auto-scroll"
+                                        : "Click to resume auto-scroll live updates"
                             }
                         >
                             <Box
@@ -290,10 +300,10 @@ export default function TranscriptVirtual({
                                     {searchTerm
                                         ? "Searching"
                                         : atLiveEdge
-                                          ? "Live"
-                                          : unreadCount > 0
-                                            ? `Click to Resume (${unreadCount})`
-                                            : "Click to Resume"}
+                                            ? "Live"
+                                            : unreadCount > 0
+                                                ? `Click to Resume (${unreadCount})`
+                                                : "Click to Resume"}
                                 </Typography>
                             </Box>
                         </Tooltip>
