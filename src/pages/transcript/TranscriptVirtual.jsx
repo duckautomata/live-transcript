@@ -234,8 +234,8 @@ export default function TranscriptVirtual({
                                 {searchTerm
                                     ? `${displayData.length} / ${transcriptLength} found`
                                     : !atLiveEdge && visibleRange.endIndex < transcriptLength - 1
-                                        ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcriptLength}`
-                                        : `${transcriptLength} lines`}
+                                      ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcriptLength}`
+                                      : `${transcriptLength} lines`}
                             </Typography>
 
                             <Divider orientation="vertical" flexItem sx={{ height: 20, my: "auto" }} />
@@ -248,8 +248,8 @@ export default function TranscriptVirtual({
                                 searchTerm
                                     ? "Click to clear search and jump to live"
                                     : atLiveEdge
-                                        ? "Click to pause auto-scroll"
-                                        : "Click to resume auto-scroll live updates"
+                                      ? "Click to pause auto-scroll"
+                                      : "Click to resume auto-scroll live updates"
                             }
                         >
                             <Box
@@ -300,10 +300,10 @@ export default function TranscriptVirtual({
                                     {searchTerm
                                         ? "Searching"
                                         : atLiveEdge
-                                            ? "Live"
-                                            : unreadCount > 0
-                                                ? `Click to Resume (${unreadCount})`
-                                                : "Click to Resume"}
+                                          ? "Live"
+                                          : unreadCount > 0
+                                            ? `Click to Resume (${unreadCount})`
+                                            : "Click to Resume"}
                                 </Typography>
                             </Box>
                         </Tooltip>

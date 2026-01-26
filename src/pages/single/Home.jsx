@@ -18,8 +18,10 @@ export default function Home() {
     const navigate = useNavigate();
     const isMobile = useMediaQuery("(max-width:768px)");
     const devMode = useAppStore((state) => state.devMode);
+    const setPastStreamViewing = useAppStore((state) => state.setPastStreamViewing);
 
     const handleStreamerChange = (value) => {
+        setPastStreamViewing(null);
         navigate(`/${value}/`);
     };
 

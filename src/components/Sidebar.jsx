@@ -35,6 +35,7 @@ export default function Sidebar({ wsKey, children }) {
     const setAudioId = useAppStore((state) => state.setAudioId);
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
     const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
+    const setPastStreamViewing = useAppStore((state) => state.setPastStreamViewing);
     const devMode = useAppStore((state) => state.devMode);
 
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -67,6 +68,7 @@ export default function Sidebar({ wsKey, children }) {
         setAudioId(-1);
         setClipStartIndex(-1);
         setClipEndIndex(-1);
+        setPastStreamViewing(null);
     };
 
     const handleStreamerChange = (value) => {
@@ -88,6 +90,7 @@ export default function Sidebar({ wsKey, children }) {
             setAudioId(-1);
             setClipStartIndex(-1);
             setClipEndIndex(-1);
+            setPastStreamViewing(null);
         }
     };
 
@@ -109,6 +112,7 @@ export default function Sidebar({ wsKey, children }) {
             setAudioId(-1);
             setClipStartIndex(-1);
             setClipEndIndex(-1);
+            setPastStreamViewing(null);
         }
     };
 
