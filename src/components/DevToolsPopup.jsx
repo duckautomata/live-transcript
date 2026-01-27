@@ -52,6 +52,9 @@ export default function DevToolsPopup({ open, setOpen }) {
     const setTranscript = useAppStore((state) => state.setTranscript);
     const metrics = useAppStore((state) => state.metrics);
     const clearMetrics = useAppStore((state) => state.clearMetrics);
+    const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
+    const activeId = useAppStore((state) => state.activeId);
+    const selectedId = pastStreamViewing || activeId;
 
     const activeTitle = useAppStore((state) => state.activeTitle);
     const setActiveTitle = useAppStore((state) => state.setActiveTitle);
@@ -158,7 +161,11 @@ export default function DevToolsPopup({ open, setOpen }) {
             .filter((id) => !isNaN(id));
 
         if (ids.length > 0) {
-            updateLineMedia(ids, mediaAvailable);
+            const files = {};
+            ids.forEach((id) => {
+                files[id] = `simulated_file_${id}`;
+            });
+            updateLineMedia(selectedId, files, mediaAvailable);
             recalculateClipRange();
         }
     };

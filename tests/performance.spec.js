@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { test, expect, devices } from "@playwright/test";
-import { loadInDevmode } from "./helper";
+import { loadInDevmode, waitForFullSync } from "./helper";
 import * as mockconst from "./mockconst";
 
 test.describe("Performance", () => {
@@ -31,6 +31,7 @@ test.describe("Performance", () => {
 
         const startTime = Date.now();
         await loadInDevmode(page, mockconst.keyName);
+        await waitForFullSync(page);
         const loadTime = Date.now() - startTime;
 
         console.log(`Load time on 4G: ${loadTime}ms`);

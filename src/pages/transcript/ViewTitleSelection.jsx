@@ -1,4 +1,14 @@
-import { Box, FormControl, MenuItem, Select, Tooltip, Typography, useMediaQuery } from "@mui/material";
+import {
+    Box,
+    CircularProgress,
+    FormControl,
+    MenuItem,
+    Select,
+    Tooltip,
+    Typography,
+    useMediaQuery,
+} from "@mui/material";
+import { EditCalendar, InfoOutline } from "@mui/icons-material";
 import { orange } from "@mui/material/colors";
 import { useAppStore } from "../../store/store";
 import { unixToLocal } from "../../logic/dateTime";
@@ -19,6 +29,7 @@ export default function ViewTitleSelection() {
     const isLive = useAppStore((state) => state.isLive);
     const startTime = useAppStore((state) => state.startTime);
     const mediaType = useAppStore((state) => state.mediaType);
+    const isSynced = useAppStore((state) => state.isSynced);
 
     const isMobile = useMediaQuery("(max-width:768px)");
     const liveText = isLive ? "live" : "offline";
@@ -54,19 +65,73 @@ export default function ViewTitleSelection() {
         <>
             {" "}
             {sortedPastStreams.length > 0 ? (
-                <FormControl variant="standard" sx={{ minWidth: 200, pl: isMobile ? 6 : 0, maxWidth: "100%" }}>
+                <FormControl variant="standard" sx={{ minWidth: 200, maxWidth: "100%" }}>
                     <Select
                         value={pastStreamViewing || "live"}
                         onChange={handleChange}
                         displayEmpty
+                        IconComponent={() => null}
+                        renderValue={(selected) => {
+                            let titleText = activeTitle || "Live Stream";
+                            if (selected !== "live") {
+                                const selectedStream = sortedPastStreams.find((s) => s.activeId === selected);
+                                if (selectedStream) {
+                                    titleText = selectedStream.activeTitle || "Untitled Stream";
+                                }
+                            }
+                            return (
+                                <Tooltip title={streamInfoTooltip}>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            pl: isMobile ? 6 : 0,
+                                        }}
+                                    >
+                                        <Typography
+                                            color={pastStreamViewing ? orange[500] : "primary"}
+                                            variant="h5"
+                                            component="h5"
+                                            sx={{ wordBreak: "break-word" }}
+                                        >
+                                            {titleText}
+                                        </Typography>
+                                        {!isSynced ? (
+                                            <CircularProgress
+                                                data-testid="syncing-icon"
+                                                size={20}
+                                                sx={{
+                                                    ml: 1,
+                                                    color: pastStreamViewing ? orange[500] : "primary.main",
+                                                }}
+                                            />
+                                        ) : (
+                                            <EditCalendar
+                                                data-testid="synced-icon"
+                                                sx={{
+                                                    ml: 1,
+                                                    color: pastStreamViewing ? orange[500] : "primary.light", // Using primary.light to be subtle but visible, or match text
+                                                    opacity: 0.7,
+                                                }}
+                                            />
+                                        )}
+                                    </Box>
+                                </Tooltip>
+                            );
+                        }}
                         inputProps={{ "aria-label": "Select Stream" }}
                         sx={{
-                            fontSize: "1.5rem",
-                            color: pastStreamViewing ? orange[500] : "primary.main",
-                            fontWeight: 400,
                             "&:before": { borderBottom: "none" },
                             "&:after": { borderBottom: "none" },
-                            "& .MuiSelect-select": { paddingRight: 4, whiteSpace: "normal", wordBreak: "break-word" }, // increased paddingRight for arrow
+                            "& .MuiSelect-select": {
+                                paddingRight: 0,
+                                paddingLeft: 0,
+                                paddingTop: 0,
+                                paddingBottom: 0,
+                                whiteSpace: "normal !important",
+                                height: "auto",
+                                minHeight: "auto",
+                            },
                         }}
                         MenuProps={{
                             PaperProps: {
@@ -86,7 +151,7 @@ export default function ViewTitleSelection() {
                                 </Typography>
                                 {/* Only show "Live" details if we are actually viewing the live stream in the dropdown item */}
                                 <Typography variant="caption" color="text.secondary">
-                                    Live
+                                    {isLive ? "Live" : "Recent Stream"}
                                 </Typography>
                             </Box>
                         </MenuItem>
@@ -110,14 +175,37 @@ export default function ViewTitleSelection() {
                 </FormControl>
             ) : (
                 <Tooltip title={streamInfoTooltip}>
-                    <Typography
-                        color="primary"
-                        variant="h5"
-                        component="h5"
-                        sx={{ wordBreak: "break-word", pl: isMobile ? 6 : 0 }}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            pl: isMobile ? 6 : 0,
+                        }}
                     >
-                        {activeTitle}
-                    </Typography>
+                        <Typography color="primary" variant="h5" component="h5" sx={{ wordBreak: "break-word" }}>
+                            {activeTitle}
+                        </Typography>
+                        {!isSynced ? (
+                            <CircularProgress
+                                data-testid="syncing-icon"
+                                size={20}
+                                sx={{
+                                    ml: 1,
+                                    color: "primary.main",
+                                }}
+                            />
+                        ) : (
+                            <InfoOutline
+                                data-testid="synced-icon"
+                                sx={{
+                                    ml: 1,
+                                    color: "primary.light",
+                                    opacity: 0, // Hidden because I don't like how it looks, but we need it there to tell the tests it's synced.
+                                }}
+                            />
+                        )}
+                    </Box>
                 </Tooltip>
             )}
         </>

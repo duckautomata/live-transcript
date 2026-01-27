@@ -35,6 +35,14 @@ export async function loadInDevmode(page, path) {
 }
 
 /**
+ * Wait for the page to be fully synced
+ * @param {Page} page
+ */
+export async function waitForFullSync(page) {
+    await expect(page.getByTestId("synced-icon")).toBeVisible();
+}
+
+/**
  * Take screenshots of the page in both light and dark mode
  * @param {Page} page
  * @param {TestInfo} testInfo

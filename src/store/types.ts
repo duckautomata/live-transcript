@@ -64,7 +64,9 @@ export interface TagPopupSlice {
 
 export interface ServerSlice {
     serverStatus: "online" | "loading" | "connecting" | "offline";
+    isSynced: boolean;
     setServerStatus: (status: ServerSlice["serverStatus"]) => void;
+    setIsSynced: (isSynced: boolean) => void;
 }
 
 export interface TranscriptSlice {

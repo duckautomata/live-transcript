@@ -62,12 +62,10 @@ export default function TranscriptVirtual({
         };
     }, []);
 
-    const firstItemIndex = displayData.length > 0 ? displayData[0].id : 0;
-
     const scrollToLive = () => {
         if (virtuosoRef.current) {
             virtuosoRef.current.scrollToIndex({
-                index: firstItemIndex + displayData.length - 1,
+                index: displayData.length - 1,
                 align: "end",
                 behavior: "auto",
             });
@@ -95,7 +93,7 @@ export default function TranscriptVirtual({
                 // If we used initialTopMostItemIndex (mount), this is redundant but safe.
                 if (virtuosoRef.current) {
                     virtuosoRef.current.scrollToIndex({
-                        index: index + firstItemIndex,
+                        index: index,
                         align: "start",
                         behavior: "auto",
                     });
@@ -113,7 +111,7 @@ export default function TranscriptVirtual({
                 }, 100);
             }
         }
-    }, [displayData, pendingJumpId, setPendingJumpId, firstItemIndex]);
+    }, [displayData, pendingJumpId, setPendingJumpId]);
 
     useEffect(() => {
         if (window.perfSyncReceivedAt && displayData.length > 0) {
@@ -136,7 +134,6 @@ export default function TranscriptVirtual({
                 <Virtuoso
                     ref={virtuosoRef}
                     data={displayData}
-                    firstItemIndex={firstItemIndex}
                     atBottomStateChange={(isAtBottom) => {
                         if (isAtBottom) {
                             if (atBottomTimerRef.current) {
@@ -167,18 +164,14 @@ export default function TranscriptVirtual({
                         />
                     )}
                     followOutput={atLiveEdge ? "auto" : false}
-                    initialTopMostItemIndex={
-                        initialJumpIndex !== -1
-                            ? initialJumpIndex + firstItemIndex
-                            : firstItemIndex + displayData.length - 1
-                    }
+                    initialTopMostItemIndex={initialJumpIndex !== -1 ? initialJumpIndex : displayData.length - 1}
                     style={{ height: "100%" }}
                     components={{
                         Footer: () => <Box sx={{ height: 50 }} />,
                     }}
                     defaultItemHeight={30}
                     rangeChanged={(range) => {
-                        const dist = displayData.length - 1 - (range.endIndex - firstItemIndex);
+                        const dist = displayData.length - 1 - range.endIndex;
                         setVisibleRange(range);
 
                         // Safety check: specific case where user scrolls up quickly while logs are streaming.
@@ -244,8 +237,8 @@ export default function TranscriptVirtual({
                             >
                                 {searchTerm
                                     ? `${displayData.length} / ${transcriptLength} found`
-                                    : !atLiveEdge && visibleRange.endIndex - firstItemIndex < transcriptLength - 1
-                                      ? `${visibleRange.startIndex - firstItemIndex + 1}-${visibleRange.endIndex - firstItemIndex + 1} / ${transcriptLength}`
+                                    : !atLiveEdge && visibleRange.endIndex < transcriptLength - 1
+                                      ? `${visibleRange.startIndex + 1}-${visibleRange.endIndex + 1} / ${transcriptLength}`
                                       : `${transcriptLength} lines`}
                             </Typography>
 

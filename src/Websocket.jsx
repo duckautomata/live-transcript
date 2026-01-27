@@ -80,6 +80,7 @@ import { useAppStore } from "./store/store";
 export const Websocket = ({ wsKey }) => {
     const WS_URL = `${wsServer}/${wsKey}/websocket`;
     const setServerStatus = useAppStore((state) => state.setServerStatus);
+    const setIsSynced = useAppStore((state) => state.setIsSynced);
     const setActiveId = useAppStore((state) => state.setActiveId);
     const setActiveTitle = useAppStore((state) => state.setActiveTitle);
     const setStartTime = useAppStore((state) => state.setStartTime);
@@ -98,11 +99,8 @@ export const Websocket = ({ wsKey }) => {
     const setPastStreams = useAppStore((state) => state.setPastStreams);
 
     const lastReceiveTime = useRef(Date.now());
-
     const hasConnected = useRef(false);
-
     const hasReceivedPartialSync = useRef(false);
-
     const [shouldConnect, setShouldConnect] = useState(true);
     const disconnectTimeout = useRef(null);
     const readyStateRef = useRef(ReadyState.CLOSED);
@@ -151,6 +149,7 @@ export const Websocket = ({ wsKey }) => {
             setServerStatus("loading");
             hasConnected.current = true;
             hasReceivedPartialSync.current = false;
+            setIsSynced(false);
         },
         onClose: () => {
             if (document.hidden) {
@@ -164,6 +163,7 @@ export const Websocket = ({ wsKey }) => {
                 setServerStatus("connecting");
             }
             hasReceivedPartialSync.current = false;
+            setIsSynced(false);
         },
         onError: () => {
             if (document.hidden) {
@@ -175,6 +175,7 @@ export const Websocket = ({ wsKey }) => {
                 setServerStatus("connecting");
             }
             hasReceivedPartialSync.current = false;
+            setIsSynced(false);
         },
         onReconnectStop: () => setServerStatus("offline"),
     });
@@ -185,6 +186,7 @@ export const Websocket = ({ wsKey }) => {
     useEffect(() => {
         hasConnected.current = false;
         hasReceivedPartialSync.current = false;
+        setIsSynced(false);
         resetTranscript();
         resetPastStreams();
         setServerStatus("connecting");
@@ -247,6 +249,7 @@ export const Websocket = ({ wsKey }) => {
                     if (!hasReceivedPartialSync.current) {
                         window.perfSyncReceivedAt = syncReceivedAt;
                     }
+                    setIsSynced(true);
                 }
 
                 if (!document.hidden) {
