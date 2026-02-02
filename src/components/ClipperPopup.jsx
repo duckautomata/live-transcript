@@ -37,6 +37,7 @@ const ClipperPopup = ({ wsKey }) => {
     const transcript = useAppStore((state) => state.transcript);
     const startTime = useAppStore((state) => state.startTime);
     const activeId = useAppStore((state) => state.activeId);
+    const pastStreams = useAppStore((state) => state.pastStreams);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
     const selectedId = pastStreamViewing || activeId;
 
@@ -68,7 +69,15 @@ const ClipperPopup = ({ wsKey }) => {
     const [trimRegion, setTrimRegion] = useState({ start: 0, end: 0 });
     const [duration, setDuration] = useState(0);
 
-    const hasVideo = mediaType === "video";
+    const activeMediaType = useMemo(() => {
+        if (pastStreamViewing) {
+            const stream = pastStreams.find((s) => s.activeId === pastStreamViewing);
+            return stream?.mediaType ?? "none";
+        }
+        return mediaType;
+    }, [pastStreamViewing, pastStreams, mediaType]);
+
+    const hasVideo = activeMediaType === "video";
 
     const startLine = useMemo(
         () => transcript.find((l) => l.id === Math.min(clipStartIndex, clipEndIndex)),

@@ -114,6 +114,17 @@ export default function View({ wsKey }) {
         }
     }, [pastStreamViewing, pastStreams, setPastStreamViewing, resetPastStreamTranscript]);
 
+    const currentStreamInfo = useMemo(() => {
+        if (pastStreamViewing) {
+            return pastStreams.find((s) => s.activeId === pastStreamViewing);
+        }
+        return null;
+    }, [pastStreamViewing, pastStreams]);
+
+    const activeIsLive = pastStreamViewing ? (currentStreamInfo?.isLive ?? false) : isLive;
+    const activeStartTime = pastStreamViewing ? (currentStreamInfo?.startTime ?? 0) : startTime;
+    const activeMediaType = pastStreamViewing ? (currentStreamInfo?.mediaType ?? "none") : mediaType;
+
     // 0: Pagination, 1: Virtual, 2: Visual Frames
     const [tabValue, setTabValue] = useState(useVirtualList ? 1 : 0);
 
@@ -122,7 +133,7 @@ export default function View({ wsKey }) {
     let targetTab = tabValue;
     if (tabValue !== 2) {
         targetTab = useVirtualList ? 1 : 0;
-    } else if (mediaType !== "video") {
+    } else if (activeMediaType !== "video") {
         targetTab = useVirtualList ? 1 : 0;
     }
 
@@ -146,15 +157,6 @@ export default function View({ wsKey }) {
     // Use correct transcript based on mode
     const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
 
-    const currentStreamInfo = useMemo(() => {
-        if (pastStreamViewing) {
-            return pastStreams.find((s) => s.activeId === pastStreamViewing);
-        }
-        return null;
-    }, [pastStreamViewing, pastStreams]);
-
-    const activeIsLive = pastStreamViewing ? (currentStreamInfo?.isLive ?? false) : isLive;
-    const activeStartTime = pastStreamViewing ? (currentStreamInfo?.startTime ?? 0) : startTime;
 
     // Filter transcript based on search term
 
@@ -565,7 +567,7 @@ export default function View({ wsKey }) {
                                                 }
                                                 sx={{ minHeight: "48px", py: 1, minWidth: "auto", px: 2 }}
                                             />
-                                            {mediaType === "video" && (
+                                            {activeMediaType === "video" && (
                                                 <Tab
                                                     data-testid="transcript-tab-visual"
                                                     label={
