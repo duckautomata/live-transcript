@@ -12,7 +12,8 @@ import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import HelpPopup from "./HelpPopup";
 import SettingsPopup from "./SettingsPopup";
-import { Construction, GitHub, Help, Home, DeveloperMode } from "@mui/icons-material";
+import { Construction, GitHub, Help, Home, DeveloperMode, Info } from "@mui/icons-material";
+import InfoPopup from "./InfoPopup";
 import { Tooltip, useMediaQuery } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import AudioFooter from "./AudioFooter";
@@ -40,6 +41,7 @@ export default function Sidebar({ wsKey, children }) {
 
     const [mobileOpen, setMobileOpen] = useState(false);
     const [helpOpen, setHelpOpen] = useState(false);
+    const [infoOpen, setInfoOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [devToolsOpen, setDevToolsOpen] = useState(false);
     const [width, setWidth] = useState(window.innerWidth);
@@ -396,6 +398,31 @@ export default function Sidebar({ wsKey, children }) {
                                 </ListItemButton>
                             </Tooltip>
                         </ListItem>
+                        {/* Info */}
+                        <ListItem disablePadding>
+                            <Tooltip title={!isMobile && !sidebarOpen ? "Info" : ""} placement="right">
+                                <ListItemButton
+                                    onClick={() => setInfoOpen(true)}
+                                    sx={{
+                                        minHeight: 48,
+                                        justifyContent: sidebarOpen ? "initial" : "center",
+                                        px: 2.5,
+                                        overflow: "hidden",
+                                    }}
+                                >
+                                    <ListItemIcon
+                                        sx={{
+                                            minWidth: 0,
+                                            mr: sidebarOpen ? 3 : "auto",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <Info />
+                                    </ListItemIcon>
+                                    {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Info" />}
+                                </ListItemButton>
+                            </Tooltip>
+                        </ListItem>
                         {/* Settings */}
                         <ListItem disablePadding>
                             <Tooltip title={!isMobile && !sidebarOpen ? "Settings" : ""} placement="right">
@@ -424,6 +451,7 @@ export default function Sidebar({ wsKey, children }) {
                     </List>
                     <SettingsPopup open={settingsOpen} setOpen={setSettingsOpen} />
                     <HelpPopup open={helpOpen} setOpen={setHelpOpen} />
+                    <InfoPopup open={infoOpen} setOpen={setInfoOpen} />
                     <DevToolsPopup open={devToolsOpen} setOpen={setDevToolsOpen} />
                 </Box>
             </Drawer>

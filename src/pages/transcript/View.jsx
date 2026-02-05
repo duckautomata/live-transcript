@@ -157,7 +157,6 @@ export default function View({ wsKey }) {
     // Use correct transcript based on mode
     const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
 
-
     // Filter transcript based on search term
 
     const filteredTranscript = useMemo(() => {
