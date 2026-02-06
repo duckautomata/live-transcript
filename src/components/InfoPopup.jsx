@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
     Box,
     Button,
@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { server } from "../config";
+import { server, keys } from "../config";
 
 /* global __BUILD_TIME__ */
 
@@ -96,6 +96,12 @@ export default function InfoPopup({ open, setOpen }) {
         setOpen(false);
     };
 
+    const usableKeys = keys();
+    const filteredWorkers = useMemo(() => {
+        if (!data?.workers) return [];
+        return data.workers.filter((worker) => usableKeys.includes(worker.channelKey));
+    }, [data, usableKeys]);
+
     return (
         <Dialog open={open} onClose={handleClose} aria-labelledby="info-dialog-title" maxWidth="md" fullWidth>
             <DialogTitle id="info-dialog-title">System Info</DialogTitle>
@@ -161,7 +167,7 @@ export default function InfoPopup({ open, setOpen }) {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {data.workers?.map((worker) => (
+                                        {filteredWorkers.map((worker) => (
                                             <TableRow key={worker.channelKey}>
                                                 <TableCell component="th" scope="row">
                                                     {worker.channelKey}
@@ -186,7 +192,7 @@ export default function InfoPopup({ open, setOpen }) {
                                                 <TableCell>{formatDate(worker.workerBuildTime)}</TableCell>
                                             </TableRow>
                                         ))}
-                                        {(!data.workers || data.workers.length === 0) && (
+                                        {filteredWorkers.length === 0 && (
                                             <TableRow>
                                                 <TableCell colSpan={5} align="center">
                                                     No workers found
