@@ -16,8 +16,8 @@ import { useAppStore } from "./store/store";
 
 /**
  * @typedef {object} EventSyncData
- * @property {string} activeId
- * @property {string} activeTitle
+ * @property {string} streamId
+ * @property {string} streamTitle
  * @property {string} startTime
  * @property {MediaType} mediaType
  * @property {boolean} isLive
@@ -36,8 +36,8 @@ import { useAppStore } from "./store/store";
 
 /**
  * @typedef {object} EventNewStreamData
- * @property {string} activeId
- * @property {string} activeTitle
+ * @property {string} streamId
+ * @property {string} streamTitle
  * @property {string} startTime
  * @property {MediaType} mediaType
  * @property {string} mediaBaseUrl
@@ -51,8 +51,8 @@ import { useAppStore } from "./store/store";
 
 /**
  * @typedef {object} EventStatusData
- * @property {string} activeId
- * @property {string} activeTitle
+ * @property {string} streamId
+ * @property {string} streamTitle
  * @property {boolean} isLive
  */
 
@@ -288,8 +288,8 @@ export const Websocket = ({ wsKey }) => {
         LOG_MSG("resetState data", data);
         const mediaBaseUrl = data.mediaBaseUrl ?? "";
 
-        setActiveId(data.activeId ?? "");
-        setActiveTitle(data.activeTitle ?? "");
+        setActiveId(data.streamId ?? "");
+        setActiveTitle(data.streamTitle ?? "");
         setStartTime(data.startTime ? +data.startTime : 0);
         setMediaType(data.mediaType ?? "none");
         setMediaBaseUrl(mediaBaseUrl.replace(/\/+$/, "")); // removes any trailing / in url
@@ -346,8 +346,8 @@ export const Websocket = ({ wsKey }) => {
         LOG_MSG("setNewActiveStream data", data);
         const mediaBaseUrl = data.mediaBaseUrl ?? "";
 
-        setActiveId(data.activeId);
-        setActiveTitle(data.activeTitle);
+        setActiveId(data.streamId);
+        setActiveTitle(data.streamTitle);
         setStartTime(+data.startTime);
         setMediaType(data.mediaType);
         setMediaBaseUrl(mediaBaseUrl.replace(/\/+$/, "")); // removes any trailing / in url
@@ -383,8 +383,8 @@ export const Websocket = ({ wsKey }) => {
 
         LOG_MSG("setStreamStatus data", data);
 
-        setActiveId(data.activeId);
-        setActiveTitle(data.activeTitle);
+        setActiveId(data.streamId);
+        setActiveTitle(data.streamTitle);
         setIsLive(data.isLive);
     };
 
