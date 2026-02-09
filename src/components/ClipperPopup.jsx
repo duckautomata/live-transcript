@@ -36,10 +36,10 @@ const ClipperPopup = ({ wsKey }) => {
     const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
     const transcript = useAppStore((state) => state.transcript);
     const startTime = useAppStore((state) => state.startTime);
-    const activeId = useAppStore((state) => state.activeId);
+    const streamId = useAppStore((state) => state.streamId);
     const pastStreams = useAppStore((state) => state.pastStreams);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
-    const selectedId = pastStreamViewing || activeId;
+    const selectedId = pastStreamViewing || streamId;
 
     const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
@@ -71,7 +71,7 @@ const ClipperPopup = ({ wsKey }) => {
 
     const activeMediaType = useMemo(() => {
         if (pastStreamViewing) {
-            const stream = pastStreams.find((s) => s.activeId === pastStreamViewing);
+            const stream = pastStreams.find((s) => s.streamId === pastStreamViewing);
             return stream?.mediaType ?? "none";
         }
         return mediaType;

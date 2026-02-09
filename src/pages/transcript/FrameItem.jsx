@@ -6,7 +6,7 @@ import { useAppStore } from "../../store/store";
 import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
 import { getFrameUrl } from "../../logic/mediaUrls";
 
-const FrameItem = memo(({ mediaBaseUrl, line, tagsMap, activeId, wsKey, lastSelectedId, onFrameClick, startTime }) => {
+const FrameItem = memo(({ mediaBaseUrl, line, tagsMap, streamId, wsKey, lastSelectedId, onFrameClick, startTime }) => {
     const theme = useTheme();
     const timeFormat = useAppStore((state) => state.timeFormat);
     const storeStartTime = useAppStore((state) => state.startTime);
@@ -89,7 +89,7 @@ const FrameItem = memo(({ mediaBaseUrl, line, tagsMap, activeId, wsKey, lastSele
                 >
                     {line.mediaAvailable ? (
                         <FrameImage
-                            src={getFrameUrl(mediaBaseUrl, wsKey, activeId, line.fileId)}
+                            src={getFrameUrl(mediaBaseUrl, wsKey, streamId, line.fileId)}
                             alt={`Frame ${line.id}`}
                             loading="lazy"
                             style={{

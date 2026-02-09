@@ -6,15 +6,15 @@
  */
 
 export const keyName = "doki";
-export const title = "【HIGHGUARD】Launch day【Dokibird】";
-export const searchTerm = "rocket launcher";
+export const title = "【#DOK2DAY CELEBRATION】2nd Year Anniversary【Dokibird】";
+export const searchTerm = "feet";
 export const searchTermSize = 2;
-export const emptyLineId = 2413;
-export const searchLineId = 799;
+export const emptyLineId = 2319;
+export const searchLineId = 195;
 
-export const paginationSearchTop = "Defend and we can win. I don't know where to go. Oh, I don't know this.";
-export const paginationTopLineId = 1813;
-export const paginationSearchBottom = "So long an hour.";
-export const paginationBottomLineId = 1814;
-export const paginationSearchMiddle = "Grecian, grecian, grecian, grecian!";
-export const paginationMiddleLineId = 1113;
+export const paginationSearchTop = "of them guys please buy my dog i have look i'm making dad out there busking right";
+export const paginationTopLineId = 1119;
+export const paginationSearchBottom = "right now look at him he look at him he's trying he's working so hard trying to";
+export const paginationBottomLineId = 1120;
+export const paginationSearchMiddle = "um there will be a dope kitty uh feature in the in the future";
+export const paginationMiddleLineId = 880;

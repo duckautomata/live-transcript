@@ -19,7 +19,7 @@ import { unixToLocal } from "../../logic/dateTime";
  * If no past streams are available, it renders a simple title with a tooltip.
  */
 export default function ViewTitleSelection() {
-    const activeTitle = useAppStore((state) => state.activeTitle);
+    const streamTitle = useAppStore((state) => state.streamTitle);
     const pastStreams = useAppStore((state) => state.pastStreams);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
     const setPastStreamViewing = useAppStore((state) => state.setPastStreamViewing);
@@ -72,11 +72,11 @@ export default function ViewTitleSelection() {
                         displayEmpty
                         IconComponent={() => null}
                         renderValue={(selected) => {
-                            let titleText = activeTitle || "Live Stream";
+                            let titleText = streamTitle || "Live Stream";
                             if (selected !== "live") {
-                                const selectedStream = sortedPastStreams.find((s) => s.activeId === selected);
+                                const selectedStream = sortedPastStreams.find((s) => s.streamId === selected);
                                 if (selectedStream) {
-                                    titleText = selectedStream.activeTitle || "Untitled Stream";
+                                    titleText = selectedStream.streamTitle || "Untitled Stream";
                                 }
                             }
                             return (
@@ -147,7 +147,7 @@ export default function ViewTitleSelection() {
                                     variant="body1"
                                     sx={{ fontWeight: "bold", whiteSpace: "normal", wordBreak: "break-word" }}
                                 >
-                                    {activeTitle || "Live Stream"}
+                                    {streamTitle || "Live Stream"}
                                 </Typography>
                                 {/* Only show "Live" details if we are actually viewing the live stream in the dropdown item */}
                                 <Typography variant="caption" color="text.secondary">
@@ -156,10 +156,10 @@ export default function ViewTitleSelection() {
                             </Box>
                         </MenuItem>
                         {sortedPastStreams.map((stream) => (
-                            <MenuItem key={stream.activeId} value={stream.activeId}>
+                            <MenuItem key={stream.streamId} value={stream.streamId}>
                                 <Box sx={{ display: "flex", flexDirection: "column" }}>
                                     <Typography variant="body1" sx={{ whiteSpace: "normal", wordBreak: "break-word" }}>
-                                        {stream.activeTitle || "Untitled Stream"}
+                                        {stream.streamTitle || "Untitled Stream"}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">
                                         {`${new Date(stream.startTime * 1000).toLocaleDateString(undefined, {
@@ -184,7 +184,7 @@ export default function ViewTitleSelection() {
                         }}
                     >
                         <Typography color="primary" variant="h5" component="h5" sx={{ wordBreak: "break-word" }}>
-                            {activeTitle}
+                            {streamTitle}
                         </Typography>
                         {!isSynced ? (
                             <CircularProgress

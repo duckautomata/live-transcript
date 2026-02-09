@@ -32,8 +32,8 @@ import { server } from "../../config";
  * @param {string} props.wsKey
  */
 export default function View({ wsKey }) {
-    const activeId = useAppStore((state) => state.activeId);
-    const activeTitle = useAppStore((state) => state.activeTitle);
+    const streamId = useAppStore((state) => state.streamId);
+    const streamTitle = useAppStore((state) => state.streamTitle);
     const isLive = useAppStore((state) => state.isLive);
     const startTime = useAppStore((state) => state.startTime);
     const mediaType = useAppStore((state) => state.mediaType);
@@ -106,7 +106,7 @@ export default function View({ wsKey }) {
     // Validate pastStreamViewing is still in pastStreams
     useEffect(() => {
         if (pastStreamViewing && pastStreams.length > 0) {
-            const streamExists = pastStreams.some((s) => s.activeId === pastStreamViewing);
+            const streamExists = pastStreams.some((s) => s.streamId === pastStreamViewing);
             if (!streamExists) {
                 setPastStreamViewing(null);
                 resetPastStreamTranscript();
@@ -116,7 +116,7 @@ export default function View({ wsKey }) {
 
     const currentStreamInfo = useMemo(() => {
         if (pastStreamViewing) {
-            return pastStreams.find((s) => s.activeId === pastStreamViewing);
+            return pastStreams.find((s) => s.streamId === pastStreamViewing);
         }
         return null;
     }, [pastStreamViewing, pastStreams]);
@@ -143,7 +143,7 @@ export default function View({ wsKey }) {
 
     const isMobile = useMediaQuery("(max-width:768px)");
     const isOnline = serverStatus === "online";
-    const isEmpty = transcript.length === 0 && activeTitle === "";
+    const isEmpty = transcript.length === 0 && streamTitle === "";
 
     // Height calculation
     const heightMap = {
@@ -320,7 +320,7 @@ export default function View({ wsKey }) {
                     <TranscriptFrame
                         mediaBaseUrl={mediaBaseUrl}
                         displayData={displayData}
-                        activeId={pastStreamViewing || activeId}
+                        streamId={pastStreamViewing || streamId}
                         wsKey={wsKey}
                         tagsMap={tagsMap}
                         startTime={activeStartTime}

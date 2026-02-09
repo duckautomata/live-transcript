@@ -4,15 +4,17 @@ import { TranscriptSlice, AppSliceCreator } from "./types";
 import * as examples from "./exampleTranscriptData";
 
 export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => ({
-    activeId: "",
-    activeTitle: "",
+    streamId: "",
+    streamTitle: "",
+    activatedTime: 0,
     startTime: 0,
     mediaType: "none",
     mediaBaseUrl: "",
     isLive: false,
     transcript: [],
-    setActiveId: (id) => set({ activeId: id }),
-    setActiveTitle: (title) => set({ activeTitle: title }),
+    setStreamId: (id) => set({ streamId: id }),
+    setStreamTitle: (title) => set({ streamTitle: title }),
+    setActivatedTime: (time) => set({ activatedTime: time }),
     setStartTime: (time) => set({ startTime: time }),
     setMediaType: (type) => set({ mediaType: type }),
     setMediaBaseUrl: (mediaUrl) => set({ mediaBaseUrl: mediaUrl }),
@@ -32,7 +34,7 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
     updateLineMedia: (streamId, files, available = true) => {
         set((state) => ({
             transcript: state.transcript.map((line) => {
-                if (state.activeId != streamId) {
+                if (state.streamId != streamId) {
                     return line;
                 }
                 const fileId = files[line.id];
@@ -42,8 +44,9 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
     },
     resetTranscript: () =>
         set({
-            activeId: "",
-            activeTitle: "",
+            streamId: "",
+            streamTitle: "",
+            activatedTime: 0,
             startTime: 0,
             mediaType: "none",
             mediaBaseUrl: "",

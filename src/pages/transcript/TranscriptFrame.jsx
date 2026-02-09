@@ -40,12 +40,12 @@ const ListContainer = styled(Box)(() => ({
  * @param {object} props
  * @param {string} props.mediaBaseUrl
  * @param {TranscriptLine[]} props.displayData
- * @param {string} props.activeId
+ * @param {string} props.streamId
  * @param {string} props.wsKey
  * @param {Map<string, any[]>} props.tagsMap
  * @param {number} props.startTime
  */
-export default function TranscriptFrame({ mediaBaseUrl, displayData, activeId, wsKey, tagsMap, startTime }) {
+export default function TranscriptFrame({ mediaBaseUrl, displayData, streamId, wsKey, tagsMap, startTime }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -187,7 +187,7 @@ export default function TranscriptFrame({ mediaBaseUrl, displayData, activeId, w
                             mediaBaseUrl={mediaBaseUrl}
                             line={line}
                             tagsMap={tagsMap}
-                            activeId={activeId}
+                            streamId={streamId}
                             wsKey={wsKey}
                             lastSelectedId={lastSelectedId}
                             onFrameClick={handleFrameClick}
@@ -215,7 +215,7 @@ export default function TranscriptFrame({ mediaBaseUrl, displayData, activeId, w
                             >
                                 {selectedLine.mediaAvailable ? (
                                     <FrameImage
-                                        src={getFrameUrl(mediaBaseUrl, wsKey, activeId, selectedLine.fileId)}
+                                        src={getFrameUrl(mediaBaseUrl, wsKey, streamId, selectedLine.fileId)}
                                         alt={`Frame ${selectedLine.id}`}
                                         style={{ width: "100%", height: "100%", objectFit: "contain" }}
                                     />

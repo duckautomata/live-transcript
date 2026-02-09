@@ -19,8 +19,8 @@ export default function AudioFooter({ wsKey, width }) {
     const transcript = useAppStore((state) => state.transcript);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
     const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
-    const activeId = useAppStore((state) => state.activeId);
-    const selectedId = pastStreamViewing || activeId;
+    const streamId = useAppStore((state) => state.streamId);
+    const selectedId = pastStreamViewing || streamId;
     const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
     const activeLine = activeTranscript.find((line) => line.id === audioId);
     const theme = useTheme();

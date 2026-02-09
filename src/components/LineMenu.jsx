@@ -12,7 +12,7 @@ import { downloadAudioUrl } from "../logic/mediaUrls";
  */
 export default function LineMenu({ wsKey, jumpToLine }) {
     const lineMenuId = useAppStore((state) => state.lineMenuId);
-    const activeId = useAppStore((state) => state.activeId);
+    const streamId = useAppStore((state) => state.streamId);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
     const transcript = useAppStore((state) => state.transcript);
     const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
@@ -26,7 +26,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
     const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
     const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
-    const selectedId = pastStreamViewing || activeId;
+    const selectedId = pastStreamViewing || streamId;
 
     const lineAnchorEl = document.getElementById(`line-button-${lineMenuId}`);
     const open = lineMenuId > -1 ? Boolean(lineAnchorEl) : false;

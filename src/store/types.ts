@@ -16,8 +16,9 @@ export interface TranscriptLine {
 
 export interface StreamInfo {
     channelId: string;
-    activeId: string;
-    activeTitle: string;
+    streamId: string;
+    streamTitle: string;
+    activatedTime: number;
     startTime: number;
     mediaType: "none" | "audio" | "video";
     isLive: boolean;
@@ -70,15 +71,17 @@ export interface ServerSlice {
 }
 
 export interface TranscriptSlice {
-    activeId: string;
-    activeTitle: string;
+    streamId: string;
+    streamTitle: string;
+    activatedTime: number;
     startTime: number;
     mediaType: "none" | "audio" | "video";
     mediaBaseUrl: string;
     isLive: boolean;
     transcript: TranscriptLine[];
-    setActiveId: (id: string) => void;
-    setActiveTitle: (title: string) => void;
+    setStreamId: (id: string) => void;
+    setStreamTitle: (title: string) => void;
+    setActivatedTime: (time: number) => void;
     setStartTime: (time: number) => void;
     setMediaType: (type: TranscriptSlice["mediaType"]) => void;
     setMediaBaseUrl: (url: string) => void;

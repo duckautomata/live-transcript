@@ -18,6 +18,7 @@ import { useAppStore } from "./store/store";
  * @typedef {object} EventSyncData
  * @property {string} streamId
  * @property {string} streamTitle
+ * @property {number} activatedTime
  * @property {string} startTime
  * @property {MediaType} mediaType
  * @property {boolean} isLive
@@ -38,6 +39,7 @@ import { useAppStore } from "./store/store";
  * @typedef {object} EventNewStreamData
  * @property {string} streamId
  * @property {string} streamTitle
+ * @property {number} activatedTime
  * @property {string} startTime
  * @property {MediaType} mediaType
  * @property {string} mediaBaseUrl
@@ -81,8 +83,9 @@ export const Websocket = ({ wsKey }) => {
     const WS_URL = `${wsServer}/${wsKey}/websocket`;
     const setServerStatus = useAppStore((state) => state.setServerStatus);
     const setIsSynced = useAppStore((state) => state.setIsSynced);
-    const setActiveId = useAppStore((state) => state.setActiveId);
-    const setActiveTitle = useAppStore((state) => state.setActiveTitle);
+    const setStreamId = useAppStore((state) => state.setStreamId);
+    const setStreamTitle = useAppStore((state) => state.setStreamTitle);
+    const setActivatedTime = useAppStore((state) => state.setActivatedTime);
     const setStartTime = useAppStore((state) => state.setStartTime);
     const setMediaType = useAppStore((state) => state.setMediaType);
     const setMediaBaseUrl = useAppStore((state) => state.setMediaBaseUrl);
@@ -288,8 +291,9 @@ export const Websocket = ({ wsKey }) => {
         LOG_MSG("resetState data", data);
         const mediaBaseUrl = data.mediaBaseUrl ?? "";
 
-        setActiveId(data.streamId ?? "");
-        setActiveTitle(data.streamTitle ?? "");
+        setStreamId(data.streamId ?? "");
+        setStreamTitle(data.streamTitle ?? "");
+        setActivatedTime(data.activatedTime ? +data.activatedTime : 0);
         setStartTime(data.startTime ? +data.startTime : 0);
         setMediaType(data.mediaType ?? "none");
         setMediaBaseUrl(mediaBaseUrl.replace(/\/+$/, "")); // removes any trailing / in url
@@ -346,8 +350,9 @@ export const Websocket = ({ wsKey }) => {
         LOG_MSG("setNewActiveStream data", data);
         const mediaBaseUrl = data.mediaBaseUrl ?? "";
 
-        setActiveId(data.streamId);
-        setActiveTitle(data.streamTitle);
+        setStreamId(data.streamId);
+        setStreamTitle(data.streamTitle);
+        setActivatedTime(data.activatedTime ? +data.activatedTime : 0);
         setStartTime(+data.startTime);
         setMediaType(data.mediaType);
         setMediaBaseUrl(mediaBaseUrl.replace(/\/+$/, "")); // removes any trailing / in url
@@ -383,8 +388,8 @@ export const Websocket = ({ wsKey }) => {
 
         LOG_MSG("setStreamStatus data", data);
 
-        setActiveId(data.streamId);
-        setActiveTitle(data.streamTitle);
+        setStreamId(data.streamId);
+        setStreamTitle(data.streamTitle);
         setIsLive(data.isLive);
     };
 

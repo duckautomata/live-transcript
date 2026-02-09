@@ -62,7 +62,7 @@ function StatCard({ title, value, icon, color }) {
  * Component providing word usage analysis and visualization via a LineChart.
  */
 export default function StreamWordCount() {
-    const activeTitle = useAppStore((state) => state.activeTitle);
+    const streamTitle = useAppStore((state) => state.streamTitle);
     const transcript = useAppStore((state) => state.transcript);
     const startTime = useAppStore((state) => state.startTime);
     const timeFormat = useAppStore((state) => state.timeFormat);
@@ -117,7 +117,7 @@ export default function StreamWordCount() {
                 component="h1"
                 sx={{ mb: 4, fontWeight: 700, pl: isMobile ? 6 : 0 }}
             >
-                {activeTitle}
+                {streamTitle}
             </Typography>
 
             <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 4 }, borderRadius: 2 }}>

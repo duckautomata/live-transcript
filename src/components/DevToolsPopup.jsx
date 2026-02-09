@@ -53,11 +53,11 @@ export default function DevToolsPopup({ open, setOpen }) {
     const metrics = useAppStore((state) => state.metrics);
     const clearMetrics = useAppStore((state) => state.clearMetrics);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
-    const activeId = useAppStore((state) => state.activeId);
-    const selectedId = pastStreamViewing || activeId;
+    const streamId = useAppStore((state) => state.streamId);
+    const selectedId = pastStreamViewing || streamId;
 
-    const activeTitle = useAppStore((state) => state.activeTitle);
-    const setActiveTitle = useAppStore((state) => state.setActiveTitle);
+    const streamTitle = useAppStore((state) => state.streamTitle);
+    const setStreamTitle = useAppStore((state) => state.setStreamTitle);
     const startTime = useAppStore((state) => state.startTime);
     const setStartTime = useAppStore((state) => state.setStartTime);
     const mediaType = useAppStore((state) => state.mediaType);
@@ -272,8 +272,8 @@ export default function DevToolsPopup({ open, setOpen }) {
                                     label="Active Title"
                                     size="small"
                                     data-testid="devtools-active-title"
-                                    value={activeTitle}
-                                    onChange={(e) => setActiveTitle(e.target.value)}
+                                    value={streamTitle}
+                                    onChange={(e) => setStreamTitle(e.target.value)}
                                     sx={{ minWidth: 200 }}
                                 />
                                 <TextField
