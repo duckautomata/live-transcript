@@ -96,7 +96,7 @@ const replacements = [
     [new RegExp(`${P}bukkake`, "gi"), "$1paint"],
     [new RegExp(`${P}masturbate`, "gi"), "$1play"],
     [new RegExp(`${P}orgasm`, "gi"), "$1finish"],
-    [new RegExp(`${P}incest`, "gi"), "$1family"],
+    [new RegExp(`${P}incest`, "gi"), "$1familial love"],
     [new RegExp(`${P}waifu`, "gi"), "$1wife"],
     [new RegExp(`${P}ball`, "gi"), "$1round object"],
     [new RegExp(`${P}sperm`, "gi"), "$1DNA"],

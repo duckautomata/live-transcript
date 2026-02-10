@@ -540,7 +540,7 @@ describe("genericCensor", () => {
         ["bukkake", "paint"],
         ["masturbate", "play"],
         ["orgasm", "finish"],
-        ["incest", "family"],
+        ["incest", "familial love"],
         ["waifu", "wife"],
         ["ball", "round object"],
         ["sperm", "DNA"],
