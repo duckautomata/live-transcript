@@ -55,6 +55,12 @@ export default function LineMenu({ wsKey, jumpToLine }) {
         setClipStartIndex(lineMenuId);
         handleClose();
     };
+    const handleClipLine = () => {
+        setClipStartIndex(lineMenuId);
+        setClipEndIndex(lineMenuId);
+        setClipPopupOpen(true);
+        handleClose();
+    };
     const handleDownloadClip = () => {
         setClipEndIndex(lineMenuId);
         setClipPopupOpen(true);
@@ -107,7 +113,6 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     const shouldRenderDownloadClip =
         hasAudio &&
         !shouldRenderStartClip &&
-        lineMenuId !== clipStartIndex &&
         Math.abs(clipStartIndex - lineMenuId) < maxClipSize &&
         isRangeMediaAvailable(clipStartIndex, lineMenuId);
 
@@ -144,6 +149,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
             transformOrigin={transformOrigin}
         >
             <MenuItem disabled>id: {lineMenuId > -1 ? lineMenuId : ""}</MenuItem>
+            {shouldRenderStartClip && <MenuItem onClick={handleClipLine}>Clip this line</MenuItem>}
             {shouldRenderStartClip && <MenuItem onClick={handleStartClip}>Start Clip</MenuItem>}
             {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Process Clip</MenuItem>}
             {shouldRenderResetClip && <MenuItem onClick={handleResetClip}>Reset Clip</MenuItem>}

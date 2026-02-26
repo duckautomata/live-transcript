@@ -5,7 +5,7 @@ import { useAppStore } from "./store/store";
 
 export const server = "https://api.duck-automata.com";
 export const wsServer = "wss://api.duck-automata.com";
-export const maxClipSize = 30;
+export const maxClipSize = 40;
 
 export const keyIcons = (size) => {
     const icons = [

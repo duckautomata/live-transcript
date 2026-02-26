@@ -135,8 +135,6 @@ const Line = memo(
 
                     if (clipStartIndex === -1) {
                         setClipStartIndex(id);
-                    } else if (clipStartIndex === id) {
-                        setClipStartIndex(-1);
                     } else {
                         setClipEndIndex(id);
                         setClipPopupOpen(true);
@@ -175,12 +173,12 @@ const Line = memo(
             const iconColor = isMediaMissing
                 ? theme.palette.id.loading
                 : clipMode
-                  ? isClipTargetValid
-                      ? theme.palette.secondary.main
-                      : theme.palette.action.disabled
-                  : isClipable
-                    ? theme.palette.id.clip
-                    : theme.palette.id.main;
+                    ? isClipTargetValid
+                        ? theme.palette.secondary.main
+                        : theme.palette.action.disabled
+                    : isClipable
+                        ? theme.palette.id.clip
+                        : theme.palette.id.main;
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
             const iconSx = density === "compact" ? { padding: 0 } : {};
@@ -206,6 +204,21 @@ const Line = memo(
                         },
                     }}
                 >
+                    {clipMode && isClipStart && (
+                        <Tooltip title="Reset Clip Start">
+                            <IconButton
+                                size={iconSize}
+                                sx={iconSx}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setClipStartIndex(-1);
+                                }}
+                                data-testid={`line-button-${id}-reset`}
+                            >
+                                <RestartAlt style={{ color: theme.palette.error.main }} data-testid="RestartAltIcon" />
+                            </IconButton>
+                        </Tooltip>
+                    )}
                     <Tooltip title={isMediaMissing ? "Media isn't available yet" : ""}>
                         <IconButton
                             size={iconSize}
@@ -219,9 +232,7 @@ const Line = memo(
                             disabled={clipMode && !isClipTargetValid}
                         >
                             {clipMode ? (
-                                isClipStart ? (
-                                    <RestartAlt style={{ color: iconColor }} data-testid="RestartAltIcon" />
-                                ) : isClipTargetValid ? (
+                                isClipTargetValid ? (
                                     <ContentCut style={{ color: iconColor }} data-testid="ContentCutIcon" />
                                 ) : (
                                     <MoreHoriz style={{ color: iconColor }} data-testid="MoreHorizIcon" />
