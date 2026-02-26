@@ -173,12 +173,12 @@ const Line = memo(
             const iconColor = isMediaMissing
                 ? theme.palette.id.loading
                 : clipMode
-                    ? isClipTargetValid
-                        ? theme.palette.secondary.main
-                        : theme.palette.action.disabled
-                    : isClipable
-                        ? theme.palette.id.clip
-                        : theme.palette.id.main;
+                  ? isClipTargetValid
+                      ? theme.palette.secondary.main
+                      : theme.palette.action.disabled
+                  : isClipable
+                    ? theme.palette.id.clip
+                    : theme.palette.id.main;
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
             const iconSx = density === "compact" ? { padding: 0 } : {};
