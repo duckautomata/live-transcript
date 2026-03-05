@@ -33,14 +33,12 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
         setPage(value);
     };
 
-    let start = 0;
-    let end = 0;
     /** @type {TranscriptLine[]} */
     let displayedLines = [];
 
     if (displayData.length > 0) {
-        start = displayData.length - actualPage * linesPerPage;
-        end = start + linesPerPage;
+        const start = displayData.length - actualPage * linesPerPage;
+        const end = start + linesPerPage;
         displayedLines = displayData.slice(Math.max(0, start), Math.min(displayData.length, end)).reverse();
     }
 
