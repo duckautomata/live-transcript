@@ -1,10 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import { useEffect, useRef, useState } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
 import { LOG_MSG, LOG_WARN, LOG_ERROR } from "./logic/debug";
 import { wsServer } from "./config";
 import { useAppStore } from "./store/store";
+
+import useWebSocketModule, { ReadyState } from "react-use-websocket";
+
+// Robust check: works universally in Vite 7 (esbuild) and Vite 8 (Rolldown)
+const useWebSocket = typeof useWebSocketModule === "function" ? useWebSocketModule : useWebSocketModule.default;
 
 /**
  * @typedef {import('./store/types').TranscriptLine} TranscriptLine
