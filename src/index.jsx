@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
-        <BrowserRouter basename="live-transcript">
+        <BrowserRouter basename="/live-transcript/">
             <App />
         </BrowserRouter>
     </StrictMode>,

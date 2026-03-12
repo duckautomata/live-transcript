@@ -20,7 +20,7 @@ export default defineConfig(() => {
                 },
             },
         ],
-        base: "/live-transcript",
+        base: "/live-transcript/",
         define: {
             __BUILD_TIME__: buildTime,
         },
@@ -32,7 +32,7 @@ export default defineConfig(() => {
             emptyOutDir: true,
             manifest: false,
             target: "esnext",
-            outDir: "live-transcript", // should be the same as base
+            outDir: "dist/live-transcript", // should be the same as base
             rollupOptions: {
                 output: {
                     manualChunks: (id) => {
