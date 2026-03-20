@@ -1,5 +1,12 @@
 export default {
     async fetch(request, env) {
+        // 0. Redirect /live-transcript (no trailing slash) to /live-transcript/
+        const url = new URL(request.url);
+        if (url.pathname === "/live-transcript") {
+            url.pathname = "/live-transcript/";
+            return Response.redirect(url.toString(), 301);
+        }
+
         // 1. Attempt to fetch the requested asset
         const response = await env.ASSETS.fetch(request);
 
