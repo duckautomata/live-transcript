@@ -3,8 +3,8 @@ import mintIcon from "./assets/icons/mint.jpg";
 import { Avatar } from "@mui/material";
 import { useAppStore } from "./store/store";
 
-export const server = "https://api.duck-automata.com";
-export const wsServer = "wss://api.duck-automata.com";
+export const server = "https://api.duck-automata.com/live";
+export const wsServer = "wss://api.duck-automata.com/live";
 export const maxClipSize = 40;
 
 export const keyIcons = (size) => {
