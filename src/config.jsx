@@ -24,28 +24,16 @@ export const keyIcons = (size) => {
     ];
 
     if (useAppStore.getState().devMode) {
-        icons.push(
-            {
-                name: "Test",
-                icon: (
-                    <Avatar alt="test" sx={{ width: size, height: size }}>
-                        T
-                    </Avatar>
-                ),
-                value: "test",
-                testId: "key-icon-test",
-            },
-            {
-                name: "Mock",
-                icon: (
-                    <Avatar alt="mock" sx={{ width: size, height: size, backgroundColor: "Highlight" }}>
-                        M
-                    </Avatar>
-                ),
-                value: "mock",
-                testId: "key-icon-mock",
-            },
-        );
+        icons.push({
+            name: "Test",
+            icon: (
+                <Avatar alt="test" sx={{ width: size, height: size }}>
+                    T
+                </Avatar>
+            ),
+            value: "test",
+            testId: "key-icon-test",
+        });
     }
     return icons;
 };

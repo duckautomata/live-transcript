@@ -387,7 +387,10 @@ export default function View({ wsKey }) {
                                     </Typography>
                                     <Typography color="text.secondary">No transcript data was found.</Typography>
                                     <Typography color="text.secondary">
-                                        This usually means the database was reset.
+                                        This usually means the database was cleared
+                                    </Typography>
+                                    <Typography color="text.secondary">
+                                        or there has been no streams in the past week.
                                     </Typography>
                                 </>
                             )}
