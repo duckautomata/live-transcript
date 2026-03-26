@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-
+// oxlint-disable no-console
 /**
  * Logs messages to the console if in development environment.
  * @param {...any} msg - Messages to log.

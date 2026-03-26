@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+// oxlint-disable react-hooks/set-state-in-effect
 /**
  *
  * WARNING: This file is 1.6k lines of who knows what. Good luck trying to decipher it.

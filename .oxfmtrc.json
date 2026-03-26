@@ -1,0 +1,26 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "printWidth": 120,
+    "tabWidth": 4,
+    "proseWrap": "preserve",
+    "semi": true,
+    "trailingComma": "all",
+    "singleQuote": false,
+    "bracketSpacing": true,
+    "bracketSameLine": false,
+    "useTabs": false,
+    "sortPackageJson": false,
+    "ignorePatterns": [
+        "dist",
+        "assets",
+        "public",
+        ".yarn",
+        ".husky",
+        "package-lock.json",
+        ".yarnrc.yml",
+        "live-transcript",
+        "node_modules",
+        "playwright-report",
+        "test-results"
+    ]
+}

@@ -63,7 +63,7 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
             const distFromEnd = displayData.length - 1 - lineIndexInFiltered;
             const targetPage = Math.floor(distFromEnd / linesPerPage) + 1;
 
-            // eslint-disable-next-line react-hooks/set-state-in-effect
+            // oxlint-disable-next-line react-hooks/set-state-in-effect
             setPage(targetPage);
 
             // We need to wait for render

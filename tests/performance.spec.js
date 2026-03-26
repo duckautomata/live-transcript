@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+// oxlint-disable no-console
 import { test, expect, devices } from "@playwright/test";
 import { loadInDevmode, waitForFullSync } from "./helper";
 import * as mockconst from "./mockconst";

@@ -1,6 +1,6 @@
 import { TranscriptSlice, AppSliceCreator } from "./types";
 
-// eslint-disable-next-line no-unused-vars
+// oxlint-disable-next-line no-unused-vars
 import * as examples from "./exampleTranscriptData";
 
 export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => ({

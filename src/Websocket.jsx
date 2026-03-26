@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
+// oxlint-disable eslint-plugin-react-hooks/exhaustive-deps
 import { useEffect, useRef, useState } from "react";
 import { LOG_MSG, LOG_WARN, LOG_ERROR } from "./logic/debug";
 import { wsServer } from "./config";

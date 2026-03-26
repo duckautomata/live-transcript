@@ -5,13 +5,15 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "test": "vitest --run",
-        "playwright": "vite build && playwright test",
         "build": "vite build",
-        "format": "prettier --write .",
-        "lint": "eslint .",
         "preview": "vite preview",
-        "deploy": "npm run format && npm run lint && npm run test && npm run build && wrangler deploy"
+        "playwright": "vite build && playwright test",
+        "format": "oxfmt .",
+        "format:check": "oxfmt --check .",
+        "lint": "oxlint .",
+        "lint:fix": "oxlint --fix .",
+        "test": "vitest",
+        "test:ci": "vitest run --reporter=junit --outputFile=junit.xml"
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",
@@ -26,34 +28,21 @@
         "react-router-dom": "^7.13.2",
         "react-use-websocket": "^4.13.0",
         "react-virtuoso": "^4.18.3",
-        "wavesurfer.js": "^7.12.4",
+        "wavesurfer.js": "^7.12.5",
         "zustand": "^5.0.12"
     },
     "devDependencies": {
-        "@eslint/js": "^10.0.1",
         "@playwright/test": "^1.58.2",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
         "baseline-browser-mapping": "^2.10.10",
         "esbuild": "^0.27.4",
-        "eslint": "^10.1.0",
-        "eslint-plugin-react": "^7.37.5",
-        "eslint-plugin-react-hooks": "^7.0.1",
-        "eslint-plugin-react-refresh": "^0.5.2",
-        "globals": "^17.4.0",
+        "oxfmt": "^0.42.0",
+        "oxlint": "^1.57.0",
         "playwright": "^1.58.2",
-        "prettier": "^3.8.1",
         "vite": "^8.0.2",
         "vitest": "^4.1.1",
-        "wrangler": "^4.76.0"
-    },
-    "overrides": {
-        "eslint-plugin-react": {
-            "eslint": "$eslint"
-        },
-        "eslint-plugin-react-hooks": {
-            "eslint": "$eslint"
-        }
+        "wrangler": "^4.77.0"
     }
 }
