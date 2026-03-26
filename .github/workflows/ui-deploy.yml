@@ -1,4 +1,4 @@
-name: UI Pipeline
+name: UI Deploy
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -7,16 +7,24 @@ concurrency:
 on:
     push:
         branches: ["master"]
-    pull_request:
-        branches: ["master"]
+        paths:
+            - "src/**"
+            - "public/**"
+            - "index.html"
+            - "package.json"
+            - "package-lock.json"
+            - "vite.config.*"
+            - "wrangler.toml"
+            - ".github/workflows/ui-deploy.yml"
 
 jobs:
-    test-and-deploy:
+    deploy:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         permissions:
             contents: read
             checks: write
+        environment: production
 
         steps:
             - name: Checkout Code
@@ -52,7 +60,6 @@ jobs:
               run: npm run build
 
             - name: Deploy to Cloudflare
-              if: github.ref == 'refs/heads/master'
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
