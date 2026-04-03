@@ -7,13 +7,15 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "playwright": "vite build && playwright test",
         "format": "oxfmt .",
         "format:check": "oxfmt --check .",
         "lint": "oxlint .",
         "lint:fix": "oxlint --fix .",
-        "test": "vitest",
-        "test:ci": "vitest run --reporter=junit --outputFile=junit.xml"
+        "test": "vitest run",
+        "test:ci": "vitest run --reporter=junit --outputFile=junit.xml",
+        "test:generate-mocks": "node tests/mocks/generate-snapshot.mjs && node tests/mocks/generate-consts.js",
+        "test:mock": "playwright test --config=playwright.mock.config.js",
+        "test:e2e": "playwright test"
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",

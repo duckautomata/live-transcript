@@ -7,7 +7,7 @@ export default defineConfig({
     retries: 1,
     workers: process.env.CI ? 1 : undefined,
     timeout: 30 * 1000,
-    reporter: "html",
+    reporter: process.env.CI ? [["github"], ["html"], ["junit", { outputFile: "playwright-report.xml" }]] : "html",
     use: {
         baseURL: "http://localhost:4173/live-transcript/",
         trace: "on-first-retry",

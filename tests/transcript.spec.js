@@ -8,7 +8,7 @@ import {
     takeScreenshots,
     waitForFullSync,
 } from "./helper";
-import * as mockconst from "./mockconst";
+import * as mockconst from "./mocks/mockconst";
 
 test("Transcript page loads", async ({ page }, testInfo) => {
     await loadInDevmode(page, mockconst.keyName);
@@ -415,9 +415,7 @@ test.describe("Transcript clipping", () => {
         );
 
         await page.getByTestId(`line-button-${mockconst.emptyLineId}`).click();
-        await expect(
-            page.getByTestId(`line-button-${mockconst.emptyLineId}`).getByTestId("RestartAltIcon"),
-        ).toBeVisible();
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId}-reset`)).toBeVisible();
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).not.toHaveCSS(
             "background-color",
             "rgba(0, 0, 0, 0)",
@@ -449,7 +447,7 @@ test.describe("Transcript clipping", () => {
             "background-color",
             "rgba(0, 0, 0, 0)",
         );
-        await page.getByTestId(`line-button-${mockconst.emptyLineId}`).click();
+        await page.getByTestId(`line-button-${mockconst.emptyLineId}-reset`).click();
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toHaveCSS(
             "background-color",
             "rgba(0, 0, 0, 0)",
@@ -457,6 +455,7 @@ test.describe("Transcript clipping", () => {
     });
 
     test("clip range", async ({ page, isMobile }) => {
+        const maxClipSize = 40;
         await loadInDevmode(page, mockconst.keyName);
         await waitForFullSync(page);
         // Use pagination since every line is rendered, making this test easier to do.
@@ -465,20 +464,25 @@ test.describe("Transcript clipping", () => {
         await page.getByTestId("clip-mode-button").click();
 
         // 30 lines down should make the last line outside the clip.
-        await page.getByTestId(`line-button-${mockconst.emptyLineId - 30}`).click();
+        await page.getByTestId(`line-button-${mockconst.emptyLineId - maxClipSize}`).click();
         await expect(page.getByTestId(`line-button-${mockconst.emptyLineId}`)).toBeDisabled();
         await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 1}`)).toBeEnabled();
-        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 59}`)).toBeEnabled();
-        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 60}`)).toBeDisabled();
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - (maxClipSize * 2 - 1)}`)).toBeEnabled();
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - maxClipSize * 2}`)).toBeDisabled();
 
         // if a line doesn't have media available, then it should act as the border.
-        await setMediaAvailability(page, isMobile, [mockconst.emptyLineId - 25, mockconst.emptyLineId - 35], false);
-        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 24}`)).toBeDisabled();
-        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 25}-loading`)).toBeDisabled();
-        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 26}`)).toBeEnabled();
-        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 34}`)).toBeEnabled();
-        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 35}-loading`)).toBeDisabled();
-        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - 36}`)).toBeDisabled();
+        await setMediaAvailability(
+            page,
+            isMobile,
+            [mockconst.emptyLineId - maxClipSize - 5, mockconst.emptyLineId - maxClipSize + 5],
+            false,
+        );
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - maxClipSize - 6}`)).toBeDisabled();
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - maxClipSize - 5}-loading`)).toBeDisabled();
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - maxClipSize - 4}`)).toBeEnabled();
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - maxClipSize + 4}`)).toBeEnabled();
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - maxClipSize + 5}-loading`)).toBeDisabled();
+        await expect(page.getByTestId(`line-button-${mockconst.emptyLineId - maxClipSize + 6}`)).toBeDisabled();
     });
 
     test("canceling reset clip state", async ({ page }) => {

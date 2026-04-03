@@ -1,7 +1,7 @@
 // oxlint-disable no-console
 import { test, expect, devices } from "@playwright/test";
 import { loadInDevmode, waitForFullSync } from "./helper";
-import * as mockconst from "./mockconst";
+import * as mockconst from "./mocks/mockconst";
 
 test.describe("Performance", () => {
     // defaults for Pixel 5 but without defaultBrowserType which causes error in test.use
