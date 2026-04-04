@@ -51,7 +51,7 @@ A guide on how to use the website can be found by clicking the `Help` question m
 
 ### Running Locally
 
-1. Have Node 20 or later installed
+1. Have Node 22 or later installed
 2. Clone the repo locally
 3. Run `npm install` to install dependencies
 4. Run `npm run dev` and open the site it gives you. Or press `o` and enter to open the site.
@@ -124,3 +124,7 @@ npm run test:generate-mocks
 ### Contributing ideas
 
 Raise an issue and detail what idea you have or would like to see.
+
+### Building a new release
+
+New releases are automatically built and deployed when a new pull request is merged into master.
