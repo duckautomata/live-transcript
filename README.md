@@ -13,10 +13,10 @@ _Development_
 
 - **[Tech Used](#tech-used)**
 - **[Running Locally](#running-locally)**
+- **[Testing](#testing)**
 - **[Contributing](#contributing)**
 - **[Contributing Ideas](#contrubiting-ideas)**
 - **[Building a Release](#building-a-new-release)**
-- **[Release Process](#release-process)**
 
 ## System
 
@@ -73,6 +73,48 @@ transcript: examples.generateTranscript(100, 3, 4);
 where you can use anything from the examples file. generateTranscript is just the easiest to generate large amounts of data.
 You can also change the initial values for the other variables to whatever you want. Just make sure to revert back to the original before committing.
 
+### Testing
+
+#### Vitest tests
+
+```bash
+npm run test
+```
+
+Playwright tests are used to test the full UI - both mocked (for stability) and real.
+
+Before running any playwright tests, you need to build the project. The tests runs against the preview server since it's significantly faster than running the dev server.
+
+#### Mocked Playwright Tests
+
+```bash
+npm run build
+npm run test:mock
+```
+
+#### Real Playwright Tests
+
+If you want to run the e2e tests, you'll need to update [mockconst.js](./tests/mocks/mockconst.js) with the current server data.
+
+mockconst.js note:
+
+- The tests require at least 2 pages of transcript lines in order for the pagination tests to work.
+- Best to keep the number of searchTerm results < 5 since virtual lists do not show all results. Best if 1-3 results.
+- searchLineId just needs to be one of the searchTerm results, order doesn't matter.
+
+```bash
+npm run build
+npm run test:e2e
+```
+
+#### Updating Mocks
+
+The mocks are auto generated from the server to ensure compatibility. If the server's api changes, the mocks need to be updated.
+
+```bash
+npm run test:generate-mocks
+```
+
 ### Contributing
 
 1. create a branch and put your code onto it.
@@ -82,11 +124,3 @@ You can also change the initial values for the other variables to whatever you w
 ### Contributing ideas
 
 Raise an issue and detail what idea you have or would like to see.
-
-### Building a new release
-
-This project is hosted in a Cloudflare worker. If you have access to the worker, then run the deploy command to update the contents.
-
-```bash
-npm run deploy
-```

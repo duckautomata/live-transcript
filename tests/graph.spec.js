@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { loadInDevmode } from "./helper";
-import * as mockconst from "./mockconst";
+import * as mockconst from "./mocks/mockconst";
 
 test("graph page loads", async ({ page }) => {
     await loadInDevmode(page, `${mockconst.keyName}/graph/`);

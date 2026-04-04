@@ -4,6 +4,11 @@
  */
 
 import { expect } from "playwright/test";
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const devSettings = {
     state: {
@@ -22,16 +27,109 @@ const devSettings = {
 /**
  * Load the page in devmode
  * @param {Page} page
- * @param {string} path
+ * @param {string} pathUrl
  */
-export async function loadInDevmode(page, path) {
+export async function loadInDevmode(page, pathUrl) {
     // We need to first load a page to set the devmode. We use the favicon since this is the lightest page possible.
     // Then we go to the actual page after devmode is set.
     await page.goto("favicon.ico");
     await page.evaluate((value) => {
         window.localStorage.setItem("live-transcript-settings", value);
     }, JSON.stringify(devSettings));
-    await page.goto(path);
+
+    if (process.env.MOCK_API != "true") {
+        await page.goto(pathUrl);
+        return;
+    }
+
+    // Setup network mocking for a stable testing environment
+    const mockDataStr = await fs.readFile(path.resolve(__dirname, "mocks/mockData.json"), "utf8");
+    const mockData = JSON.parse(mockDataStr);
+
+    // Mock Websockets
+    await page.routeWebSocket(/.*/, (ws) => {
+        ws.onMessage(async (msg) => {
+            // handle any client-to-server WS messages here if needed (e.g., ping)
+            if (typeof msg === "string") {
+                try {
+                    const parsed = JSON.parse(msg);
+                    if (parsed.event === "ping") {
+                        ws.send(JSON.stringify({ event: "pong", data: { timestamp: parsed.data.timestamp } }));
+                    }
+                    // oxlint-disable-next-line no-unused-vars
+                } catch (e) {
+                    // oxlint-disable-next-line no-empty
+                }
+            }
+        });
+
+        if (mockData.currentStream) {
+            const partialSync = { ...mockData.currentStream, event: "partialSync" };
+            setTimeout(() => ws.send(JSON.stringify(partialSync)), 10);
+            setTimeout(() => ws.send(JSON.stringify(mockData.currentStream)), 100);
+        }
+        if (mockData.pastStreams) {
+            setTimeout(() => ws.send(JSON.stringify(mockData.pastStreams)), 200);
+        }
+    });
+
+    // Mock Clipping Endpoints
+    await page.route("**/clip", async (route) => {
+        await route.fulfill({ json: { status: "success", clip_id: "test_clip" } });
+    });
+
+    await page.route("**/trim", async (route) => {
+        await route.fulfill({ json: { status: "success", clip_id: "test_trimmed_clip" } });
+    });
+
+    // Mock Past Transcripts Endpoint
+    await page.route("**/transcript/*", async (route) => {
+        await route.fulfill({ json: mockData.pastStreamTranscript || {} });
+    });
+
+    function getHeaders(route) {
+        return route.request().url().includes("download=true") ? { "Content-Disposition": "attachment" } : undefined;
+    }
+
+    // Mock Images using a local placeholder image
+    const mockImageBuffer = await fs.readFile(path.resolve(__dirname, "mocks/mockImage.jpg"));
+    await page.route("**/*.{jpg,png,jpeg}*", async (route) => {
+        await route.fulfill({
+            body: mockImageBuffer,
+            contentType: "image/jpeg",
+            headers: getHeaders(route),
+        });
+    });
+
+    // Mock Audio/Video assets
+    const mockAudioMp3Buffer = await fs.readFile(path.resolve(__dirname, "mocks/mockAudio.mp3"));
+    await page.route("**/*.mp3*", async (route) => {
+        await route.fulfill({
+            body: mockAudioMp3Buffer,
+            contentType: "audio/mpeg",
+            headers: getHeaders(route),
+        });
+    });
+
+    const mockAudioM4aBuffer = await fs.readFile(path.resolve(__dirname, "mocks/mockAudio.m4a"));
+    await page.route("**/*.m4a*", async (route) => {
+        await route.fulfill({
+            body: mockAudioM4aBuffer,
+            contentType: "audio/mp4",
+            headers: getHeaders(route),
+        });
+    });
+
+    const mockVideoMp4Buffer = await fs.readFile(path.resolve(__dirname, "mocks/mockVideo.mp4"));
+    await page.route("**/*.mp4*", async (route) => {
+        await route.fulfill({
+            body: mockVideoMp4Buffer,
+            contentType: "video/mp4",
+            headers: getHeaders(route),
+        });
+    });
+
+    await page.goto(pathUrl);
 }
 
 /**
@@ -49,6 +147,8 @@ export async function waitForFullSync(page) {
  * @param {string} name
  */
 export async function takeScreenshots(page, testInfo, name) {
+    if (process.env.CI) return;
+
     // Light Mode. We need to wait for the page to update to the color scheme.
     await page.emulateMedia({ colorScheme: "light" });
     await page.waitForTimeout(250);

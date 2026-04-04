@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { loadInDevmode } from "./helper";
-import * as mockconst from "./mockconst";
+import * as mockconst from "./mocks/mockconst";
 
 test("tag formatter page loads", async ({ page }) => {
     await loadInDevmode(page, `${mockconst.keyName}/tagFixer/`);

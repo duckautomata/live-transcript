@@ -7,7 +7,7 @@ export default defineConfig({
     retries: 1,
     workers: process.env.CI ? 1 : undefined,
     timeout: 30 * 1000,
-    reporter: "html",
+    reporter: process.env.CI ? [["github"], ["html"], ["junit", { outputFile: "playwright-report.xml" }]] : "html",
     use: {
         baseURL: "http://localhost:4173/live-transcript/",
         trace: "on-first-retry",
@@ -24,13 +24,13 @@ export default defineConfig({
         },
         {
             name: "Mobile Chrome",
-            use: { ...devices["Pixel 5"] },
+            use: { ...devices["Pixel 7"] },
         },
         {
             name: "Mobile Safari",
-            use: { ...devices["iPhone 12"] },
+            use: { ...devices["iPhone 15"] },
         },
-    ],
+    ].filter((project) => !process.env.CI || project.name === "chromium"),
 
     webServer: {
         command: "npm run preview",
