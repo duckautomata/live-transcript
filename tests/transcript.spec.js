@@ -129,6 +129,7 @@ test.describe("Transcript search", () => {
         // Virtual
         const virtualTab = page.getByTestId("transcript-tab-virtual");
         await virtualTab.click();
+        await page.waitForTimeout(500); // Needed to ensure virtual list is fully loaded. Otherwise it'll jump to the end after the jump to line.
         await searchInput.fill(mockconst.searchTerm);
         await expect(page.getByTestId(`transcript-line-${mockconst.searchLineId}`)).toBeVisible();
 
@@ -248,6 +249,12 @@ test.describe("Transcript tabs", () => {
         await expect(page.getByTestId("transcript-line-0")).toBeVisible();
 
         await virtualTab.click();
+        await page.waitForTimeout(100);
+        if (await page.getByTestId("transcript-jumpToBottom").isVisible()) {
+            await page.getByTestId("transcript-jumpToBottom").click();
+        }
+        await page.waitForTimeout(500);
+
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
         await expect(page.getByTestId("transcript-jumpToBottom")).not.toBeVisible();
         await page.getByTestId("transcript-jumpToTop").click();

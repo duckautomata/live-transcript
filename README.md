@@ -94,6 +94,14 @@ npm run test:mock
 
 #### Real Playwright Tests
 
+If you want to run the e2e tests, you'll need to update [mockconst.js](./tests/mocks/mockconst.js) with the current server data.
+
+mockconst.js note:
+
+- The tests require at least 2 pages of transcript lines in order for the pagination tests to work.
+- Best to keep the number of searchTerm results < 5 since virtual lists do not show all results. Best if 1-3 results.
+- searchLineId just needs to be one of the searchTerm results, order doesn't matter.
+
 ```bash
 npm run build
 npm run test:e2e
@@ -101,7 +109,7 @@ npm run test:e2e
 
 #### Updating Mocks
 
-The mocks are auto generated from the server to ensure compatibility. If the server changes, the mocks need to be updated.
+The mocks are auto generated from the server to ensure compatibility. If the server's api changes, the mocks need to be updated.
 
 ```bash
 npm run test:generate-mocks
