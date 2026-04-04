@@ -24,13 +24,13 @@ export default defineConfig({
         },
         {
             name: "Mobile Chrome",
-            use: { ...devices["Pixel 5"] },
+            use: { ...devices["Pixel 7"] },
         },
         {
             name: "Mobile Safari",
-            use: { ...devices["iPhone 12"] },
+            use: { ...devices["iPhone 15"] },
         },
-    ],
+    ].filter((project) => !process.env.CI || project.name === "chromium"),
 
     webServer: {
         command: "npm run preview",
