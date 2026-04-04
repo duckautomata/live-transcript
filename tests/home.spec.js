@@ -35,7 +35,7 @@ test.describe("homepage", () => {
 
         const dokiBtn = page.getByTestId("archive-btn");
         await dokiBtn.click();
-        await expect(page).toHaveURL(/archived-transcript/);
+        await expect(page).toHaveURL(/archived-transcript\//);
     });
 
     test("handle redirecting with wrong url", async ({ page }) => {

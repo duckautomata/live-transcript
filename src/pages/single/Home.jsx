@@ -104,7 +104,7 @@ export default function Home() {
                     Looking for past streams?
                 </Typography>
                 <Button
-                    href="/archived-transcript"
+                    href="/archived-transcript/"
                     variant="outlined"
                     size="large"
                     data-testid="archive-btn"
