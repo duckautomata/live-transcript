@@ -260,8 +260,8 @@ function CountdownCard({ nextStream, currentTime }) {
                     lineHeight: 1.4,
                 }}
             >
-                Note: This assumes your device&apos;s clock is in sync with YouTube&apos;s servers.
-                Once the stream starts, the official YouTube timestamp will be used instead.
+                Note: This assumes your device&apos;s clock is in sync with YouTube&apos;s servers. Once the stream
+                starts, the official YouTube timestamp will be used instead.
             </Typography>
         </StyledPaper>
     );
@@ -370,7 +370,11 @@ const Tracker = ({ wsKey }) => {
     // scheduled stream that doesn't have a stream_id but is close to the current start time (within 2 hours)
     const partialMatchStream = useMemo(() => {
         return processedStreams.find(
-            (row) => row.stream_id === "" && row.startUTC && row.startUTC.getTime() - 2*3600*1000 <= startTimeFromStore * 1000 && row.startUTC.getTime() + 2*3600*1000 >= startTimeFromStore * 1000, // 2 hours buffer
+            (row) =>
+                row.stream_id === "" &&
+                row.startUTC &&
+                row.startUTC.getTime() - 2 * 3600 * 1000 <= startTimeFromStore * 1000 &&
+                row.startUTC.getTime() + 2 * 3600 * 1000 >= startTimeFromStore * 1000, // 2 hours buffer
         );
     }, [processedStreams, startTimeFromStore]);
 
@@ -410,22 +414,34 @@ const Tracker = ({ wsKey }) => {
     }, [isLive, processedStreams, currentTime]);
 
     // Display logic:
-    //   Countdown  → offline AND 
-    //      ((next stream within 12h AND next stream is not the current stream or past stream) OR 
+    //   Countdown  → offline AND
+    //      ((next stream within 12h AND next stream is not the current stream or past stream) OR
     //      (previous stream within 12h AND previous stream is not the current stream or past stream))
     //   Lateness   → (live AND matched) OR (offline AND no countdown)
     //   Fallback   → Otherwise
-    const nextStreamValid = nextStream !== null && nextStream.stream_id !== currentStreamIdFromStore && !pastStreamsIds.includes(nextStream.stream_id);
-    const previousStreamValid = previousStream !== null && previousStream.stream_id !== currentStreamIdFromStore && !pastStreamsIds.includes(previousStream.stream_id);
+    const nextStreamValid =
+        nextStream !== null &&
+        nextStream.stream_id !== currentStreamIdFromStore &&
+        !pastStreamsIds.includes(nextStream.stream_id);
+    const previousStreamValid =
+        previousStream !== null &&
+        previousStream.stream_id !== currentStreamIdFromStore &&
+        !pastStreamsIds.includes(previousStream.stream_id);
     const showCountdown = !isLive && (nextStreamValid || previousStreamValid);
-    const showLateness =
-        (isLive && matchedStream !== null) || (!isLive && !showCountdown);
+    const showLateness = (isLive && matchedStream !== null) || (!isLive && !showCountdown);
     const showFallback = !showCountdown && !showLateness;
 
     // choose the one closest to current time
-    const countdownStream = nextStreamValid && previousStreamValid ? (Math.abs(nextStream.startUTC - currentTime) < Math.abs(previousStream.startUTC - currentTime) ? nextStream : previousStream) : nextStreamValid ? nextStream : previousStreamValid ? previousStream : null;
-
-
+    const countdownStream =
+        nextStreamValid && previousStreamValid
+            ? Math.abs(nextStream.startUTC - currentTime) < Math.abs(previousStream.startUTC - currentTime)
+                ? nextStream
+                : previousStream
+            : nextStreamValid
+              ? nextStream
+              : previousStreamValid
+                ? previousStream
+                : null;
 
     return (
         <Box sx={{ p: 3, maxWidth: 480, mx: "auto" }}>
