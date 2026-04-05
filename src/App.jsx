@@ -16,6 +16,7 @@ import View from "./pages/transcript/View";
 import StreamWordCount from "./pages/graph/StreamWordCount";
 import CensorPage from "./pages/single/CensorPage";
 import Home from "./pages/single/Home";
+import Tracker from "./pages/single/Tracker";
 import { useTagIntegration } from "./hooks/useTagIntegration";
 
 /**
@@ -57,6 +58,7 @@ function App() {
                                 <Routes>
                                     <Route path={`${wsKey}/*`} element={<View wsKey={wsKey} />} />
                                     <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
+                                    <Route path={`${wsKey}/track/`} element={<Tracker wsKey={wsKey} />} />
                                     <Route path={`${wsKey}/tagFixer/`} element={<TagFormatter wsKey={wsKey} />} />
                                 </Routes>
                             </>
