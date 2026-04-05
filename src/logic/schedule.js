@@ -1,6 +1,9 @@
 /**
  * Parse a Pacific Time date+time string into a UTC Date object.
  * Handles PST (UTC-8) and PDT (UTC-7) automatically via Intl.
+ * @param {string} dateStr - The date string (e.g., "M/D/YYYY" or "YYYY-MM-DD").
+ * @param {string} timeStr - The time string (e.g., "HH:mm:ss" or "hh:mm:ss AM/PM").
+ * @returns {Date | null} The UTC Date object, or null if parsing fails.
  */
 export function parsePTtoUTC(dateStr, timeStr) {
     if (!dateStr || !timeStr) return null;
@@ -93,11 +96,19 @@ export function formatDuration(absMs) {
     return `${s}s`;
 }
 
+/**
+ * @param {Date | null} date - The Date object to format.
+ */
 export function formatLocalTime(date) {
+    if (!date) return "Unknown Time";
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
+/**
+ * @param {Date | null} date - The Date object to format.
+ */
 export function formatPTTime(date) {
+    if (!date) return "Unknown Time";
     return date.toLocaleTimeString("en-US", {
         timeZone: "America/Los_Angeles",
         hour: "2-digit",
