@@ -342,7 +342,7 @@ const Tracker = ({ wsKey }) => {
 
         fetchData();
 
-        const intervalId = setInterval(fetchData, 3600000); // 1 hour
+        const intervalId = setInterval(fetchData, 15 * 60 * 1000); // 15 minutes
         return () => clearInterval(intervalId);
     }, [wsKey]);
 
