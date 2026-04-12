@@ -1,5 +1,5 @@
 // oxlint-disable no-console
-import { test, expect, devices } from "@playwright/test";
+import { test, expect, devices } from "./custom-test";
 import { loadInDevmode, waitForFullSync } from "./helper";
 import * as mockconst from "./mocks/mockconst";
 

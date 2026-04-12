@@ -15,22 +15,23 @@
         "test:ci": "vitest run --reporter=junit --outputFile=junit.xml",
         "test:generate-mocks": "node tests/mocks/generate-snapshot.mjs && node tests/mocks/generate-consts.js",
         "test:mock": "playwright test --config=playwright.mock.config.js",
+        "test:dev": "playwright test --config=playwright.dev.config.js",
         "test:e2e": "playwright test"
     },
     "dependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@fontsource/roboto": "^5.2.10",
-        "@mui/icons-material": "^7.3.9",
-        "@mui/material": "^7.3.9",
-        "@mui/x-charts": "^8.28.2",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4",
+        "@mui/icons-material": "^9.0.0",
+        "@mui/material": "^9.0.0",
+        "@mui/x-charts": "^9.0.1",
+        "react": "^19.2.5",
+        "react-dom": "^19.2.5",
         "react-h5-audio-player": "^3.10.2",
         "react-router-dom": "^7.14.0",
         "react-use-websocket": "^4.13.0",
         "react-virtuoso": "^4.18.4",
-        "wavesurfer.js": "^7.12.5",
+        "wavesurfer.js": "^7.12.6",
         "zustand": "^5.0.12"
     },
     "devDependencies": {
@@ -39,11 +40,11 @@
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
         "esbuild": "^0.28.0",
-        "oxfmt": "^0.43.0",
-        "oxlint": "^1.58.0",
-        "playwright": "^1.58.2",
-        "vite": "^8.0.5",
-        "vitest": "^4.1.2",
-        "wrangler": "^4.80.0"
+        "oxfmt": "^0.44.0",
+        "oxlint": "^1.59.0",
+        "playwright": "^1.59.1",
+        "vite": "^8.0.8",
+        "vitest": "^4.1.4",
+        "wrangler": "^4.81.1"
     }
 }

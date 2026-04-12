@@ -729,7 +729,7 @@ export default function HelpPopup({ open, setOpen }) {
                                 <Typography variant="h6" gutterBottom>
                                     <strong>Controls</strong>
                                 </Typography>
-                                <Typography variant="body1" gutterBottom>
+                                <Typography variant="body1" component="div" gutterBottom>
                                     Broken up into 5 tabs:
                                     <ul>
                                         <li>
@@ -757,7 +757,7 @@ export default function HelpPopup({ open, setOpen }) {
                                 <Typography variant="h6" gutterBottom>
                                     <strong>Performance</strong>
                                 </Typography>
-                                <Typography variant="body1" gutterBottom>
+                                <Typography variant="body1" component="div" gutterBottom>
                                     Broken up into 4 tabs:
                                     <ul>
                                         <li>

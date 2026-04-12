@@ -640,7 +640,7 @@ const ClipperPopup = ({ wsKey }) => {
                                         size="small"
                                         value={trimRegion.start}
                                         onChange={handleManualStartChange}
-                                        inputProps={{ step: 0.01, min: 0, max: trimRegion.end }}
+                                        slotProps={{ htmlInput: { step: 0.01, min: 0, max: trimRegion.end } }}
                                         sx={{ width: 100 }}
                                     />
                                     <TextField
@@ -649,7 +649,7 @@ const ClipperPopup = ({ wsKey }) => {
                                         size="small"
                                         value={trimRegion.end}
                                         onChange={handleManualEndChange}
-                                        inputProps={{ step: 0.01, min: trimRegion.start, max: duration }}
+                                        slotProps={{ htmlInput: { step: 0.01, min: trimRegion.start, max: duration } }}
                                         sx={{ width: 100 }}
                                     />
                                 </Box>

@@ -30,7 +30,7 @@ function StatCard({ title, value, icon, color }) {
     return (
         <Card variant="outlined" sx={{ height: "100%", bgcolor: "background.paper" }}>
             <CardContent>
-                <Stack direction="row" spacing={2} alignItems="center">
+                <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                     <Box
                         sx={{
                             p: 1,
@@ -130,26 +130,28 @@ export default function StreamWordCount() {
                     value={word}
                     onChange={(e) => setWord(e.target.value)}
                     sx={{ mb: 4 }}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon color="action" />
-                            </InputAdornment>
-                        ),
-                        endAdornment: word && (
-                            <InputAdornment position="end">
-                                <IconButton size="small" onClick={() => setWord("")}>
-                                    <ClearIcon />
-                                </IconButton>
-                            </InputAdornment>
-                        ),
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon color="action" />
+                                </InputAdornment>
+                            ),
+                            endAdornment: word && (
+                                <InputAdornment position="end">
+                                    <IconButton size="small" onClick={() => setWord("")}>
+                                        <ClearIcon />
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }
                     }}
                 />
 
                 {data.length > 0 && word.length >= 3 ? (
                     <Box>
-                        <Grid container spacing={3} sx={{ mb: 4 }}>
-                            <Grid item xs={12} sm={4}>
+                        <Grid container spacing={3} sx={{ width: "100%", mb: 4 }}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <StatCard
                                     title="TOTAL COUNT"
                                     value={maxCount}
@@ -157,7 +159,7 @@ export default function StreamWordCount() {
                                     color="#20A79A"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <StatCard
                                     title="STREAM DURATION"
                                     value={duration}
@@ -165,7 +167,7 @@ export default function StreamWordCount() {
                                     color="#8093E0"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                                 <StatCard
                                     title="TIME TO FIRST"
                                     value={firstCount}

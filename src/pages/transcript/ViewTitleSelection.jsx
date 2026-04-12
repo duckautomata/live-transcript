@@ -8,7 +8,7 @@ import {
     Typography,
     useMediaQuery,
 } from "@mui/material";
-import { EditCalendar, InfoOutline } from "@mui/icons-material";
+import { EditCalendar, InfoOutlined } from "@mui/icons-material";
 import { orange } from "@mui/material/colors";
 import { useAppStore } from "../../store/store";
 import { unixToLocal } from "../../logic/dateTime";
@@ -89,10 +89,9 @@ export default function ViewTitleSelection() {
                                         }}
                                     >
                                         <Typography
-                                            color={pastStreamViewing ? orange[500] : "primary"}
                                             variant="h5"
                                             component="h5"
-                                            sx={{ wordBreak: "break-word" }}
+                                            sx={{ color: pastStreamViewing ? orange[500] : "primary.main", wordBreak: "break-word" }}
                                         >
                                             {titleText}
                                         </Typography>
@@ -119,7 +118,7 @@ export default function ViewTitleSelection() {
                                 </Tooltip>
                             );
                         }}
-                        inputProps={{ "aria-label": "Select Stream" }}
+                        slotProps={{ htmlInput: { "aria-label": "Select Stream" } }}
                         sx={{
                             "&:before": { borderBottom: "none" },
                             "&:after": { borderBottom: "none" },
@@ -134,9 +133,11 @@ export default function ViewTitleSelection() {
                             },
                         }}
                         MenuProps={{
-                            PaperProps: {
-                                style: {
-                                    maxHeight: 300,
+                            slotProps: {
+                                paper: {
+                                    style: {
+                                        maxHeight: 300,
+                                    },
                                 },
                             },
                         }}
@@ -196,7 +197,7 @@ export default function ViewTitleSelection() {
                                 }}
                             />
                         ) : (
-                            <InfoOutline
+                            <InfoOutlined
                                 data-testid="synced-icon"
                                 sx={{
                                     ml: 1,

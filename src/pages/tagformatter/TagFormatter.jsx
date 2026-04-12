@@ -103,8 +103,8 @@ const TagRow = memo(
                                         onChange={(e) => setLocalTimestamp(e.target.value)}
                                         placeholder="00:00"
                                         sx={{ width: "60px", mr: 1 }}
-                                        inputProps={{
-                                            style: { textAlign: "right", fontWeight: "bold", color: "inherit" },
+                                        slotProps={{
+                                            htmlInput: { style: { textAlign: "right", fontWeight: "bold", color: "inherit" } },
                                         }}
                                         onKeyDown={handleKeyDown}
                                     />
@@ -116,8 +116,8 @@ const TagRow = memo(
                                     autoFocus
                                     fullWidth
                                     onKeyDown={handleKeyDown}
-                                    inputProps={{
-                                        style: { textAlign: "center", fontWeight: "bold", color: "inherit" },
+                                    slotProps={{
+                                        htmlInput: { style: { textAlign: "center", fontWeight: "bold", color: "inherit" } },
                                     }}
                                 />
                             </>
@@ -181,7 +181,7 @@ const TagRow = memo(
                         value={localTimestamp}
                         onChange={(e) => setLocalTimestamp(e.target.value)}
                         sx={{ minWidth: "50px", width: "60px", mx: 1 }}
-                        inputProps={{ style: { fontFamily: "monospace" } }}
+                        slotProps={{ htmlInput: { style: { fontFamily: "monospace" } } }}
                         onKeyDown={handleKeyDown}
                     />
                 ) : (

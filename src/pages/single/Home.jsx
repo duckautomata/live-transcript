@@ -41,25 +41,27 @@ export default function Home() {
                 <Typography
                     variant={isMobile ? "h3" : "h2"}
                     component="h1"
-                    fontWeight="bold"
                     sx={{
+                        fontWeight: "bold",
                         background: (theme) =>
                             `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.alt})`,
                         backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
                         textFillColor: "transparent",
+                        WebkitTextFillColor: "transparent",
                         mb: 2,
                     }}
                 >
                     Live Transcripts {devMode ? "(Dev Mode)" : ""}
                 </Typography>
-                <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: "auto" }}>
+                <Typography variant="h6" sx={{ color: "text.secondary", maxWidth: 600, mx: "auto" }}>
                     Select a streamer to view real-time transcripts.
                 </Typography>
             </Box>
 
-            <Grid container spacing={4} justifyContent="center" alignItems="stretch">
+            <Grid container spacing={4} sx={{ width: "100%", justifyContent: "center", alignItems: "stretch" }}>
                 {keyIcons(120).map((streamer, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={streamer.value} sx={{ display: "flex" }}>
+                    <Grid size={{ xs: 12, sm: 6, md: 3 }} key={streamer.value} sx={{ display: "flex" }}>
                         <Fade in={true} timeout={500 + index * 200}>
                             <Card
                                 sx={{
@@ -100,7 +102,7 @@ export default function Home() {
             </Grid>
 
             <Box sx={{ mt: 8, textAlign: "center" }}>
-                <Typography variant="body1" color="text.secondary" gutterBottom>
+                <Typography variant="body1" sx={{ color: "text.secondary", mb: 1 }}>
                     Looking for past streams?
                 </Typography>
                 <Button

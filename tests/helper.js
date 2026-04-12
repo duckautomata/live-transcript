@@ -84,7 +84,11 @@ export async function loadInDevmode(page, pathUrl) {
 
     // Mock Past Transcripts Endpoint
     await page.route("**/transcript/*", async (route) => {
-        await route.fulfill({ json: mockData.pastStreamTranscript || {} });
+        if (route.request().resourceType() === "fetch" || route.request().resourceType() === "xhr") {
+            await route.fulfill({ json: mockData.pastStreamTranscript || {} });
+        } else {
+            await route.fallback();
+        }
     });
 
     function getHeaders(route) {
@@ -94,6 +98,9 @@ export async function loadInDevmode(page, pathUrl) {
     // Mock Images using a local placeholder image
     const mockImageBuffer = await fs.readFile(path.resolve(__dirname, "mocks/mockImage.jpg"));
     await page.route("**/*.{jpg,png,jpeg}*", async (route) => {
+        if (route.request().resourceType() === "script") {
+            return route.fallback();
+        }
         await route.fulfill({
             body: mockImageBuffer,
             contentType: "image/jpeg",
@@ -104,6 +111,9 @@ export async function loadInDevmode(page, pathUrl) {
     // Mock Audio/Video assets
     const mockAudioMp3Buffer = await fs.readFile(path.resolve(__dirname, "mocks/mockAudio.mp3"));
     await page.route("**/*.mp3*", async (route) => {
+        if (route.request().resourceType() === "script") {
+            return route.fallback();
+        }
         await route.fulfill({
             body: mockAudioMp3Buffer,
             contentType: "audio/mpeg",
@@ -113,6 +123,9 @@ export async function loadInDevmode(page, pathUrl) {
 
     const mockAudioM4aBuffer = await fs.readFile(path.resolve(__dirname, "mocks/mockAudio.m4a"));
     await page.route("**/*.m4a*", async (route) => {
+        if (route.request().resourceType() === "script") {
+            return route.fallback();
+        }
         await route.fulfill({
             body: mockAudioM4aBuffer,
             contentType: "audio/mp4",
@@ -122,6 +135,9 @@ export async function loadInDevmode(page, pathUrl) {
 
     const mockVideoMp4Buffer = await fs.readFile(path.resolve(__dirname, "mocks/mockVideo.mp4"));
     await page.route("**/*.mp4*", async (route) => {
+        if (route.request().resourceType() === "script") {
+            return route.fallback();
+        }
         await route.fulfill({
             body: mockVideoMp4Buffer,
             contentType: "video/mp4",

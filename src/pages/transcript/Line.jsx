@@ -190,13 +190,13 @@ const Line = memo(
                     className={highlight ? "highlight" : ""}
                     color="secondary"
                     aria-live="assertive"
-                    padding="1px"
-                    whiteSpace="pre-wrap"
                     align="left"
                     id={id}
                     role="transcript-line"
                     data-testid={`transcript-line-${id}`}
                     sx={{
+                        padding: "1px",
+                        whiteSpace: "pre-wrap",
                         backgroundColor,
                         wordBreak: "break-word",
                         "&:hover": {

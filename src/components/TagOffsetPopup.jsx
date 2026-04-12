@@ -241,7 +241,7 @@ const TagOffsetPopup = ({ wsKey }) => {
                                 Offset Calculator
                             </Typography>
                         )}
-                        <Typography paddingTop={1}>Enter the Message ID of the tag you want to offset.</Typography>
+                        <Typography sx={{ pt: 1 }}>Enter the Message ID of the tag you want to offset.</Typography>
                         <TextField
                             label="Message ID"
                             type="text"
@@ -264,8 +264,7 @@ const TagOffsetPopup = ({ wsKey }) => {
                         {command !== null && (
                             <Typography
                                 variant="body1"
-                                marginTop="16px"
-                                sx={{ bgcolor: "action.hover", p: 1, borderRadius: 1 }}
+                                sx={{ mt: "16px", bgcolor: "action.hover", p: 1, borderRadius: 1 }}
                             >
                                 <span style={{ fontFamily: "monospace" }}>{command}</span>
                             </Typography>

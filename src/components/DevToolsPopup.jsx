@@ -468,8 +468,8 @@ export default function DevToolsPopup({ open, setOpen }) {
 
                 {/* Performance Tab */}
                 <TabPanel value={tabValue} index={1}>
-                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                        <Grid item xs={2.4}>
+                    <Grid container spacing={2} sx={{ width: "100%", mb: 3 }}>
+                        <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
                                 <Typography variant="caption" color="text.secondary">
                                     FPS
@@ -477,7 +477,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 <Typography variant="h6">{fps}</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={2.4}>
+                        <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
                                 <Typography variant="caption" color="text.secondary">
                                     Memory (Used/Total)
@@ -487,7 +487,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 </Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={2.4}>
+                        <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
                                 <Typography variant="caption" color="text.secondary">
                                     Avg Latency
@@ -495,7 +495,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 <Typography variant="h6">{avgLatency} s</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={2.4}>
+                        <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
                                 <Typography variant="caption" color="text.secondary">
                                     Avg Inter-arrival
@@ -503,7 +503,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                                 <Typography variant="h6">{avgJitter} s</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={2.4}>
+                        <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
                                 <Typography variant="caption" color="text.secondary">
                                     Avg Upload Time
