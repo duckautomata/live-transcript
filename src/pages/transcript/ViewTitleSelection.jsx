@@ -154,7 +154,7 @@ export default function ViewTitleSelection() {
                                     {streamTitle || "Live Stream"}
                                 </Typography>
                                 {/* Only show "Live" details if we are actually viewing the live stream in the dropdown item */}
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" sx={{ color: "text.secondary" }}>
                                     {isLive ? "Live" : "Recent Stream"}
                                 </Typography>
                             </Box>
@@ -165,7 +165,7 @@ export default function ViewTitleSelection() {
                                     <Typography variant="body1" sx={{ whiteSpace: "normal", wordBreak: "break-word" }}>
                                         {stream.streamTitle || "Untitled Stream"}
                                     </Typography>
-                                    <Typography variant="caption" color="text.secondary">
+                                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
                                         {`${new Date(stream.startTime * 1000).toLocaleDateString(undefined, {
                                             year: "numeric",
                                             month: "long",

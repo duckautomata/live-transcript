@@ -471,7 +471,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                     <Grid container spacing={2} sx={{ width: "100%", mb: 3 }}>
                         <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" sx={{ color: "text.secondary" }}>
                                     FPS
                                 </Typography>
                                 <Typography variant="h6">{fps}</Typography>
@@ -479,7 +479,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                         </Grid>
                         <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" sx={{ color: "text.secondary" }}>
                                     Memory (Used/Total)
                                 </Typography>
                                 <Typography variant="h6">
@@ -489,7 +489,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                         </Grid>
                         <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" sx={{ color: "text.secondary" }}>
                                     Avg Latency
                                 </Typography>
                                 <Typography variant="h6">{avgLatency} s</Typography>
@@ -497,7 +497,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                         </Grid>
                         <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" sx={{ color: "text.secondary" }}>
                                     Avg Inter-arrival
                                 </Typography>
                                 <Typography variant="h6">{avgJitter} s</Typography>
@@ -505,7 +505,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                         </Grid>
                         <Grid size="grow">
                             <Paper sx={{ p: 2, textAlign: "center" }}>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography variant="caption" sx={{ color: "text.secondary" }}>
                                     Avg Upload Time
                                 </Typography>
                                 <Typography variant="h6">{avgUploadTime} s</Typography>
@@ -524,7 +524,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                             height={250}
                         />
                     ) : (
-                        <Typography color="text.secondary">No data yet</Typography>
+                        <Typography sx={{ color: "text.secondary" }}>No data yet</Typography>
                     )}
 
                     <Typography variant="h6" sx={{ mt: 2 }}>
@@ -538,7 +538,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                             height={250}
                         />
                     ) : (
-                        <Typography color="text.secondary">No data yet</Typography>
+                        <Typography sx={{ color: "text.secondary" }}>No data yet</Typography>
                     )}
 
                     <Typography variant="h6" sx={{ mt: 2 }}>
@@ -554,7 +554,7 @@ export default function DevToolsPopup({ open, setOpen }) {
                             height={250}
                         />
                     ) : (
-                        <Typography color="text.secondary">No data yet</Typography>
+                        <Typography sx={{ color: "text.secondary" }}>No data yet</Typography>
                     )}
                 </TabPanel>
             </DialogContent>

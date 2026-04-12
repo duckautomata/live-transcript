@@ -29,7 +29,9 @@ export default function ViewSkeleton({ serverStatus = "loading" }) {
                     <Typography variant="h5" component="h2" sx={{ mb: 1 }}>
                         Connection Failed
                     </Typography>
-                    <Typography color="text.secondary">Could not establish a connection to the server.</Typography>
+                    <Typography sx={{ color: "text.secondary" }}>
+                        Could not establish a connection to the server.
+                    </Typography>
                 </Box>
             ) : (
                 <Box sx={{ height: "95vh", overflow: "hidden" }}>

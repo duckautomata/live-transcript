@@ -45,7 +45,7 @@ function StatCard({ title, value, icon, color }) {
                         {icon}
                     </Box>
                     <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
                             {title}
                         </Typography>
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>

@@ -21,10 +21,10 @@ export default function Maintenance() {
             <Typography variant="h5" component="h2" sx={{ mb: 1 }}>
                 Live Transcript is currently down for maintenance.
             </Typography>
-            <Typography color="text.secondary">{window.maintenanceText1}</Typography>
-            <Typography color="text.secondary">{window.maintenanceText2}</Typography>
+            <Typography sx={{ color: "text.secondary" }}>{window.maintenanceText1}</Typography>
+            <Typography sx={{ color: "text.secondary" }}>{window.maintenanceText2}</Typography>
             <br />
-            <Typography color="text.secondary">
+            <Typography sx={{ color: "text.secondary" }}>
                 If you want to use the tag fixer, you can find it here:{" "}
                 <Link to="/tagFixer">Click to go to tag fixer</Link>
             </Typography>

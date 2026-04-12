@@ -509,7 +509,7 @@ const ClipperPopup = ({ wsKey }) => {
                         <Typography variant="body1">
                             Creating a clip containing {1 + Math.abs(clipEndIndex - clipStartIndex)} lines.
                         </Typography>
-                        <Typography variant="body2" color="textSecondary">
+                        <Typography variant="body2" sx={{ color: "text.secondary" }}>
                             {infoText}
                         </Typography>
 

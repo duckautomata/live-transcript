@@ -385,11 +385,13 @@ export default function View({ wsKey }) {
                                     <Typography variant="h5" component="h2" sx={{ mb: 1 }}>
                                         No Data Available for {wsKey.charAt(0).toUpperCase() + wsKey.slice(1)}
                                     </Typography>
-                                    <Typography color="text.secondary">No transcript data was found.</Typography>
-                                    <Typography color="text.secondary">
+                                    <Typography sx={{ color: "text.secondary" }}>
+                                        No transcript data was found.
+                                    </Typography>
+                                    <Typography sx={{ color: "text.secondary" }}>
                                         This usually means the database was cleared
                                     </Typography>
-                                    <Typography color="text.secondary">
+                                    <Typography sx={{ color: "text.secondary" }}>
                                         or there has been no streams in the past week.
                                     </Typography>
                                 </>

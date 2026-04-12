@@ -184,7 +184,7 @@ export default function InfoPopup({ open, setOpen }) {
                                                 <TableCell>
                                                     {formatDate(worker.lastSeen)}
                                                     <br />
-                                                    <Typography variant="caption" color="text.secondary">
+                                                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
                                                         {timeAgo(worker.lastSeen)}
                                                     </Typography>
                                                 </TableCell>
