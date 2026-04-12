@@ -91,7 +91,10 @@ export default function ViewTitleSelection() {
                                         <Typography
                                             variant="h5"
                                             component="h5"
-                                            sx={{ color: pastStreamViewing ? orange[500] : "primary.main", wordBreak: "break-word" }}
+                                            sx={{
+                                                color: pastStreamViewing ? orange[500] : "primary.main",
+                                                wordBreak: "break-word",
+                                            }}
                                         >
                                             {titleText}
                                         </Typography>

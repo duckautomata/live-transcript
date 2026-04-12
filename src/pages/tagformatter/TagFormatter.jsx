@@ -104,7 +104,9 @@ const TagRow = memo(
                                         placeholder="00:00"
                                         sx={{ width: "60px", mr: 1 }}
                                         slotProps={{
-                                            htmlInput: { style: { textAlign: "right", fontWeight: "bold", color: "inherit" } },
+                                            htmlInput: {
+                                                style: { textAlign: "right", fontWeight: "bold", color: "inherit" },
+                                            },
                                         }}
                                         onKeyDown={handleKeyDown}
                                     />
@@ -117,7 +119,9 @@ const TagRow = memo(
                                     fullWidth
                                     onKeyDown={handleKeyDown}
                                     slotProps={{
-                                        htmlInput: { style: { textAlign: "center", fontWeight: "bold", color: "inherit" } },
+                                        htmlInput: {
+                                            style: { textAlign: "center", fontWeight: "bold", color: "inherit" },
+                                        },
                                     }}
                                 />
                             </>

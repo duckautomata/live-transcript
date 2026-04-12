@@ -144,7 +144,7 @@ export default function StreamWordCount() {
                                     </IconButton>
                                 </InputAdornment>
                             ),
-                        }
+                        },
                     }}
                 />
 
