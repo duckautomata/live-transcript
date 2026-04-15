@@ -68,6 +68,8 @@ const ClipperPopup = ({ wsKey }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [trimRegion, setTrimRegion] = useState({ start: 0, end: 0 });
     const [duration, setDuration] = useState(0);
+    const [startInput, setStartInput] = useState("0");
+    const [endInput, setEndInput] = useState("0");
 
     const activeMediaType = useMemo(() => {
         if (pastStreamViewing) {
@@ -196,41 +198,31 @@ const ClipperPopup = ({ wsKey }) => {
                 resize: true,
             });
             setTrimRegion({ start: 0, end: duration });
+            setStartInput("0");
+            setEndInput(duration.toFixed(2));
         }
     };
 
-    const handleManualStartChange = (e) => {
-        const val = parseFloat(e.target.value);
-        if (isNaN(val) || val < 0) return;
-
-        // If trying to go past end, clamp or ignore?
-        // Best to just ignore invalid updates that cross over
-        if (val >= trimRegion.end) return;
-
+    const handleStartBlur = () => {
+        const val = parseFloat(startInput);
+        if (isNaN(val) || val < 0 || val >= trimRegion.end) {
+            setStartInput(trimRegion.start.toFixed(2));
+            return;
+        }
         setTrimRegion((prev) => ({ ...prev, start: val }));
-
-        if (regions.current) {
-            const region = regions.current.getRegions()[0];
-            if (region) {
-                region.setOptions({ start: val });
-            }
-        }
+        const region = regions.current?.getRegions()[0];
+        if (region) region.setOptions({ start: val });
     };
 
-    const handleManualEndChange = (e) => {
-        const val = parseFloat(e.target.value);
-        if (isNaN(val) || val > duration) return;
-
-        if (val <= trimRegion.start) return;
-
-        setTrimRegion((prev) => ({ ...prev, end: val }));
-
-        if (regions.current) {
-            const region = regions.current.getRegions()[0];
-            if (region) {
-                region.setOptions({ end: val });
-            }
+    const handleEndBlur = () => {
+        const val = parseFloat(endInput);
+        if (isNaN(val) || val > duration || val <= trimRegion.start) {
+            setEndInput(trimRegion.end.toFixed(2));
+            return;
         }
+        setTrimRegion((prev) => ({ ...prev, end: val }));
+        const region = regions.current?.getRegions()[0];
+        if (region) region.setOptions({ end: val });
     };
 
     const handleReset = () => {
@@ -338,11 +330,15 @@ const ClipperPopup = ({ wsKey }) => {
                     resize: true,
                 });
                 setTrimRegion({ start: 0, end: dur });
+                setStartInput("0");
+                setEndInput(dur.toFixed(2));
                 setIsLoaded(true);
             });
 
             wsRegions.on("region-updated", (region) => {
                 setTrimRegion({ start: region.start, end: region.end });
+                setStartInput(region.start.toFixed(2));
+                setEndInput(region.end.toFixed(2));
             });
 
             wsRegions.on("region-clicked", (region, e) => {
@@ -405,6 +401,7 @@ const ClipperPopup = ({ wsKey }) => {
                     if (currentTime < region.end) {
                         region.setOptions({ start: currentTime });
                         setTrimRegion({ start: currentTime, end: region.end });
+                        setStartInput(currentTime.toFixed(2));
                     }
                 }
             } else if (e.code === "KeyD") {
@@ -419,6 +416,7 @@ const ClipperPopup = ({ wsKey }) => {
                     if (currentTime > region.start) {
                         region.setOptions({ end: currentTime });
                         setTrimRegion({ start: region.start, end: currentTime });
+                        setEndInput(currentTime.toFixed(2));
                     }
                 }
             } else if (e.code === "KeyR") {
@@ -437,6 +435,8 @@ const ClipperPopup = ({ wsKey }) => {
                         resize: true,
                     });
                     setTrimRegion({ start: 0, end: dur });
+                    setStartInput("0");
+                    setEndInput(dur.toFixed(2));
                 }
             } else if (e.code === "ArrowLeft") {
                 e.preventDefault();
@@ -456,6 +456,8 @@ const ClipperPopup = ({ wsKey }) => {
                         if (region.start > 0) {
                             region.setOptions({ start: newStart, end: newEnd });
                             setTrimRegion({ start: newStart, end: newEnd });
+                            setStartInput(newStart.toFixed(2));
+                            setEndInput(newEnd.toFixed(2));
                         }
                     }
                 } else {
@@ -480,6 +482,8 @@ const ClipperPopup = ({ wsKey }) => {
                         if (region.end < dur) {
                             region.setOptions({ start: newStart, end: newEnd });
                             setTrimRegion({ start: newStart, end: newEnd });
+                            setStartInput(newStart.toFixed(2));
+                            setEndInput(newEnd.toFixed(2));
                         }
                     }
                 } else {
@@ -638,8 +642,9 @@ const ClipperPopup = ({ wsKey }) => {
                                         label="Start"
                                         type="number"
                                         size="small"
-                                        value={trimRegion.start}
-                                        onChange={handleManualStartChange}
+                                        value={startInput}
+                                        onChange={(e) => setStartInput(e.target.value)}
+                                        onBlur={handleStartBlur}
                                         slotProps={{ htmlInput: { step: 0.01, min: 0, max: trimRegion.end } }}
                                         sx={{ width: 100 }}
                                     />
@@ -647,8 +652,9 @@ const ClipperPopup = ({ wsKey }) => {
                                         label="End"
                                         type="number"
                                         size="small"
-                                        value={trimRegion.end}
-                                        onChange={handleManualEndChange}
+                                        value={endInput}
+                                        onChange={(e) => setEndInput(e.target.value)}
+                                        onBlur={handleEndBlur}
                                         slotProps={{ htmlInput: { step: 0.01, min: trimRegion.start, max: duration } }}
                                         sx={{ width: 100 }}
                                     />
@@ -698,6 +704,15 @@ const ClipperPopup = ({ wsKey }) => {
                             </Box>{" "}
                             (Reset)
                         </Typography>
+                        {fileFormat === "mp4" && (
+                            <Typography
+                                variant="caption"
+                                sx={{ display: "block", textAlign: "center", color: "warning.main" }}
+                            >
+                                Video trims may not be frame-accurate. The start of the clip may be slightly earlier
+                                than selected due to video keyframe alignment.
+                            </Typography>
+                        )}
                         {creationError && (
                             <Typography variant="body2" color="error" sx={{ mt: 1, textAlign: "center" }}>
                                 {creationError}
