@@ -41,6 +41,7 @@ export default function Home() {
                 <Typography
                     variant={isMobile ? "h3" : "h2"}
                     component="h1"
+                    data-testid="home-title"
                     sx={{
                         fontWeight: "bold",
                         background: (theme) =>
@@ -52,7 +53,7 @@ export default function Home() {
                         mb: 2,
                     }}
                 >
-                    Live Transcripts {devMode ? "(Dev Mode)" : ""}
+                    {import.meta.env.VITE_UI_TITLE} {devMode ? "(Dev Mode)" : ""}
                 </Typography>
                 <Typography variant="h6" sx={{ color: "text.secondary", maxWidth: 600, mx: "auto" }}>
                     Select a streamer to view real-time transcripts.

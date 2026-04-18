@@ -102,6 +102,19 @@ export default function InfoPopup({ open, setOpen }) {
         return data.workers.filter((worker) => usableKeys.includes(worker.channelKey));
     }, [data, usableKeys]);
 
+    const uiChipColor =
+        import.meta.env.VITE_ENVIRONMENT === "prod"
+            ? "success"
+            : import.meta.env.VITE_ENVIRONMENT === "dev"
+              ? "warning"
+              : "default";
+    const serverChipColor = data?.server?.version === "dev" ? "warning" : "primary";
+    const workerChipColor = (worker) => {
+        if (worker.workerVersion === "dev") return "warning";
+        if (worker.workerVersion === "N/A") return "default";
+        return "primary";
+    };
+
     return (
         <Dialog open={open} onClose={handleClose} aria-labelledby="info-dialog-title" maxWidth="md" fullWidth>
             <DialogTitle id="info-dialog-title">System Info</DialogTitle>
@@ -124,6 +137,19 @@ export default function InfoPopup({ open, setOpen }) {
                                 UI
                             </Typography>
                             <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+                                <Typography
+                                    variant="body1"
+                                    component="div"
+                                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                                >
+                                    <strong>Environment:</strong>
+                                    <Chip
+                                        label={import.meta.env.VITE_ENVIRONMENT || "unknown"}
+                                        size="small"
+                                        color={uiChipColor}
+                                        sx={{ textTransform: "capitalize", fontWeight: "bold" }}
+                                    />
+                                </Typography>
                                 <Typography variant="body1">
                                     <strong>Build Time:</strong> {formatDate(__BUILD_TIME__)}
                                 </Typography>
@@ -136,8 +162,19 @@ export default function InfoPopup({ open, setOpen }) {
                                 Server
                             </Typography>
                             <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
-                                <Typography variant="body1">
-                                    <strong>Version:</strong> {data.server?.version || "Unknown"}
+                                <Typography
+                                    variant="body1"
+                                    component="div"
+                                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                                >
+                                    <strong>Version:</strong>
+                                    <Chip
+                                        label={data.server?.version || "Unknown"}
+                                        size="small"
+                                        variant="outlined"
+                                        color={serverChipColor}
+                                        sx={{ fontWeight: "bold" }}
+                                    />
                                 </Typography>
                                 <Typography variant="body1">
                                     <strong>Build Time:</strong> {formatDate(data.server?.buildTime)}
@@ -188,7 +225,15 @@ export default function InfoPopup({ open, setOpen }) {
                                                         {timeAgo(worker.lastSeen)}
                                                     </Typography>
                                                 </TableCell>
-                                                <TableCell>{worker.workerVersion}</TableCell>
+                                                <TableCell>
+                                                    <Chip
+                                                        label={worker.workerVersion || "Unknown"}
+                                                        size="small"
+                                                        variant="outlined"
+                                                        color={workerChipColor(worker)}
+                                                        sx={{ fontWeight: "bold" }}
+                                                    />
+                                                </TableCell>
                                                 <TableCell>{formatDate(worker.workerBuildTime)}</TableCell>
                                             </TableRow>
                                         ))}

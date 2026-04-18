@@ -4,7 +4,7 @@ import { takeScreenshots } from "./helper";
 test.describe("homepage", () => {
     test("can load", async ({ page }, testInfo) => {
         await page.goto("");
-        await expect(page.getByText("Live Transcripts")).toBeVisible();
+        await expect(page.getByTestId("home-title")).toBeVisible();
         await takeScreenshots(page, testInfo, "home");
     });
 
