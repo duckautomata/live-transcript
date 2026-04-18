@@ -53,7 +53,7 @@ export default function Home() {
                         mb: 2,
                     }}
                 >
-                    {import.meta.env.VITE_UI_TITLE} {devMode ? "(Dev Mode)" : ""}
+                    Live Transcripts
                 </Typography>
                 <Typography variant="h6" sx={{ color: "text.secondary", maxWidth: 600, mx: "auto" }}>
                     Select a streamer to view real-time transcripts.
@@ -61,7 +61,7 @@ export default function Home() {
             </Box>
 
             <Grid container spacing={4} sx={{ width: "100%", justifyContent: "center", alignItems: "stretch" }}>
-                {keyIcons(120).map((streamer, index) => (
+                {keyIcons(120, devMode).map((streamer, index) => (
                     <Grid size={{ xs: 12, sm: 6, md: 3 }} key={streamer.value} sx={{ display: "flex" }}>
                         <Fade in={true} timeout={500 + index * 200}>
                             <Card

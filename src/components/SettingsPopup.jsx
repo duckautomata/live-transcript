@@ -20,7 +20,9 @@ import { useAppStore } from "../store/store";
  * @param {boolean} props.open - Whether the dialog is open.
  * @param {function(boolean): void} props.setOpen - Callback to change the open state.
  */
-const SettingsPopup = ({ open, setOpen }) => {
+const SettingsPopup = () => {
+    const settingsOpen = useAppStore((state) => state.settingsOpen);
+    const setSettingsOpen = useAppStore((state) => state.setSettingsOpen);
     const theme = useAppStore((state) => state.theme);
     const density = useAppStore((state) => state.density);
     const timeFormat = useAppStore((state) => state.timeFormat);
@@ -36,11 +38,11 @@ const SettingsPopup = ({ open, setOpen }) => {
     const setDevMode = useAppStore((state) => state.setDevMode);
 
     const handleClose = () => {
-        setOpen(false);
+        setSettingsOpen(false);
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+        <Dialog open={settingsOpen} onClose={handleClose} maxWidth="xs" fullWidth>
             <DialogTitle>Settings</DialogTitle>
             <DialogContent>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>

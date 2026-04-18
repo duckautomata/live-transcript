@@ -17,6 +17,11 @@ import StreamWordCount from "./pages/graph/StreamWordCount";
 import CensorPage from "./pages/single/CensorPage";
 import Home from "./pages/single/Home";
 import { useTagIntegration } from "./hooks/useTagIntegration";
+import EnvironmentBadge from "./components/EnvironmentBadge";
+import SettingsPopup from "./components/SettingsPopup";
+import HelpPopup from "./components/HelpPopup";
+import InfoPopup from "./components/InfoPopup";
+import DevToolsPopup from "./components/DevToolsPopup";
 
 /**
  * The root application component.
@@ -25,6 +30,7 @@ import { useTagIntegration } from "./hooks/useTagIntegration";
 function App() {
     const location = useLocation();
     const theme = useAppStore((state) => state.theme);
+    const devMode = useAppStore((state) => state.devMode);
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
     let colorTheme = prefersDarkMode ? darkTheme : lightTheme;
     if (theme === "light") {
@@ -32,14 +38,16 @@ function App() {
     } else if (theme === "dark") {
         colorTheme = darkTheme;
     }
+
     const pathSegment = location.pathname.split("/")[1];
-    const wsKey = keys().find((k) => k === pathSegment);
+    const wsKey = keys(devMode).find((k) => k === pathSegment);
 
     useTagIntegration(wsKey);
 
     return (
         <ThemeProvider theme={colorTheme}>
             <CssBaseline />
+            <EnvironmentBadge />
             <UpdateAlert />
             {window.maintenance ? (
                 <Routes>
@@ -69,6 +77,10 @@ function App() {
                     </Sidebar>
                 </>
             )}
+            <SettingsPopup />
+            <HelpPopup />
+            <InfoPopup />
+            <DevToolsPopup />
         </ThemeProvider>
     );
 }

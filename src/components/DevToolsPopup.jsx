@@ -40,7 +40,9 @@ const TabPanel = (props) => {
     );
 };
 
-export default function DevToolsPopup({ open, setOpen }) {
+export default function DevToolsPopup() {
+    const devToolsOpen = useAppStore((state) => state.devToolsOpen);
+    const setDevToolsOpen = useAppStore((state) => state.setDevToolsOpen);
     const [tabValue, setTabValue] = useState(0);
 
     // Store Access
@@ -83,7 +85,7 @@ export default function DevToolsPopup({ open, setOpen }) {
     const [memory, setMemory] = useState({ used: 0, total: 0 });
 
     // Handlers
-    const handleClose = () => setOpen(false);
+    const handleClose = () => setDevToolsOpen(false);
     const handleTabChange = (event, newValue) => setTabValue(newValue);
 
     const handleClearTranscript = () => {
@@ -172,7 +174,7 @@ export default function DevToolsPopup({ open, setOpen }) {
 
     // Performance Stats Effect (FPS & Memory)
     useEffect(() => {
-        if (!open || tabValue !== 1) return;
+        if (!devToolsOpen || tabValue !== 1) return;
 
         let frameCount = 0;
         let lastTime = performance.now();
@@ -207,7 +209,7 @@ export default function DevToolsPopup({ open, setOpen }) {
             cancelAnimationFrame(animationFrameId);
             clearInterval(statsInterval);
         };
-    }, [open, tabValue]);
+    }, [devToolsOpen, tabValue]);
 
     // Chart Data Preparation
     const now = Date.now();
@@ -241,7 +243,7 @@ export default function DevToolsPopup({ open, setOpen }) {
         uploadTimeData.length > 0 ? (uploadTimeData.reduce((a, b) => a + b, 0) / uploadTimeData.length).toFixed(3) : 0;
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <Dialog open={devToolsOpen} onClose={handleClose} maxWidth="md" fullWidth>
             <DialogTitle data-testid="devtools-title">Dev Tools</DialogTitle>
             <DialogContent>
                 <Box sx={{ borderBottom: 1, borderColor: "divider" }}>

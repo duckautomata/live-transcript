@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useAppStore } from "../store/store";
 import {
     Box,
     Button,
@@ -67,13 +68,15 @@ const timeAgo = (timestamp) => {
     return `${diffInDays} days ago`;
 };
 
-export default function InfoPopup({ open, setOpen }) {
+export default function InfoPopup() {
+    const infoOpen = useAppStore((state) => state.infoOpen);
+    const setInfoOpen = useAppStore((state) => state.setInfoOpen);
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (open) {
+        if (infoOpen) {
             fetch(`${server}/status`)
                 .then((res) => {
                     if (!res.ok) {
@@ -90,10 +93,10 @@ export default function InfoPopup({ open, setOpen }) {
                     setLoading(false);
                 });
         }
-    }, [open]);
+    }, [infoOpen]);
 
     const handleClose = () => {
-        setOpen(false);
+        setInfoOpen(false);
     };
 
     const usableKeys = keys();
@@ -116,7 +119,7 @@ export default function InfoPopup({ open, setOpen }) {
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} aria-labelledby="info-dialog-title" maxWidth="md" fullWidth>
+        <Dialog open={infoOpen} onClose={handleClose} aria-labelledby="info-dialog-title" maxWidth="md" fullWidth>
             <DialogTitle id="info-dialog-title">System Info</DialogTitle>
             <DialogContent>
                 {loading && (
@@ -136,7 +139,7 @@ export default function InfoPopup({ open, setOpen }) {
                             <Typography variant="h6" gutterBottom>
                                 UI
                             </Typography>
-                            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1 }}>
                                 <Typography
                                     variant="body1"
                                     component="div"
@@ -161,7 +164,7 @@ export default function InfoPopup({ open, setOpen }) {
                             <Typography variant="h6" gutterBottom>
                                 Server
                             </Typography>
-                            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+                            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1 }}>
                                 <Typography
                                     variant="body1"
                                     component="div"

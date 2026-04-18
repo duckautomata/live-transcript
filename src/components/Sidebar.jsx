@@ -10,16 +10,12 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import HelpPopup from "./HelpPopup";
-import SettingsPopup from "./SettingsPopup";
 import { Construction, GitHub, Help, Home, DeveloperMode, Info } from "@mui/icons-material";
-import InfoPopup from "./InfoPopup";
 import { Tooltip, useMediaQuery } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import AudioFooter from "./AudioFooter";
 import { keyIcons } from "../config";
 import { useAppStore } from "../store/store";
-import DevToolsPopup from "./DevToolsPopup";
 
 /**
  * The main application sidebar containing navigation and streamers list.
@@ -40,10 +36,10 @@ export default function Sidebar({ wsKey, children }) {
     const devMode = useAppStore((state) => state.devMode);
 
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [helpOpen, setHelpOpen] = useState(false);
-    const [infoOpen, setInfoOpen] = useState(false);
-    const [settingsOpen, setSettingsOpen] = useState(false);
-    const [devToolsOpen, setDevToolsOpen] = useState(false);
+    const setHelpOpen = useAppStore((state) => state.setHelpOpen);
+    const setInfoOpen = useAppStore((state) => state.setInfoOpen);
+    const setSettingsOpen = useAppStore((state) => state.setSettingsOpen);
+    const setDevToolsOpen = useAppStore((state) => state.setDevToolsOpen);
     const [width, setWidth] = useState(window.innerWidth);
     const isMobile = useMediaQuery("(max-width:768px)");
     const drawerWidth = isMobile ? 180 : 200; // Slightly wider on mobile for better touch targets if needed, or keep same.
@@ -175,7 +171,7 @@ export default function Sidebar({ wsKey, children }) {
                     },
                 }}
             >
-                <Box sx={{ overflow: "hidden" }}>
+                <Box sx={{ overflowY: "auto", overflowX: "hidden", height: "100%" }}>
                     <List>
                         {/* Collapse/Expand Button */}
                         <ListItem disablePadding>
@@ -222,7 +218,7 @@ export default function Sidebar({ wsKey, children }) {
                                     primary="Transcripts"
                                     sx={{ ml: 1, display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none" }}
                                 />
-                                {keyIcons(32)
+                                {keyIcons(32, devMode)
                                     .filter((streamer) => streamer.value === wsKey)
                                     .map((streamer) => (
                                         <ListItem key={streamer.value} disablePadding>
@@ -449,10 +445,6 @@ export default function Sidebar({ wsKey, children }) {
                             </Tooltip>
                         </ListItem>
                     </List>
-                    <SettingsPopup open={settingsOpen} setOpen={setSettingsOpen} />
-                    <HelpPopup open={helpOpen} setOpen={setHelpOpen} />
-                    <InfoPopup open={infoOpen} setOpen={setInfoOpen} />
-                    <DevToolsPopup open={devToolsOpen} setOpen={setDevToolsOpen} />
                 </Box>
             </Drawer>
             <Box

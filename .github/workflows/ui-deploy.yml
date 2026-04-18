@@ -58,8 +58,8 @@ jobs:
 
             - name: Build Static Files
               env:
-                  VITE_UI_TITLE: "Live Transcripts"
-                  VITE_PAGE_TITLE: "Live Transcripts"
+                  VITE_PAGE_TITLE: "Live Transcript"
+                  VITE_SUB_DOMAIN: "www"
                   VITE_API_URL: "https://api.duck-automata.com/live"
                   VITE_WS_URL: "wss://api.duck-automata.com/live"
                   VITE_ENVIRONMENT: "prod"

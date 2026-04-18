@@ -1,7 +1,6 @@
 import dokiIcon from "./assets/icons/doki.jpg";
 import mintIcon from "./assets/icons/mint.jpg";
 import { Avatar } from "@mui/material";
-import { useAppStore } from "./store/store";
 import { Engineering } from "@mui/icons-material";
 
 /** @type {string} */
@@ -10,7 +9,7 @@ export const server = import.meta.env.VITE_API_URL;
 export const wsServer = import.meta.env.VITE_WS_URL;
 export const maxClipSize = 40;
 
-export const keyIcons = (size) => {
+export const keyIcons = (size, devMode = false) => {
     const icons = [
         {
             name: "Doki",
@@ -26,7 +25,7 @@ export const keyIcons = (size) => {
         },
     ];
 
-    if (useAppStore.getState().devMode) {
+    if (devMode) {
         icons.push({
             name: "Test",
             icon: (
@@ -57,8 +56,8 @@ export const keyIcons = (size) => {
     }
 };
 
-export const keys = () => {
-    const keys = keyIcons(120).map((streamer) => streamer.value);
+export const keys = (devMode = false) => {
+    const keys = keyIcons(120, devMode).map((streamer) => streamer.value);
 
     return keys;
 };

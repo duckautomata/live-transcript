@@ -115,6 +115,10 @@ export interface SettingsSlice {
     membershipKey: string;
     membershipInfo: { channel: string; expiresAt: string } | null;
     useVirtualList: boolean;
+    infoOpen: boolean;
+    helpOpen: boolean;
+    settingsOpen: boolean;
+    devToolsOpen: boolean;
     setTheme: (theme: SettingsSlice["theme"]) => void;
     setDensity: (density: SettingsSlice["density"]) => void;
     setTimeFormat: (format: SettingsSlice["timeFormat"]) => void;
@@ -126,6 +130,10 @@ export interface SettingsSlice {
     setMembershipKey: (key: string) => void;
     setMembershipInfo: (info: SettingsSlice["membershipInfo"]) => void;
     setUseVirtualList: (value: boolean) => void;
+    setInfoOpen: (isOpen: boolean) => void;
+    setHelpOpen: (isOpen: boolean) => void;
+    setSettingsOpen: (isOpen: boolean) => void;
+    setDevToolsOpen: (isOpen: boolean) => void;
 }
 
 export interface PerformanceMetric {
