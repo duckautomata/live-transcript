@@ -53,6 +53,17 @@ export interface LineMenuSlice {
     setLineMenuId: (id: number) => void;
 }
 
+export interface OpenSlice {
+    infoOpen: boolean;
+    helpOpen: boolean;
+    settingsOpen: boolean;
+    devToolsOpen: boolean;
+    setInfoOpen: (isOpen: boolean) => void;
+    setHelpOpen: (isOpen: boolean) => void;
+    setSettingsOpen: (isOpen: boolean) => void;
+    setDevToolsOpen: (isOpen: boolean) => void;
+}
+
 export interface TagPopupSlice {
     tagPopupOpen: boolean;
     tagPopupTimestamp: number;
@@ -115,10 +126,6 @@ export interface SettingsSlice {
     membershipKey: string;
     membershipInfo: { channel: string; expiresAt: string } | null;
     useVirtualList: boolean;
-    infoOpen: boolean;
-    helpOpen: boolean;
-    settingsOpen: boolean;
-    devToolsOpen: boolean;
     setTheme: (theme: SettingsSlice["theme"]) => void;
     setDensity: (density: SettingsSlice["density"]) => void;
     setTimeFormat: (format: SettingsSlice["timeFormat"]) => void;
@@ -130,10 +137,6 @@ export interface SettingsSlice {
     setMembershipKey: (key: string) => void;
     setMembershipInfo: (info: SettingsSlice["membershipInfo"]) => void;
     setUseVirtualList: (value: boolean) => void;
-    setInfoOpen: (isOpen: boolean) => void;
-    setHelpOpen: (isOpen: boolean) => void;
-    setSettingsOpen: (isOpen: boolean) => void;
-    setDevToolsOpen: (isOpen: boolean) => void;
 }
 
 export interface PerformanceMetric {
@@ -153,18 +156,6 @@ export interface PerformanceSlice {
     clearMetrics: () => void;
 }
 
-// The combined store type
-export type AppStore = AudioSlice &
-    ClipperSlice &
-    LineMenuSlice &
-    TagPopupSlice &
-    ServerSlice &
-    TranscriptSlice &
-    SettingsSlice &
-    PerformanceSlice &
-    TagFormatterSlice &
-    PastStreamSlice;
-
 export interface TagFormatterSlice {
     formattedRows: any[];
     controls: Record<string, any>;
@@ -173,6 +164,19 @@ export interface TagFormatterSlice {
     setControls: (controls: Record<string, any>) => void;
     setInputTags: (tags: string) => void;
 }
+
+// The combined store type
+export type AppStore = AudioSlice &
+    ClipperSlice &
+    LineMenuSlice &
+    OpenSlice &
+    TagPopupSlice &
+    ServerSlice &
+    TranscriptSlice &
+    SettingsSlice &
+    PerformanceSlice &
+    TagFormatterSlice &
+    PastStreamSlice;
 
 // Helper type for creating slices
 export type AppSliceCreator<T> = StateCreator<AppStore, [], [], T>;

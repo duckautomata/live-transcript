@@ -5,6 +5,7 @@ import { AppStore } from "./types";
 import { createAudioSlice } from "./audioSlice";
 import { createClipperSlice } from "./clipperSlice";
 import { createLineMenuSlice } from "./lineMenuSlice";
+import { createOpenSlice } from "./openSlice";
 import { createTagPopupSlice } from "./tagPopupSlice";
 import { createServerSlice } from "./serverSlice";
 import { createTranscriptSlice } from "./transcriptSlice";
@@ -19,6 +20,7 @@ export const useAppStore = create<AppStore>()(
             ...createAudioSlice(set, get, api),
             ...createClipperSlice(set, get, api),
             ...createLineMenuSlice(set, get, api),
+            ...createOpenSlice(set, get, api),
             ...createTagPopupSlice(set, get, api),
             ...createServerSlice(set, get, api),
             ...createTranscriptSlice(set, get, api),
