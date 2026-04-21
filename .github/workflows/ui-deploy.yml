@@ -57,12 +57,6 @@ jobs:
                   reporter: jest-junit
 
             - name: Build Static Files
-              env:
-                  VITE_PAGE_TITLE: "Live Transcript"
-                  VITE_SUB_DOMAIN: "www"
-                  VITE_API_URL: "https://api.duck-automata.com/live"
-                  VITE_WS_URL: "wss://api.duck-automata.com/live"
-                  VITE_ENVIRONMENT: "prod"
               run: npm run build
 
             - name: Deploy to Cloudflare

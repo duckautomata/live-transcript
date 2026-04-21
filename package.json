@@ -28,7 +28,7 @@
         "react": "^19.2.5",
         "react-dom": "^19.2.5",
         "react-h5-audio-player": "^3.10.2",
-        "react-router-dom": "^7.14.1",
+        "react-router-dom": "^7.14.2",
         "react-use-websocket": "^4.13.0",
         "react-virtuoso": "^4.18.5",
         "wavesurfer.js": "^7.12.6",
@@ -40,11 +40,11 @@
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
         "esbuild": "^0.28.0",
-        "oxfmt": "^0.45.0",
-        "oxlint": "^1.60.0",
+        "oxfmt": "^0.46.0",
+        "oxlint": "^1.61.0",
         "playwright": "^1.59.1",
         "vite": "^8.0.9",
-        "vitest": "^4.1.4",
-        "wrangler": "^4.83.0"
+        "vitest": "^4.1.5",
+        "wrangler": "^4.84.1"
     }
 }
