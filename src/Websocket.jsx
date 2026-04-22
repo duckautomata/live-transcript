@@ -336,7 +336,7 @@ export const Websocket = ({ wsKey }) => {
             timestamp: timestamp,
             segments: segments,
             mediaAvailable: mediaAvailable,
-            vodAccurate: vodAccurate
+            vodAccurate: vodAccurate,
         };
 
         addTranscriptLine(newLine);

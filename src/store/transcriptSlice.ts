@@ -46,9 +46,7 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
         set((state) => {
             const idSet = new Set(ids);
             return {
-                transcript: state.transcript.map((line) =>
-                    idSet.has(line.id) ? { ...line, vodAccurate } : line,
-                ),
+                transcript: state.transcript.map((line) => (idSet.has(line.id) ? { ...line, vodAccurate } : line)),
             };
         });
     },
