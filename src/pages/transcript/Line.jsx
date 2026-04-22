@@ -39,11 +39,12 @@ const loadingAnimation = keyframes`
  * @param {Segment[]} props.segments - The segments of the line.
  * @param {boolean} [props.highlight] - Whether to highlight the line.
  * @param {boolean} [props.mediaAvailable] - Whether media is available for this line.
+ * @param {boolean} [props.vodAccurate] - Whether the line timestamp matches the VOD precisely.
  */
 const Line = memo(
     forwardRef(
         /**
-         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean, startTime?: number }} props
+         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean, vodAccurate?: boolean, startTime?: number }} props
          * @param {Ref} ref
          */
         ({ id, lineTimestamp, segments, highlight, tagsMap, startTime, ...props }, ref) => {
@@ -65,6 +66,7 @@ const Line = memo(
             const effectiveStartTime = startTime ?? storeStartTime;
 
             const isMediaMissing = mediaType !== "none" && props.mediaAvailable === false;
+            const isTimestampApproximated = props.vodAccurate === false;
 
             const {
                 isSelected,
@@ -242,11 +244,28 @@ const Line = memo(
                             )}
                         </IconButton>
                     </Tooltip>{" "}
-                    [
-                    <TimestampTheme theme={theme} style={{ color: timestampColor }}>
-                        {convertTime(lineTimestamp)}
-                    </TimestampTheme>
-                    ]{" "}
+                    <Tooltip
+                        title={
+                            isTimestampApproximated
+                                ? "Timestamp is approximated and may not align precisely with the VOD"
+                                : ""
+                        }
+                    >
+                        <span data-testid={isTimestampApproximated ? `line-timestamp-${id}-approx` : undefined}>
+                            [
+                            <TimestampTheme
+                                theme={theme}
+                                style={{
+                                    color: timestampColor,
+                                    opacity: isTimestampApproximated ? 0.75 : 1,
+                                }}
+                            >
+                                {isTimestampApproximated ? "≈" : ""}
+                                {convertTime(lineTimestamp)}
+                            </TimestampTheme>
+                            ]
+                        </span>
+                    </Tooltip>{" "}
                     {hasSegments ? (
                         segments.map((segment, index) => {
                             const segmentTags = tagsMap?.get(`${id}_${index}`);

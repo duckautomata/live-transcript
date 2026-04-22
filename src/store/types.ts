@@ -12,6 +12,7 @@ export interface TranscriptLine {
     segments: Segment[];
     timestamp: number;
     mediaAvailable?: boolean;
+    vodAccurate?: boolean;
 }
 
 export interface StreamInfo {
@@ -100,6 +101,7 @@ export interface TranscriptSlice {
     setTranscript: (data: TranscriptLine[]) => void;
     addTranscriptLine: (newLine: TranscriptLine) => void;
     updateLineMedia: (streamId: string, files: Files, available?: boolean) => void;
+    updateLineVodAccurate: (ids: number[], vodAccurate: boolean) => void;
     resetTranscript: () => void;
 }
 

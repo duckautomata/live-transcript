@@ -320,7 +320,7 @@ export const Websocket = ({ wsKey }) => {
         lastReceiveTime.current = now;
         setLastLineReceivedAt(now);
 
-        const { lineId, timestamp, uploadTime, segments, mediaAvailable } = data;
+        const { lineId, timestamp, uploadTime, segments, mediaAvailable, vodAccurate } = data;
 
         addMetric({
             type: "line",
@@ -336,6 +336,7 @@ export const Websocket = ({ wsKey }) => {
             timestamp: timestamp,
             segments: segments,
             mediaAvailable: mediaAvailable,
+            vodAccurate: vodAccurate
         };
 
         addTranscriptLine(newLine);

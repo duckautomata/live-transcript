@@ -50,6 +50,7 @@ export default function DevToolsPopup() {
     const resetTranscript = useAppStore((state) => state.resetTranscript);
     const addTranscriptLine = useAppStore((state) => state.addTranscriptLine);
     const updateLineMedia = useAppStore((state) => state.updateLineMedia);
+    const updateLineVodAccurate = useAppStore((state) => state.updateLineVodAccurate);
     const recalculateClipRange = useAppStore((state) => state.recalculateClipRange);
     const setTranscript = useAppStore((state) => state.setTranscript);
     const metrics = useAppStore((state) => state.metrics);
@@ -79,6 +80,10 @@ export default function DevToolsPopup() {
     // Media Availability State
     const [mediaIds, setMediaIds] = useState("");
     const [mediaAvailable, setMediaAvailable] = useState(true);
+
+    // VOD Accuracy State
+    const [vodIds, setVodIds] = useState("");
+    const [vodAccurate, setVodAccurate] = useState(true);
 
     // Performance Metrics State
     const [fps, setFps] = useState(0);
@@ -169,6 +174,17 @@ export default function DevToolsPopup() {
             });
             updateLineMedia(selectedId, files, mediaAvailable);
             recalculateClipRange();
+        }
+    };
+
+    const handleSetVodAccurate = () => {
+        const ids = vodIds
+            .split(",")
+            .map((id) => parseInt(id.trim()))
+            .filter((id) => !isNaN(id));
+
+        if (ids.length > 0) {
+            updateLineVodAccurate(ids, vodAccurate);
         }
     };
 
@@ -438,6 +454,37 @@ export default function DevToolsPopup() {
                                     data-testid="devtools-set-media-availability"
                                     variant="contained"
                                     onClick={handleSetMediaAvailability}
+                                >
+                                    Set
+                                </Button>
+                            </Box>
+                        </Box>
+
+                        <Box sx={{ border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
+                            <Typography variant="h6">VOD Accuracy</Typography>
+                            <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+                                <TextField
+                                    data-testid="devtools-vod-ids"
+                                    label="Line IDs (comma-separated)"
+                                    size="small"
+                                    value={vodIds}
+                                    onChange={(e) => setVodIds(e.target.value)}
+                                    sx={{ flexGrow: 1 }}
+                                />
+                                <FormControlLabel
+                                    data-testid="devtools-vod-accurate"
+                                    control={
+                                        <Switch
+                                            checked={vodAccurate}
+                                            onChange={(e) => setVodAccurate(e.target.checked)}
+                                        />
+                                    }
+                                    label={vodAccurate ? "Accurate" : "Approximated"}
+                                />
+                                <Button
+                                    data-testid="devtools-set-vod-accurate"
+                                    variant="contained"
+                                    onClick={handleSetVodAccurate}
                                 >
                                     Set
                                 </Button>
