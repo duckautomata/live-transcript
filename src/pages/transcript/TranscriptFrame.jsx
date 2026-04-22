@@ -229,6 +229,7 @@ export default function TranscriptFrame({ mediaBaseUrl, displayData, streamId, w
                                     lineTimestamp={selectedLine.timestamp}
                                     segments={selectedLine.segments}
                                     mediaAvailable={selectedLine.mediaAvailable}
+                                    vodAccurate={selectedLine.vodAccurate}
                                     tagsMap={tagsMap}
                                     startTime={startTime}
                                 />

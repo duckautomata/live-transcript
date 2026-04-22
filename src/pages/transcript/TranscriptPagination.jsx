@@ -114,6 +114,7 @@ export default function TranscriptPagination({ displayData, pendingJumpId, setPe
                             lineTimestamp={line.timestamp}
                             segments={line.segments}
                             mediaAvailable={line.mediaAvailable}
+                            vodAccurate={line.vodAccurate}
                             tagsMap={tagsMap}
                             startTime={startTime}
                         />

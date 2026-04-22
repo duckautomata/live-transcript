@@ -42,6 +42,14 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
             }),
         }));
     },
+    updateLineVodAccurate: (ids, vodAccurate) => {
+        set((state) => {
+            const idSet = new Set(ids);
+            return {
+                transcript: state.transcript.map((line) => (idSet.has(line.id) ? { ...line, vodAccurate } : line)),
+            };
+        });
+    },
     resetTranscript: () =>
         set({
             streamId: "",

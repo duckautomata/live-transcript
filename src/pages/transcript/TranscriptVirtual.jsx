@@ -159,6 +159,7 @@ export default function TranscriptVirtual({
                             segments={line.segments}
                             highlight={highlightedId === line.id}
                             mediaAvailable={line.mediaAvailable}
+                            vodAccurate={line.vodAccurate}
                             tagsMap={tagsMap}
                             startTime={startTime}
                         />
