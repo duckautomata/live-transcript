@@ -224,6 +224,9 @@ export default function View({ wsKey }) {
         // 4. Map Key: `${lineId}_${segmentIndex}`
 
         formattedRows.forEach((row) => {
+            // Collection headers share a timestamp with their first tag, which already
+            // carries the group name in its tooltip — skip them to avoid duplicate entries.
+            if (row.type === "header" && row.subtype === "collection") return;
             if (row.timestamp) {
                 const relativeSeconds = timeToSeconds(row.timestamp);
                 const absoluteTimestamp = (activeStartTime || 0) + relativeSeconds;

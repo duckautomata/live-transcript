@@ -58,19 +58,43 @@ function Segment({ id, timestamp, text, onClick, tags }) {
 
         tooltipContent = (
             <Box sx={{ p: 0.5 }}>
-                {tags.map((tag, i) => (
-                    <Typography key={tag.id || i} variant="caption" display="block">
-                        {tag.type === "header" ? (
+                {tags.map((tag, i) => {
+                    let body;
+                    if (tag.type === "header") {
+                        const label = tag.subtype === "hbd" ? "birthday" : tag.subtype;
+                        body = (
                             <strong>
-                                {tag.subtype}: {tag.name}
+                                {label}: {tag.name}
                             </strong>
-                        ) : (
+                        );
+                    } else if (tag.subtype === "hbd") {
+                        body = (
+                            <>
+                                <strong>Birthday: [{tag.timestamp}]</strong> {tag.text}
+                            </>
+                        );
+                    } else if (tag.subtype === "collection") {
+                        body = (
+                            <>
+                                <strong>
+                                    collection: {tag.parentName} [{tag.timestamp}]
+                                </strong>{" "}
+                                {tag.text}
+                            </>
+                        );
+                    } else {
+                        body = (
                             <>
                                 <strong>[{tag.timestamp}]</strong> {tag.text}
                             </>
-                        )}
-                    </Typography>
-                ))}
+                        );
+                    }
+                    return (
+                        <Typography key={tag.id || i} variant="caption" display="block">
+                            {body}
+                        </Typography>
+                    );
+                })}
             </Box>
         );
     }

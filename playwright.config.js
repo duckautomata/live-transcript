@@ -21,14 +21,17 @@ export default defineConfig({
         {
             name: "webkit",
             use: { ...devices["Desktop Safari"] },
+            testIgnore: /tagformatter\.spec\.js/,
         },
         {
             name: "Mobile Chrome",
             use: { ...devices["Pixel 7"] },
+            testIgnore: /tagformatter\.spec\.js/,
         },
         {
             name: "Mobile Safari",
             use: { ...devices["iPhone 15"] },
+            testIgnore: /tagformatter\.spec\.js/,
         },
     ].filter((project) => !process.env.CI || project.name === "chromium"),
 
