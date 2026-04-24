@@ -74,6 +74,14 @@ const TagRow = memo(
                 <Box
                     key={row.id}
                     ref={(el) => registerRef(row.id, el)}
+                    data-testid={`tag-header-${row.name}`}
+                    data-row-subtype={row.subtype}
+                    data-row-enabled={row.isEnabled ? "true" : "false"}
+                    data-row-original-name={row.originalName || ""}
+                    data-row-timestamp={row.timestamp || ""}
+                    data-row-decoration={headerDecoration}
+                    data-row-highlighted={isHighlightedRow ? "true" : "false"}
+                    data-row-highlighted-parent={isHighlightedParent ? "true" : "false"}
                     sx={{
                         py: 1,
                         paddingBottom: 0,
@@ -154,6 +162,13 @@ const TagRow = memo(
         return (
             <Box
                 key={row.id}
+                data-testid="tag-row"
+                data-row-timestamp={row.timestamp}
+                data-row-subtype={row.subtype}
+                data-row-enabled={row.isEnabled ? "true" : "false"}
+                data-row-parent-name={row.parentName || ""}
+                data-row-original-text={row.originalText || ""}
+                data-row-highlighted={highlightColor ? "true" : "false"}
                 sx={{
                     display: "flex",
                     alignItems: "center",
@@ -845,6 +860,7 @@ const TagFormatter = ({ wsKey }) => {
                     size="small"
                     disabled={!inputTags}
                     onClick={() => setInputTags("")}
+                    data-testid="tag-clear-input-btn"
                 >
                     Clear Input
                 </Button>
@@ -854,6 +870,7 @@ const TagFormatter = ({ wsKey }) => {
                 multiline
                 fullWidth
                 variant="outlined"
+                data-testid="tag-input-field"
                 value={inputTags}
                 onChange={(e) => setInputTags(e.target.value)}
                 sx={{
@@ -870,17 +887,22 @@ const TagFormatter = ({ wsKey }) => {
                 }}
             />
             <Box sx={{ display: "flex", gap: 2 }}>
-                <Button variant="outlined" color="secondary" onClick={handleClear}>
+                <Button variant="outlined" color="secondary" onClick={handleClear} data-testid="tag-reset-btn">
                     Reset Data
                 </Button>
                 {formattedRows.length > 0 && (
-                    <Button variant="contained" color="secondary" onClick={() => setView("formatted")}>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => setView("formatted")}
+                        data-testid="tag-return-formatted-btn"
+                    >
                         Return to Formatted
                     </Button>
                 )}
                 {/* Append Button if formatted rows exist */}
                 {formattedRows.length > 0 && inputTags.trim().length > 0 && (
-                    <Button variant="contained" color="success" onClick={handleAppend}>
+                    <Button variant="contained" color="success" onClick={handleAppend} data-testid="tag-append-btn">
                         Append Tags
                     </Button>
                 )}
@@ -890,6 +912,7 @@ const TagFormatter = ({ wsKey }) => {
                     <Button
                         variant="contained"
                         color="primary"
+                        data-testid="tag-format-btn"
                         onClick={() => {
                             if (formattedRows.length > 0) {
                                 setDialogConfig({
@@ -911,7 +934,11 @@ const TagFormatter = ({ wsKey }) => {
 
                 {/* Hide Format from Clipboard if we already have data (user should use Append via Input) */}
                 {formattedRows.length === 0 && (
-                    <Button variant="outlined" onClick={handleFormatFromClipboard}>
+                    <Button
+                        variant="outlined"
+                        onClick={handleFormatFromClipboard}
+                        data-testid="tag-format-clipboard-btn"
+                    >
                         Format from Clipboard
                     </Button>
                 )}
@@ -1052,7 +1079,13 @@ const TagFormatter = ({ wsKey }) => {
                         Formatted Tags
                     </Typography>
 
-                    <Button variant="outlined" color="secondary" size="small" onClick={() => setView("input")}>
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        size="small"
+                        onClick={() => setView("input")}
+                        data-testid="tag-back-input-btn"
+                    >
                         Back to Input
                     </Button>
 
@@ -1062,6 +1095,7 @@ const TagFormatter = ({ wsKey }) => {
                         startIcon={isCopied ? <Check /> : <ContentCopy />}
                         onClick={handleCopyFormatted}
                         size="small"
+                        data-testid="tag-copy-btn"
                     >
                         {isCopied ? "Copied!" : "Copy to Clipboard"}
                     </Button>
@@ -1160,7 +1194,13 @@ const TagFormatter = ({ wsKey }) => {
                             const isCrossedOut = !hasChildren && controls[key].isEnabled;
 
                             return (
-                                <Box key={key} sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                <Box
+                                    key={key}
+                                    data-testid={`tag-control-collection-${key}`}
+                                    data-control-enabled={controls[key].isEnabled ? "true" : "false"}
+                                    data-control-crossed-out={isCrossedOut ? "true" : "false"}
+                                    sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                                >
                                     <Checkbox
                                         checked={controls[key].isEnabled}
                                         onChange={() => toggleControl(key)}
@@ -1180,12 +1220,20 @@ const TagFormatter = ({ wsKey }) => {
                                     </Typography>
                                     <Box sx={{ flexGrow: 1 }} />
                                     {index > 0 && (
-                                        <IconButton size="small" onClick={() => moveControl(key, -1)}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => moveControl(key, -1)}
+                                            data-testid={`tag-control-move-up-${key}`}
+                                        >
                                             <ArrowUpward fontSize="small" />
                                         </IconButton>
                                     )}
                                     {index < array.length - 1 && (
-                                        <IconButton size="small" onClick={() => moveControl(key, 1)}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => moveControl(key, 1)}
+                                            data-testid={`tag-control-move-down-${key}`}
+                                        >
                                             <ArrowDownward fontSize="small" />
                                         </IconButton>
                                     )}
@@ -1213,6 +1261,10 @@ const TagFormatter = ({ wsKey }) => {
                             return (
                                 <Box
                                     key={key}
+                                    data-testid={`tag-control-chapter-${key}`}
+                                    data-control-enabled={controls[key].isEnabled ? "true" : "false"}
+                                    data-control-crossed-out={isCrossedOut ? "true" : "false"}
+                                    data-control-hovered={isHovered ? "true" : "false"}
                                     sx={{
                                         display: "flex",
                                         alignItems: "center",
@@ -1252,7 +1304,13 @@ const TagFormatter = ({ wsKey }) => {
                             const isCrossedOut = !hasChildren && controls[key].isEnabled;
 
                             return (
-                                <Box key={key} sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                <Box
+                                    key={key}
+                                    data-testid={`tag-control-hbd-${key}`}
+                                    data-control-enabled={controls[key].isEnabled ? "true" : "false"}
+                                    data-control-crossed-out={isCrossedOut ? "true" : "false"}
+                                    sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                                >
                                     <Checkbox
                                         checked={controls[key].isEnabled}
                                         disabled
@@ -1297,6 +1355,7 @@ const TagFormatter = ({ wsKey }) => {
                         label="Start"
                         size="small"
                         placeholder="00:00"
+                        data-testid="tag-offset-start"
                         value={bulkEdit.offsetStart}
                         onChange={(e) => handleBulkEditChange("offsetStart", e.target.value)}
                     />
@@ -1304,6 +1363,7 @@ const TagFormatter = ({ wsKey }) => {
                         label="End"
                         size="small"
                         placeholder="01:00"
+                        data-testid="tag-offset-end"
                         value={bulkEdit.offsetEnd}
                         onChange={(e) => handleBulkEditChange("offsetEnd", e.target.value)}
                     />
@@ -1313,17 +1373,29 @@ const TagFormatter = ({ wsKey }) => {
                         label="Offset"
                         size="small"
                         placeholder="00:05"
+                        data-testid="tag-offset-amount"
                         value={bulkEdit.offsetAmount}
                         onChange={(e) => handleBulkEditChange("offsetAmount", e.target.value)}
                         sx={{ flexGrow: 1 }}
                     />
                     <Tooltip title="Add offset to timestamp">
-                        <Button variant="contained" size="small" onClick={() => applyOffset(1)}>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => applyOffset(1)}
+                            data-testid="tag-offset-add"
+                        >
                             +
                         </Button>
                     </Tooltip>
                     <Tooltip title="Subtract offset from timestamp">
-                        <Button variant="contained" size="small" color="warning" onClick={() => applyOffset(-1)}>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            color="warning"
+                            onClick={() => applyOffset(-1)}
+                            data-testid="tag-offset-subtract"
+                        >
                             -
                         </Button>
                     </Tooltip>
@@ -1340,6 +1412,7 @@ const TagFormatter = ({ wsKey }) => {
                         label="Start"
                         size="small"
                         placeholder="00:00"
+                        data-testid="tag-enable-start"
                         value={bulkEdit.enableStart}
                         onChange={(e) => handleBulkEditChange("enableStart", e.target.value)}
                     />
@@ -1347,12 +1420,19 @@ const TagFormatter = ({ wsKey }) => {
                         label="End"
                         size="small"
                         placeholder="01:00"
+                        data-testid="tag-enable-end"
                         value={bulkEdit.enableEnd}
                         onChange={(e) => handleBulkEditChange("enableEnd", e.target.value)}
                     />
                 </Box>
                 <Box sx={{ display: "flex", gap: 1 }}>
-                    <Button variant="outlined" size="small" fullWidth onClick={() => applyEnableDisable(true)}>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        onClick={() => applyEnableDisable(true)}
+                        data-testid="tag-enable-btn"
+                    >
                         Enable
                     </Button>
                     <Button
@@ -1361,6 +1441,7 @@ const TagFormatter = ({ wsKey }) => {
                         fullWidth
                         color="error"
                         onClick={() => applyEnableDisable(false)}
+                        data-testid="tag-disable-btn"
                     >
                         Disable
                     </Button>
@@ -1377,6 +1458,7 @@ const TagFormatter = ({ wsKey }) => {
                     size="small"
                     fullWidth
                     sx={{ mb: 1 }}
+                    data-testid="tag-find-text"
                     value={bulkEdit.findText}
                     onChange={(e) => handleBulkEditChange("findText", e.target.value)}
                 />
@@ -1385,10 +1467,17 @@ const TagFormatter = ({ wsKey }) => {
                     size="small"
                     fullWidth
                     sx={{ mb: 1 }}
+                    data-testid="tag-replace-text"
                     value={bulkEdit.replaceText}
                     onChange={(e) => handleBulkEditChange("replaceText", e.target.value)}
                 />
-                <Button variant="contained" size="small" fullWidth onClick={applyFindReplace}>
+                <Button
+                    variant="contained"
+                    size="small"
+                    fullWidth
+                    onClick={applyFindReplace}
+                    data-testid="tag-replace-all-btn"
+                >
                     Replace All
                 </Button>
             </Box>
@@ -1407,6 +1496,7 @@ const TagFormatter = ({ wsKey }) => {
                             onChange={(e) => handleBulkEditChange("isHighlightTime", e.target.checked)}
                             size="small"
                             sx={{ mr: 1 }}
+                            data-testid="tag-highlight-time"
                         />
                         <Typography variant="body2" sx={{ mr: 0.5, whiteSpace: "nowrap" }}>
                             are under
@@ -1418,6 +1508,7 @@ const TagFormatter = ({ wsKey }) => {
                             onChange={(e) => handleBulkEditChange("highlightThreshold", e.target.value)}
                             disabled={!bulkEdit.isHighlightTime}
                             sx={{ width: "40px", mr: 0.5, "& input": { textAlign: "center" } }}
+                            data-testid="tag-highlight-time-threshold"
                         />
                         <Typography variant="body2" sx={{ mr: 0.5, whiteSpace: "nowrap" }}>
                             seconds apart
@@ -1426,6 +1517,7 @@ const TagFormatter = ({ wsKey }) => {
                     {bulkEdit.isHighlightTime && (
                         <Box sx={{ pl: 5, mt: 0.5 }}>
                             <Box
+                                data-testid="tag-highlight-time-count"
                                 sx={{
                                     display: "inline-block",
                                     bgcolor: theme.palette.background.yellow,
@@ -1449,12 +1541,14 @@ const TagFormatter = ({ wsKey }) => {
                         onChange={(e) => handleBulkEditChange("isHighlightCensored", e.target.checked)}
                         size="small"
                         sx={{ mr: 1 }}
+                        data-testid="tag-highlight-censored"
                     />
                     <Typography variant="body2" sx={{ mr: 1, flexGrow: 1 }}>
                         are censored/filtered
                     </Typography>
                     {bulkEdit.isHighlightCensored && (
                         <Box
+                            data-testid="tag-highlight-censored-count"
                             sx={{
                                 display: "inline-block",
                                 bgcolor: theme.palette.background.orange,
@@ -1477,6 +1571,7 @@ const TagFormatter = ({ wsKey }) => {
                         onChange={(e) => handleBulkEditChange("isHighlightStar", e.target.checked)}
                         size="small"
                         sx={{ mr: 1 }}
+                        data-testid="tag-highlight-star"
                     />
                     <Typography variant="body2" sx={{ mr: 1, flexGrow: 1 }}>
                         contain a *
@@ -1484,6 +1579,7 @@ const TagFormatter = ({ wsKey }) => {
                     {bulkEdit.isHighlightStar && (
                         <Box sx={{ pl: 5, mt: 0.5 }}>
                             <Box
+                                data-testid="tag-highlight-star-count"
                                 sx={{
                                     display: "inline-block",
                                     bgcolor: theme.palette.background.red,
@@ -1507,6 +1603,7 @@ const TagFormatter = ({ wsKey }) => {
                         onChange={(e) => handleBulkEditChange("isHighlightCaps", e.target.checked)}
                         size="small"
                         sx={{ mr: 1 }}
+                        data-testid="tag-highlight-caps"
                     />
                     <Typography variant="body2" sx={{ mr: 1, flexGrow: 1 }}>
                         are all caps
@@ -1514,6 +1611,7 @@ const TagFormatter = ({ wsKey }) => {
                     {bulkEdit.isHighlightCaps && (
                         <Box sx={{ pl: 5, mt: 0.5 }}>
                             <Box
+                                data-testid="tag-highlight-caps-count"
                                 sx={{
                                     display: "inline-block",
                                     bgcolor: theme.palette.background.teal,

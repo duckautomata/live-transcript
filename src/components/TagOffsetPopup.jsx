@@ -211,7 +211,9 @@ const TagOffsetPopup = ({ wsKey }) => {
         .map((r) => r.name);
 
     // Validation for Button
-    const isChapterNameUnique = !existingChapters.includes(chapterName.trim());
+    const isChapterNameUnique = !existingChapters.some(
+        (name) => name.toLowerCase() === chapterName.trim().toLowerCase(),
+    );
     const isCreateDisabled = tagType === "chapter" ? !chapterName.trim() || !isChapterNameUnique : !tagText.trim();
 
     return (

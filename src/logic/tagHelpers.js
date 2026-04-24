@@ -119,8 +119,8 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
             const rawName = match[2];
             const rawText = match[3];
 
-            const ogRawName = ogMatch[2];
-            const ogRawText = ogMatch[3];
+            const ogRawName = ogMatch ? ogMatch[2] : rawName;
+            const ogRawText = ogMatch ? ogMatch[3] : rawText;
 
             // Use censored name for grouping
             const keyName = rawName;
@@ -219,25 +219,29 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
                 const rawName = chapterMatch[2];
                 const rawText = chapterMatch[3];
 
-                const ogRawName = ogChapterMatch[2];
-                const ogRawText = ogChapterMatch[3];
+                const ogRawName = ogChapterMatch ? ogChapterMatch[2] : rawName;
+                const ogRawText = ogChapterMatch ? ogChapterMatch[3] : rawText;
 
-                currentChapter = rawName;
+                const existingChapterKey = Object.keys(newControls).find(
+                    (k) => newControls[k].type === "chapter" && k.toLowerCase() === rawName.toLowerCase(),
+                );
 
-                if (!newControls[currentChapter]) {
+                if (existingChapterKey) {
+                    currentChapter = existingChapterKey;
+                } else {
+                    currentChapter = rawName;
                     newControls[currentChapter] = { isEnabled: true, type: "chapter" };
+                    newRows.push({
+                        id: generateId("chap-header"),
+                        type: "header",
+                        subtype: "chapter",
+                        name: currentChapter,
+                        originalName: currentChapter,
+                        timestamp: timestamp,
+                        isEnabled: true,
+                        wasCensored: rawName !== ogRawName,
+                    });
                 }
-
-                newRows.push({
-                    id: generateId("chap-header"),
-                    type: "header",
-                    subtype: "chapter",
-                    name: currentChapter,
-                    originalName: currentChapter,
-                    timestamp: timestamp,
-                    isEnabled: true,
-                    wasCensored: rawName !== ogRawName,
-                });
 
                 if (rawText && rawText.trim().length > 0) {
                     newRows.push({
@@ -259,7 +263,7 @@ export const parseRawInput = (textToFormat, wsKey_or_CensorType, birthdayText) =
                 if (timestampMatch) {
                     const timestamp = timestampMatch[1];
                     const rawText = timestampMatch[2];
-                    const ogRawText = ogTimestampMatch[2];
+                    const ogRawText = ogTimestampMatch ? ogTimestampMatch[2] : rawText;
 
                     newRows.push({
                         id: generateId("tag"),
