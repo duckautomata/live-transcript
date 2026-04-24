@@ -757,6 +757,8 @@ test.describe("Tag Formatter Bulk Edit", () => {
         await fillInput(page, "00:10 first\n00:30 second\n02:00 third");
         await formatTags(page);
 
+        await page.getByRole("button", { name: "Offset Timestamps" }).click();
+
         // Add
         await page.getByTestId("tag-offset-start").locator("input").fill("00:00");
         await page.getByTestId("tag-offset-end").locator("input").fill("01:00");
@@ -793,6 +795,8 @@ test.describe("Tag Formatter Bulk Edit", () => {
         await fillInput(page, "00:10 hello world\n00:20 hello again");
         await formatTags(page);
 
+        await page.getByRole("button", { name: /Find .* Replace/ }).click();
+
         // Matches
         await page.getByTestId("tag-find-text").locator("input").fill("hello");
         await page.getByTestId("tag-replace-text").locator("input").fill("hi");
@@ -814,6 +818,8 @@ test.describe("Tag Formatter Bulk Edit", () => {
         await loadInDevmode(page, pagePath);
         await fillInput(page, "00:10 a\n00:30 b\n02:00 c");
         await formatTags(page);
+
+        await page.getByRole("button", { name: "Enable / Disable Range" }).click();
 
         await page.getByTestId("tag-enable-start").locator("input").fill("00:00");
         await page.getByTestId("tag-enable-end").locator("input").fill("01:00");

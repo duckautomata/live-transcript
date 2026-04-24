@@ -1,6 +1,7 @@
 // oxlint-disable react-hooks/set-state-in-effect
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Tab, Tabs, useMediaQuery, useTheme } from "@mui/material";
+import { Edit, FormatListBulleted, MenuBook } from "@mui/icons-material";
 import { timeToSeconds, secondsToTime, recalculateStructure, parseRawInput, mergeTags } from "../../logic/tagHelpers";
 import { useAppStore } from "../../store/store";
 import { LOG_ERROR } from "../../logic/debug";
@@ -24,6 +25,7 @@ const TagFormatter = ({ wsKey }) => {
 
     const [view, setView] = useState("input");
     const [loadedKey, setLoadedKey] = useState(null);
+    const [mobileTab, setMobileTab] = useState("tags");
 
     const inputTags = useAppStore((state) => state.inputTags);
     const setInputTags = useAppStore((state) => state.setInputTags);
@@ -451,6 +453,54 @@ const TagFormatter = ({ wsKey }) => {
 
     // --- Render ---
 
+    const formattedPanel = (
+        <FormattedTagsList
+            displayedRows={displayedRows}
+            formattedRows={formattedRows}
+            controls={controls}
+            editingId={editingId}
+            startEditing={startEditing}
+            saveEdit={saveEdit}
+            cancelEdit={cancelEdit}
+            toggleRowEnabled={toggleRowEnabled}
+            densityStyles={densityStyles}
+            theme={theme}
+            highlightStats={highlightStats}
+            highlightedRowId={highlightedRowId}
+            registerRef={registerRef}
+            handleRowHover={handleRowHover}
+            hoveredParent={hoveredParent}
+            onBackToInput={() => setView("input")}
+            isCopied={isCopied}
+            onCopy={handleCopyFormatted}
+            isMobile={isMobile}
+        />
+    );
+
+    const controlsPanel = (
+        <ControlsPanel
+            controls={controls}
+            formattedRows={formattedRows}
+            hoveredParent={hoveredParent}
+            toggleControl={toggleControl}
+            moveControl={moveControl}
+            scrollToRow={scrollToRow}
+        />
+    );
+
+    const bulkEditPanel = (
+        <BulkEditPanel
+            bulkEdit={bulkEdit}
+            handleBulkEditChange={handleBulkEditChange}
+            applyOffset={applyOffset}
+            applyEnableDisable={applyEnableDisable}
+            applyFindReplace={applyFindReplace}
+            highlightStats={highlightStats}
+            theme={theme}
+            isMobile={isMobile}
+        />
+    );
+
     return (
         <>
             {view === "input" ? (
@@ -464,72 +514,87 @@ const TagFormatter = ({ wsKey }) => {
                     onFormat={handleFormatClick}
                     onFormatFromClipboard={handleFormatFromClipboard}
                 />
+            ) : isMobile ? (
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "calc(100vh - 64px)",
+                        p: 1,
+                        gap: 1,
+                    }}
+                >
+                    <Tabs
+                        value={mobileTab}
+                        onChange={(_, v) => setMobileTab(v)}
+                        variant="fullWidth"
+                        sx={{
+                            minHeight: 40,
+                            borderBottom: 1,
+                            borderColor: "divider",
+                            "& .MuiTab-root": { minHeight: 40, py: 0.5, textTransform: "none" },
+                        }}
+                    >
+                        <Tab
+                            icon={<FormatListBulleted fontSize="small" />}
+                            iconPosition="start"
+                            label="Tags"
+                            value="tags"
+                            data-testid="tag-mobile-tab-tags"
+                        />
+                        <Tab
+                            icon={<MenuBook fontSize="small" />}
+                            iconPosition="start"
+                            label="Headers"
+                            value="headers"
+                            data-testid="tag-mobile-tab-headers"
+                        />
+                        <Tab
+                            icon={<Edit fontSize="small" />}
+                            iconPosition="start"
+                            label="Bulk Edit"
+                            value="bulk"
+                            data-testid="tag-mobile-tab-bulk"
+                        />
+                    </Tabs>
+                    <Box sx={{ flexGrow: 1, minHeight: 0, overflow: "hidden" }}>
+                        {mobileTab === "tags" && formattedPanel}
+                        {mobileTab === "headers" && controlsPanel}
+                        {mobileTab === "bulk" && bulkEditPanel}
+                    </Box>
+                </Box>
             ) : (
                 <Box
                     sx={{
                         display: "flex",
-                        flexDirection: isMobile ? "column" : "row",
+                        flexDirection: "row",
                         height: "calc(100vh - 64px)",
                         p: 2,
                         gap: 2,
                     }}
                 >
-                    <Box
-                        sx={{
-                            flexMatched: true,
-                            flex: isMobile ? "0 0 500px" : "0 0 70%",
-                            height: isMobile ? "50vh" : "100%",
-                            overflow: "hidden",
-                        }}
-                    >
-                        <FormattedTagsList
-                            displayedRows={displayedRows}
-                            formattedRows={formattedRows}
-                            controls={controls}
-                            editingId={editingId}
-                            startEditing={startEditing}
-                            saveEdit={saveEdit}
-                            cancelEdit={cancelEdit}
-                            toggleRowEnabled={toggleRowEnabled}
-                            densityStyles={densityStyles}
-                            theme={theme}
-                            highlightStats={highlightStats}
-                            highlightedRowId={highlightedRowId}
-                            registerRef={registerRef}
-                            handleRowHover={handleRowHover}
-                            hoveredParent={hoveredParent}
-                            onBackToInput={() => setView("input")}
-                            isCopied={isCopied}
-                            onCopy={handleCopyFormatted}
-                        />
-                    </Box>
+                    <Box sx={{ flex: "0 0 68%", height: "100%", overflow: "hidden" }}>{formattedPanel}</Box>
 
                     <Box
                         sx={{
                             display: "flex",
                             flexDirection: "column",
-                            flex: isMobile ? 1 : "0 0 30%",
-                            height: isMobile ? "auto" : "100%",
+                            flex: "0 0 32%",
+                            height: "100%",
                             gap: 2,
+                            minWidth: 0,
                         }}
                     >
                         <Box
                             sx={{
                                 display: "flex",
                                 flexDirection: "column",
-                                flex: isMobile ? 1 : "0 1 auto",
-                                maxHeight: isMobile ? "none" : "50%",
+                                flex: "0 1 auto",
+                                maxHeight: "45%",
                                 overflow: "hidden",
                             }}
                         >
-                            <ControlsPanel
-                                controls={controls}
-                                formattedRows={formattedRows}
-                                hoveredParent={hoveredParent}
-                                toggleControl={toggleControl}
-                                moveControl={moveControl}
-                                scrollToRow={scrollToRow}
-                            />
+                            {controlsPanel}
                         </Box>
 
                         <Box
@@ -540,15 +605,7 @@ const TagFormatter = ({ wsKey }) => {
                                 overflow: "hidden",
                             }}
                         >
-                            <BulkEditPanel
-                                bulkEdit={bulkEdit}
-                                handleBulkEditChange={handleBulkEditChange}
-                                applyOffset={applyOffset}
-                                applyEnableDisable={applyEnableDisable}
-                                applyFindReplace={applyFindReplace}
-                                highlightStats={highlightStats}
-                                theme={theme}
-                            />
+                            {bulkEditPanel}
                         </Box>
                     </Box>
                 </Box>
