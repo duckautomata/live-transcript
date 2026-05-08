@@ -449,10 +449,12 @@ export const Websocket = ({ wsKey }) => {
         // viewing it as a past stream, removePastStream also clears that view.
         removePastStream(streamId);
 
-        // The deleted stream was the live one — clear the live transcript state
-        // so the UI returns to "no active stream" instead of pointing at a stream
-        // that no longer exists. The server will not send a follow-up status event.
-        if (wasLive) {
+        // Reset the active-stream view if the deleted stream is the one being
+        // displayed — either because it was live (wasLive) or because it was
+        // the most recent stream still on screen after going offline. The
+        // server will not send a follow-up status event in either case.
+        const currentStreamId = useAppStore.getState().streamId;
+        if (wasLive || currentStreamId === streamId) {
             resetTranscript();
         }
 
