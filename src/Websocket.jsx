@@ -68,13 +68,20 @@ const useWebSocket = typeof useWebSocketModule === "function" ? useWebSocketModu
  */
 
 /**
- * @typedef {"newLine" | "newStream" | "pastStreams" | "status" | "sync" | "partialSync" | "newMedia"} Events
+ * @typedef {object} EventDeletedStreamData
+ * @property {string} streamId
+ * @property {string} streamTitle
+ * @property {boolean} wasLive
+ */
+
+/**
+ * @typedef {"newLine" | "newStream" | "pastStreams" | "status" | "sync" | "partialSync" | "newMedia" | "deletedStream"} Events
  */
 
 /**
  * @typedef {object} WebSocketMessage
  * @property {Events} event
- * @property {EventSyncData | EventNewLineData | EventNewStreamData | EventPastStreamData | EventStatusData | EventNewMediaData} [data]
+ * @property {EventSyncData | EventNewLineData | EventNewStreamData | EventPastStreamData | EventStatusData | EventNewMediaData | EventDeletedStreamData} [data]
  */
 
 /**
@@ -103,6 +110,8 @@ export const Websocket = ({ wsKey }) => {
     const resetPastStreams = useAppStore((state) => state.resetPastStreams);
     const setAudioId = useAppStore((state) => state.setAudioId);
     const setPastStreams = useAppStore((state) => state.setPastStreams);
+    const removePastStream = useAppStore((state) => state.removePastStream);
+    const setDeletedStreamNotice = useAppStore((state) => state.setDeletedStreamNotice);
 
     const lastReceiveTime = useRef(Date.now());
     const hasConnected = useRef(false);
@@ -265,6 +274,9 @@ export const Websocket = ({ wsKey }) => {
             case "newMedia":
                 handleNewMedia(data);
                 break;
+            case "deletedStream":
+                handleDeletedStream(data);
+                break;
             case "pong": {
                 const { timestamp } = data;
                 const latency = Date.now() - timestamp;
@@ -414,5 +426,37 @@ export const Websocket = ({ wsKey }) => {
         } else {
             LOG_ERROR("handleNewMedia data.files is missing or not an object", data);
         }
+    };
+
+    /**
+     * @param {EventDeletedStreamData | null} data
+     */
+    const handleDeletedStream = (data) => {
+        if (!data) {
+            LOG_ERROR("handleDeletedStream data is null");
+            return;
+        }
+
+        LOG_MSG("handleDeletedStream data", data);
+
+        const { streamId, streamTitle, wasLive } = data;
+        if (!streamId) {
+            LOG_ERROR("handleDeletedStream missing streamId", data);
+            return;
+        }
+
+        // Drop the stream from the past-streams cache. If the user is currently
+        // viewing it as a past stream, removePastStream also clears that view.
+        removePastStream(streamId);
+
+        // The deleted stream was the live one — clear the live transcript state
+        // so the UI returns to "no active stream" instead of pointing at a stream
+        // that no longer exists. The server will not send a follow-up status event.
+        if (wasLive) {
+            resetTranscript();
+        }
+
+        // Surface a toast so the user knows the change was operator-initiated.
+        setDeletedStreamNotice(streamTitle || "(untitled)");
     };
 };

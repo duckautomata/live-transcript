@@ -109,9 +109,12 @@ export interface PastStreamSlice {
     pastStreamViewing: string | null;
     pastStreams: StreamInfo[];
     pastStreamTranscript: TranscriptLine[];
+    deletedStreamNotice: string | null;
     setPastStreamViewing: (streamId: string) => void;
     setPastStreams: (data: StreamInfo[]) => void;
     setPastStreamTranscript: (data: TranscriptLine[]) => void;
+    removePastStream: (streamId: string) => void;
+    setDeletedStreamNotice: (title: string | null) => void;
     resetPastStreams: () => void;
     resetPastStreamTranscript: () => void;
 }

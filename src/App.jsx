@@ -22,6 +22,7 @@ import SettingsPopup from "./components/SettingsPopup";
 import HelpPopup from "./components/HelpPopup";
 import InfoPopup from "./components/InfoPopup";
 import DevToolsPopup from "./components/DevToolsPopup";
+import DeletedStreamSnackbar from "./components/DeletedStreamSnackbar";
 
 /**
  * The root application component.
@@ -81,6 +82,7 @@ function App() {
             <HelpPopup />
             <InfoPopup />
             <DevToolsPopup />
+            <DeletedStreamSnackbar />
         </ThemeProvider>
     );
 }
