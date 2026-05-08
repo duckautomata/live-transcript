@@ -68,13 +68,20 @@ const useWebSocket = typeof useWebSocketModule === "function" ? useWebSocketModu
  */
 
 /**
- * @typedef {"newLine" | "newStream" | "pastStreams" | "status" | "sync" | "partialSync" | "newMedia"} Events
+ * @typedef {object} EventDeletedStreamData
+ * @property {string} streamId
+ * @property {string} streamTitle
+ * @property {boolean} wasLive
+ */
+
+/**
+ * @typedef {"newLine" | "newStream" | "pastStreams" | "status" | "sync" | "partialSync" | "newMedia" | "deletedStream"} Events
  */
 
 /**
  * @typedef {object} WebSocketMessage
  * @property {Events} event
- * @property {EventSyncData | EventNewLineData | EventNewStreamData | EventPastStreamData | EventStatusData | EventNewMediaData} [data]
+ * @property {EventSyncData | EventNewLineData | EventNewStreamData | EventPastStreamData | EventStatusData | EventNewMediaData | EventDeletedStreamData} [data]
  */
 
 /**
@@ -103,6 +110,8 @@ export const Websocket = ({ wsKey }) => {
     const resetPastStreams = useAppStore((state) => state.resetPastStreams);
     const setAudioId = useAppStore((state) => state.setAudioId);
     const setPastStreams = useAppStore((state) => state.setPastStreams);
+    const removePastStream = useAppStore((state) => state.removePastStream);
+    const setDeletedStreamNotice = useAppStore((state) => state.setDeletedStreamNotice);
 
     const lastReceiveTime = useRef(Date.now());
     const hasConnected = useRef(false);
@@ -265,6 +274,9 @@ export const Websocket = ({ wsKey }) => {
             case "newMedia":
                 handleNewMedia(data);
                 break;
+            case "deletedStream":
+                handleDeletedStream(data);
+                break;
             case "pong": {
                 const { timestamp } = data;
                 const latency = Date.now() - timestamp;
@@ -414,5 +426,61 @@ export const Websocket = ({ wsKey }) => {
         } else {
             LOG_ERROR("handleNewMedia data.files is missing or not an object", data);
         }
+    };
+
+    /**
+     * Force the WebSocket to tear down and reopen so the server can re-sync
+     * us from scratch. Used when the local state is no longer reconcilable
+     * with the server (e.g. the active stream just got deleted) — pulling a
+     * fresh partialSync + pastStreams is simpler than mutating state in place.
+     *
+     * Clearing hasConnected makes the imminent onClose go through the
+     * "connecting" branch (skeleton view) instead of "reconnecting" (which
+     * keeps stale content on screen).
+     */
+    const triggerReconnect = () => {
+        hasConnected.current = false;
+        setShouldConnect(false);
+        // Re-enable on the next tick so React flushes the false update first
+        // and the hook fully tears the old connection down before reopening.
+        setTimeout(() => setShouldConnect(true), 100);
+    };
+
+    /**
+     * @param {EventDeletedStreamData | null} data
+     */
+    const handleDeletedStream = (data) => {
+        if (!data) {
+            LOG_ERROR("handleDeletedStream data is null");
+            return;
+        }
+
+        LOG_MSG("handleDeletedStream data", data);
+
+        const { streamId, streamTitle, wasLive } = data;
+        if (!streamId) {
+            LOG_ERROR("handleDeletedStream missing streamId", data);
+            return;
+        }
+
+        // Surface a toast so the user knows the change was operator-initiated.
+        setDeletedStreamNotice(streamTitle || "(untitled)");
+
+        // If the deleted stream is the one currently on screen — either
+        // because it was live (wasLive) or because it was still the most
+        // recent stream after going offline — reconnect so the server sends
+        // fresh partialSync + pastStreams. The server won't send a follow-up
+        // status event, so reconnecting is the cleanest way to land in a
+        // consistent state (next active stream + updated past-streams list).
+        const currentStreamId = useAppStore.getState().streamId;
+        if (wasLive || currentStreamId === streamId) {
+            triggerReconnect();
+            return;
+        }
+
+        // Otherwise it was a non-active stream — drop it from the cache.
+        // removePastStream also clears pastStreamViewing if the user was
+        // viewing the deleted stream.
+        removePastStream(streamId);
     };
 };
