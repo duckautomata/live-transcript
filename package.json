@@ -22,17 +22,17 @@
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
         "@fontsource/roboto": "^5.2.10",
-        "@mui/icons-material": "^9.0.0",
+        "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.0",
-        "@mui/x-charts": "^9.0.4",
-        "react": "^19.2.5",
-        "react-dom": "^19.2.5",
+        "@mui/x-charts": "^9.1.0",
+        "react": "^19.2.6",
+        "react-dom": "^19.2.6",
         "react-h5-audio-player": "^3.10.2",
-        "react-router-dom": "^7.14.2",
+        "react-router-dom": "^7.15.0",
         "react-use-websocket": "^4.13.0",
-        "react-virtuoso": "^4.18.6",
+        "react-virtuoso": "^4.18.7",
         "wavesurfer.js": "^7.12.6",
-        "zustand": "^5.0.12"
+        "zustand": "^5.0.13"
     },
     "devDependencies": {
         "@playwright/test": "^1.59.1",
@@ -40,11 +40,11 @@
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
         "esbuild": "^0.28.0",
-        "oxfmt": "^0.47.0",
-        "oxlint": "^1.62.0",
+        "oxfmt": "^0.48.0",
+        "oxlint": "^1.63.0",
         "playwright": "^1.59.1",
-        "vite": "^8.0.10",
+        "vite": "^8.0.12",
         "vitest": "^4.1.5",
-        "wrangler": "^4.87.0"
+        "wrangler": "^4.90.0"
     }
 }
