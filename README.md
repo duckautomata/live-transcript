@@ -73,6 +73,11 @@ transcript: examples.generateTranscript(100, 3, 4);
 where you can use anything from the examples file. generateTranscript is just the easiest to generate large amounts of data.
 You can also change the initial values for the other variables to whatever you want. Just make sure to revert back to the original before committing.
 
+#### Update Command
+```bash
+npx npm-check-updates -u --cooldown 7; npm install; npm audit; npm audit signatures --min-release-age=0
+```
+
 ### Testing
 
 #### Vitest tests
