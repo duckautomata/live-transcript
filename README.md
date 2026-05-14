@@ -74,6 +74,7 @@ where you can use anything from the examples file. generateTranscript is just th
 You can also change the initial values for the other variables to whatever you want. Just make sure to revert back to the original before committing.
 
 #### Update Command
+
 ```bash
 npx npm-check-updates -u --cooldown 7; npm install; npm audit; npm audit signatures --min-release-age=0
 ```
