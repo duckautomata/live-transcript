@@ -41,7 +41,7 @@ jobs:
               run: npm ci
 
             - name: Verify Package Signatures
-              run: npm audit signatures
+              run: npm audit signatures --min-release-age=0
 
             - name: Format Check
               run: npm run format:check
