@@ -8,11 +8,13 @@ on:
     push:
         branches: ["master"]
         paths:
+            - ".env.*"
             - "src/**"
             - "public/**"
             - "index.html"
             - "package.json"
             - "package-lock.json"
+            - "playwright.*"
             - "vite.config.*"
             - "wrangler.toml"
             - ".github/workflows/ui-deploy.yml"
@@ -39,7 +41,7 @@ jobs:
               run: npm ci
 
             - name: Verify Package Signatures
-              run: npm audit signatures --min-release-age=0
+              run: npm audit signatures
 
             - name: Format Check
               run: npm run format:check

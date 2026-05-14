@@ -76,8 +76,10 @@ You can also change the initial values for the other variables to whatever you w
 #### Update Command
 
 ```bash
-npx npm-check-updates -u --cooldown 7; npm install; npm audit; npm audit signatures --min-release-age=0
+npx npm-check-updates -u --cooldown 7; npm install; npm audit; npm audit signatures
 ```
+
+if audit signatures is failing, you can add `--min-release-age=0` to it to bypass the minimum release age restriction.
 
 ### Testing
 
