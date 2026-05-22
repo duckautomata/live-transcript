@@ -24,27 +24,27 @@
         "@fontsource/roboto": "^5.2.10",
         "@mui/icons-material": "^9.0.1",
         "@mui/material": "^9.0.1",
-        "@mui/x-charts": "^9.1.0",
+        "@mui/x-charts": "^9.2.0",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
         "react-h5-audio-player": "^3.10.2",
-        "react-router-dom": "^7.15.0",
+        "react-router-dom": "^7.15.1",
         "react-use-websocket": "^4.13.0",
         "react-virtuoso": "^4.18.7",
-        "wavesurfer.js": "^7.12.6",
+        "wavesurfer.js": "^7.12.7",
         "zustand": "^5.0.13"
     },
     "devDependencies": {
-        "@playwright/test": "^1.59.1",
+        "@playwright/test": "^1.60.0",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.0.2",
         "esbuild": "^0.28.0",
-        "oxfmt": "^0.48.0",
-        "oxlint": "^1.63.0",
-        "playwright": "^1.59.1",
-        "vite": "^8.0.12",
-        "vitest": "^4.1.5",
-        "wrangler": "^4.90.0"
+        "oxfmt": "^0.50.0",
+        "oxlint": "^1.65.0",
+        "playwright": "^1.60.0",
+        "vite": "^8.0.13",
+        "vitest": "^4.1.6",
+        "wrangler": "^4.93.1"
     }
 }

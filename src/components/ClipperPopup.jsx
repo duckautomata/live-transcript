@@ -13,13 +13,15 @@ import {
     FormHelperText,
     CircularProgress,
     Box,
+    IconButton,
+    Slider,
 } from "@mui/material";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { server } from "../config";
 import { useAppStore } from "../store/store";
 import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js";
-import { RestartAlt } from "@mui/icons-material";
+import { RestartAlt, PlayArrow, Pause, VolumeUp } from "@mui/icons-material";
 import { unixToRelative } from "../logic/dateTime";
 import { downloadClipUrl, playClipUrl } from "../logic/mediaUrls";
 
@@ -63,6 +65,11 @@ const ClipperPopup = ({ wsKey }) => {
     const wavesurfer = useRef(null);
     const regions = useRef(null);
     const isLooping = useRef(false);
+    const transportRef = useRef(null);
+    // True while the user is actively dragging the seek slider — suppresses the
+    // wavesurfer `timeupdate` -> setCurrentTime path so playback's continuous time
+    // updates don't yank the slider thumb away from the drag position.
+    const isSeekingRef = useRef(false);
     const [loopingActive, setLoopingActive] = useState(false);
 
     const [isLoaded, setIsLoaded] = useState(false);
@@ -70,6 +77,17 @@ const ClipperPopup = ({ wsKey }) => {
     const [duration, setDuration] = useState(0);
     const [startInput, setStartInput] = useState("0");
     const [endInput, setEndInput] = useState("0");
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [volume, setVolume] = useState(1);
+    // Pending rAF id for throttling currentTime updates during seek drag, so a
+    // burst of pointer-move events doesn't fire setCurrentTime at >60 Hz and
+    // trip React's "Maximum update depth exceeded" guard.
+    const seekRafRef = useRef(0);
+    const pendingSeekValueRef = useRef(0);
+    // Mirrored so the wavesurfer init effect can read the latest value without
+    // forcing the effect to re-run (and destroy/recreate the player) on volume changes.
+    const volumeRef = useRef(1);
 
     const activeMediaType = useMemo(() => {
         if (pastStreamViewing) {
@@ -225,6 +243,55 @@ const ClipperPopup = ({ wsKey }) => {
         if (region) region.setOptions({ end: val });
     };
 
+    const handlePlayPause = () => {
+        if (!wavesurfer.current) return;
+        isLooping.current = false;
+        setLoopingActive(false);
+        wavesurfer.current.playPause();
+    };
+
+    const handleVolumeChange = (_, value) => {
+        const v = Array.isArray(value) ? value[0] : value;
+        setVolume(v);
+        volumeRef.current = v;
+        wavesurfer.current?.setVolume(v);
+    };
+
+    const handleSeek = (_, value) => {
+        const v = Array.isArray(value) ? value[0] : value;
+        isSeekingRef.current = true;
+        pendingSeekValueRef.current = v;
+        wavesurfer.current?.setTime(v);
+        // Coalesce display updates to one per animation frame. Without this, a
+        // burst of pointer-move events from MUI Slider would call setCurrentTime
+        // fast enough to trigger React's runaway-update guard.
+        if (!seekRafRef.current) {
+            seekRafRef.current = requestAnimationFrame(() => {
+                seekRafRef.current = 0;
+                setCurrentTime(pendingSeekValueRef.current);
+            });
+        }
+    };
+
+    const handleSeekCommitted = (_, value) => {
+        const v = Array.isArray(value) ? value[0] : value;
+        isSeekingRef.current = false;
+        if (seekRafRef.current) {
+            cancelAnimationFrame(seekRafRef.current);
+            seekRafRef.current = 0;
+        }
+        setCurrentTime(v);
+        wavesurfer.current?.setTime(v);
+    };
+
+    const formatTime = (seconds) => {
+        if (!seconds || isNaN(seconds)) return "0:00.00";
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        const sStr = s.toFixed(2);
+        return `${m}:${s < 10 ? "0" : ""}${sStr}`;
+    };
+
     const handleReset = () => {
         // cleanup wavesurfer
         if (wavesurfer.current) {
@@ -269,7 +336,10 @@ const ClipperPopup = ({ wsKey }) => {
                 height: 100,
                 barWidth: 2,
                 barGap: 1,
-                mediaControls: true,
+                // Native <audio controls> intentionally omitted. Chromium fully suppresses
+                // keydown dispatch (even capture-phase) while its scrubber is mouse-held,
+                // which broke our hotkeys. Verified via diagnostic logging. Replaced with
+                // the custom transport bar below.
             };
 
             if (fileFormat === "mp4") {
@@ -346,19 +416,34 @@ const ClipperPopup = ({ wsKey }) => {
                 isLooping.current = false;
                 setLoopingActive(false);
                 region.play();
+                // Reflect the jump immediately — wavesurfer's first `timeupdate`
+                // after a seek lags by a frame or two, which made the slider thumb
+                // visibly drift back to region.start instead of snapping.
+                setCurrentTime(region.start);
             });
 
             wsRegions.on("region-out", (region) => {
                 if (isLooping.current) {
                     region.play();
+                    setCurrentTime(region.start);
                 }
             });
+
+            // Transport state for the custom control bar
+            ws.on("play", () => setIsPlaying(true));
+            ws.on("pause", () => setIsPlaying(false));
+            ws.on("timeupdate", (t) => {
+                if (!isSeekingRef.current) setCurrentTime(t);
+            });
+            ws.setVolume(volumeRef.current);
 
             wavesurfer.current = ws;
 
             return () => {
                 isLooping.current = false;
                 setLoopingActive(false);
+                setIsPlaying(false);
+                setCurrentTime(0);
                 ws.destroy();
             };
         }
@@ -371,6 +456,28 @@ const ClipperPopup = ({ wsKey }) => {
          */
         const handleKeyDown = (e) => {
             if (step !== "preview" || !isLoaded) return;
+
+            const active = document.activeElement;
+
+            if (transportRef.current?.contains(active)) {
+                // Inside the transport bar, only skip the keys the focused widget natively
+                // handles — let all other hotkeys (A/D/R/etc.) through so the user can
+                // still trim while a slider thumb is focused. MUI Slider focuses a hidden
+                // <input type="range">, so check both that and role="slider".
+                if (e.code === "Space" && active instanceof HTMLButtonElement) return;
+                const isSlider =
+                    (active instanceof HTMLInputElement && active.type === "range") ||
+                    active?.getAttribute("role") === "slider";
+                if (isSlider && e.code.startsWith("Arrow")) return;
+            } else if (
+                // Outside the transport bar: skip when typing in form fields (e.g.
+                // Start/End inputs) so cursor/value edits aren't hijacked.
+                active instanceof HTMLInputElement ||
+                active instanceof HTMLTextAreaElement ||
+                active?.isContentEditable
+            ) {
+                return;
+            }
 
             // Helper to get current region
             const getRegion = () => regions.current?.getRegions()[0];
@@ -614,6 +721,98 @@ const ClipperPopup = ({ wsKey }) => {
                                     <CircularProgress size={30} />
                                 </Box>
                             )}
+                        </Box>
+
+                        {/* Transport bar (custom — avoids native <audio controls> shadow-DOM
+                            keydown swallowing in Chromium). Uses a CSS grid so on mobile
+                            the seek slider drops to its own full-width row, giving room to
+                            grab the thumb. */}
+                        <Box
+                            ref={transportRef}
+                            sx={{
+                                display: "grid",
+                                gridTemplateColumns: "auto auto 1fr auto auto",
+                                gridTemplateAreas: {
+                                    xs: `"play current . duration volume" "seek seek seek seek seek"`,
+                                    sm: `"play current seek duration volume"`,
+                                },
+                                alignItems: "center",
+                                columnGap: 2,
+                                rowGap: 1,
+                                bgcolor: "action.hover",
+                                p: 1,
+                                borderRadius: 1,
+                            }}
+                        >
+                            <IconButton
+                                onClick={handlePlayPause}
+                                disabled={!isLoaded}
+                                size="small"
+                                aria-label={isPlaying ? "Pause" : "Play"}
+                                sx={{ gridArea: "play" }}
+                            >
+                                {isPlaying ? <Pause /> : <PlayArrow />}
+                            </IconButton>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    gridArea: "current",
+                                    minWidth: 55,
+                                    fontVariantNumeric: "tabular-nums",
+                                }}
+                            >
+                                {formatTime(currentTime)}
+                            </Typography>
+                            <Slider
+                                value={Math.min(currentTime, duration || 0)}
+                                min={0}
+                                max={duration || 1}
+                                step={0.01}
+                                onChange={handleSeek}
+                                onChangeCommitted={handleSeekCommitted}
+                                disabled={!isLoaded}
+                                size="small"
+                                sx={{
+                                    gridArea: "seek",
+                                    // MUI's default ~150ms transition on the thumb/track means
+                                    // 60Hz `timeupdate` events during playback retrigger the
+                                    // animation faster than it finishes, so the thumb never
+                                    // catches up. Snap-to-value matches actual playback position.
+                                    "& .MuiSlider-thumb, & .MuiSlider-track": { transition: "none" },
+                                }}
+                                aria-label="Seek"
+                            />
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    gridArea: "duration",
+                                    minWidth: 55,
+                                    fontVariantNumeric: "tabular-nums",
+                                }}
+                            >
+                                {formatTime(duration)}
+                            </Typography>
+                            <Box
+                                sx={{
+                                    gridArea: "volume",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                    width: { xs: "auto", sm: 140 },
+                                }}
+                            >
+                                <VolumeUp fontSize="small" />
+                                <Slider
+                                    value={volume}
+                                    min={0}
+                                    max={1}
+                                    step={0.01}
+                                    onChange={handleVolumeChange}
+                                    size="small"
+                                    aria-label="Volume"
+                                    sx={{ display: { xs: "none", sm: "block" } }}
+                                />
+                            </Box>
                         </Box>
 
                         {/* Controls */}

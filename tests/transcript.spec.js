@@ -700,4 +700,40 @@ test.describe("Transcript clipping", () => {
         await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText("Clip Editor")).not.toBeVisible();
     });
+
+    test("hotkeys fire when seek slider has focus", async ({ page, browserName }) => {
+        test.skip(browserName !== "chromium", "Trim preview audio is most stable on Chromium");
+        await loadInDevmode(page, mockconst.keyName);
+        await waitForFullSync(page);
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+
+        // Open the clip editor and enter the trim preview step.
+        await page.getByTestId("clip-mode-button").click();
+        await page.getByTestId(`line-button-${mockconst.emptyLineId}`).click();
+        await page.getByTestId(`line-button-${mockconst.emptyLineId - 1}`).click();
+        await expect(page.getByText("Clip Editor")).toBeVisible();
+        await page.getByRole("textbox", { name: "Clip Name" }).fill("Clip name");
+        await page.getByRole("combobox", { name: "File Format" }).click();
+        await page.getByRole("option", { name: "MP3 (Audio)" }).click();
+        await page.getByRole("button", { name: "Trim Clip" }).click();
+        await expect(page.getByText("Trim your clip")).toBeVisible();
+
+        // Wait for the audio to decode. the End input updates from "0" to the duration.
+        await expect(page.getByRole("spinbutton", { name: "End" })).not.toHaveValue("0");
+
+        // Move Start away from 0 so the reset hotkey has something to undo.
+        await page.getByRole("spinbutton", { name: "Start" }).fill("5");
+
+        // Focus the seek slider. The MUI Slider's visually-hidden <input type="range">
+        // becomes document.activeElement. the regression we're guarding against is the
+        // keyboard handler treating any focused HTMLInputElement as a typing target and
+        // bailing out, which silently broke every hotkey until the user clicked elsewhere.
+        await page.getByRole("slider", { name: "Seek" }).focus();
+
+        // Press R to reset the trim. With the fix, this fires despite slider focus.
+        await page.keyboard.press("r");
+
+        // Reset returns Start to 0. confirms the hotkey ran.
+        await expect(page.getByRole("spinbutton", { name: "Start" })).toHaveValue(/^0(\.0+)?$/);
+    });
 });
