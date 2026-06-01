@@ -16,6 +16,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
     const transcript = useAppStore((state) => state.transcript);
     const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
+    const pastStreams = useAppStore((state) => state.pastStreams);
     const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
     const startTime = useAppStore((state) => state.startTime);
     const mediaType = useAppStore((state) => state.mediaType);
@@ -32,7 +33,10 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     const open = lineMenuId > -1 ? Boolean(lineAnchorEl) : false;
     const selectedLine = activeTranscript.filter((line) => line.id === lineMenuId)[0];
     const ts = selectedLine?.timestamp;
-    const formattedTime = unixToRelative(ts, startTime);
+    const activeStartTime = pastStreamViewing
+        ? (pastStreams.find((s) => s.streamId === pastStreamViewing)?.startTime ?? 0)
+        : startTime;
+    const formattedTime = unixToRelative(ts, activeStartTime);
     const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, selectedLine?.fileId, lineMenuId);
 
     let openUrl = "";
