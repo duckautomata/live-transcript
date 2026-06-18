@@ -9,6 +9,10 @@ import useWebSocketModule, { ReadyState } from "react-use-websocket";
 // Robust check: works universally in Vite 7 (esbuild) and Vite 8 (Rolldown)
 const useWebSocket = typeof useWebSocketModule === "function" ? useWebSocketModule : useWebSocketModule.default;
 
+// How long the tab may stay hidden before we drop the connection and force a
+// fresh sync on return (instead of replaying frames buffered while away).
+const HIDDEN_DISCONNECT_MS = 10 * 60 * 1000; // 10 minutes
+
 /**
  * @typedef {import('./store/types').TranscriptLine} TranscriptLine
  * @typedef {import('./store/types').Segment} Segment
@@ -118,31 +122,44 @@ export const Websocket = ({ wsKey }) => {
     const hasReceivedPartialSync = useRef(false);
     const [shouldConnect, setShouldConnect] = useState(true);
     const disconnectTimeout = useRef(null);
+    const hiddenAt = useRef(null);
     const readyStateRef = useRef(ReadyState.CLOSED);
 
     useEffect(() => {
         const handleVisibilityChange = () => {
             const isVisible = !document.hidden;
             if (isVisible) {
+                // Decide based on how long we were actually away (wall clock)
+                const hiddenDuration = hiddenAt.current ? Date.now() - hiddenAt.current : 0;
+                hiddenAt.current = null;
+
                 if (disconnectTimeout.current) {
                     clearTimeout(disconnectTimeout.current);
                     disconnectTimeout.current = null;
-                    if (readyStateRef.current === ReadyState.OPEN) {
-                        setServerStatus("online");
-                    }
+                }
+
+                if (hiddenDuration >= HIDDEN_DISCONNECT_MS) {
+                    // Away long enough that our transcript is stale and the
+                    // socket may have a backlog of frames buffered while frozen.
+                    // Tear down and reopen so the server replies with a fresh
+                    // sync instead of us replaying the queued newLine events.
+                    triggerReconnect();
+                } else if (readyStateRef.current === ReadyState.OPEN) {
+                    // Came back quickly and the socket survived — resume as-is.
+                    setServerStatus("online");
                 } else {
+                    // Came back quickly but the socket dropped while hidden
+                    // (or the disconnect timer fired) — re-enable to reconnect.
                     setShouldConnect(true);
                 }
             } else {
-                disconnectTimeout.current = setTimeout(
-                    () => {
-                        setServerStatus("connecting");
-                        setShouldConnect(false);
-                        disconnectTimeout.current = null;
-                        hasReceivedPartialSync.current = false;
-                    },
-                    10 * 60 * 1000,
-                ); // 10 minutes
+                hiddenAt.current = Date.now();
+                disconnectTimeout.current = setTimeout(() => {
+                    setServerStatus("connecting");
+                    setShouldConnect(false);
+                    disconnectTimeout.current = null;
+                    hasReceivedPartialSync.current = false;
+                }, HIDDEN_DISCONNECT_MS);
             }
         };
 
