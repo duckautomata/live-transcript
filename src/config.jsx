@@ -1,5 +1,7 @@
 import dokiIcon from "./assets/icons/doki.jpg";
 import mintIcon from "./assets/icons/mint.jpg";
+import vicIcon from "./assets/icons/victoria.jpg";
+import phoebeIcon from "./assets/icons/phoebe.jpg";
 import { Avatar } from "@mui/material";
 import { Engineering } from "@mui/icons-material";
 
@@ -22,6 +24,18 @@ export const keyIcons = (size, devMode = false) => {
             icon: <Avatar src={mintIcon} alt="mint" sx={{ width: size, height: size }} />,
             value: "mint",
             testId: "key-icon-mint",
+        },
+        {
+            name: "Victoria",
+            icon: <Avatar src={vicIcon} alt="victoria" sx={{ width: size, height: size }} />,
+            value: "victoria",
+            testId: "key-icon-victoria",
+        },
+        {
+            name: "Phoebe",
+            icon: <Avatar src={phoebeIcon} alt="phoebe" sx={{ width: size, height: size }} />,
+            value: "phoebe",
+            testId: "key-icon-phoebe",
         },
     ];
 
