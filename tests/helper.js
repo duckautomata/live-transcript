@@ -82,6 +82,12 @@ export async function loadInDevmode(page, pathUrl) {
         await route.fulfill({ json: { status: "success", clip_id: "test_trimmed_clip" } });
     });
 
+    // Mock the Stream Tracker schedule so lateness metrics are deterministic
+    const mockScheduleCsv = await fs.readFile(path.resolve(__dirname, "mocks/mockSchedule.csv"), "utf8");
+    await page.route("**/*.csv", async (route) => {
+        await route.fulfill({ body: mockScheduleCsv, contentType: "text/csv" });
+    });
+
     // Mock Past Transcripts Endpoint
     await page.route("**/transcript/*", async (route) => {
         if (route.request().resourceType() === "fetch" || route.request().resourceType() === "xhr") {

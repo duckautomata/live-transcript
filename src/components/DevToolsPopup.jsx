@@ -23,6 +23,7 @@ import {
 import { Add, Delete, PlayArrow, Stop } from "@mui/icons-material";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { useAppStore } from "../store/store";
+import { SCHEDULE_MOCK_OPTIONS, scenarioNeedsActiveStream } from "../logic/scheduleMock";
 
 const TabPanel = (props) => {
     const { children, value, index, ...other } = props;
@@ -67,6 +68,9 @@ export default function DevToolsPopup() {
     const setMediaType = useAppStore((state) => state.setMediaType);
     const isLive = useAppStore((state) => state.isLive);
     const setIsLive = useAppStore((state) => state.setIsLive);
+    const scheduleMock = useAppStore((state) => state.scheduleMock);
+    const setScheduleMock = useAppStore((state) => state.setScheduleMock);
+    const clearLatenessHistory = useAppStore((state) => state.clearLatenessHistory);
 
     // Simulation State
     const [lineId, setLineId] = useState("");
@@ -326,6 +330,46 @@ export default function DevToolsPopup() {
                                     label="Is Live"
                                 />
                             </Box>
+                        </Box>
+
+                        <Box sx={{ border: "1px solid #ccc", p: 2, borderRadius: 1 }}>
+                            <Typography variant="h6">Stream Tracker Schedule</Typography>
+                            <Box sx={{ display: "flex", gap: 2, my: 2, alignItems: "center", flexWrap: "wrap" }}>
+                                <FormControl size="small" sx={{ minWidth: 340 }}>
+                                    <InputLabel>Mock Schedule</InputLabel>
+                                    <Select
+                                        data-testid="devtools-schedule-mock"
+                                        value={scheduleMock}
+                                        label="Mock Schedule"
+                                        onChange={(e) => setScheduleMock(e.target.value)}
+                                    >
+                                        {SCHEDULE_MOCK_OPTIONS.map((option) => (
+                                            <MenuItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <Button
+                                    data-testid="devtools-clear-tracker-history"
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={() => clearLatenessHistory()}
+                                >
+                                    Clear Tracker History
+                                </Button>
+                            </Box>
+                            <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
+                                Replaces the schedule the Tracker page downloads. Countdowns are anchored to the moment
+                                you pick the scenario, so they tick down from there. Mocked results are shown but never
+                                saved to the punctuality history.
+                            </Typography>
+                            {scenarioNeedsActiveStream(scheduleMock) && startTime <= 0 && (
+                                <Typography variant="caption" sx={{ color: "warning.main", display: "block", mt: 1 }}>
+                                    This scenario is measured against the active stream — set a Start Time above for it
+                                    to render.
+                                </Typography>
+                            )}
                         </Box>
 
                         <Box sx={{ border: "1px solid #ccc", p: 2, borderRadius: 1 }}>

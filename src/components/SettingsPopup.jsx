@@ -113,7 +113,7 @@ const SettingsPopup = () => {
                         control={
                             <Switch checked={devMode} onChange={(e) => setDevMode(e.target.checked)} name="devMode" />
                         }
-                        label="Developer Mode"
+                        label="Testing Mode"
                     />
                 </Box>
             </DialogContent>

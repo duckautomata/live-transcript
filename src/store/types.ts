@@ -161,6 +161,30 @@ export interface PerformanceSlice {
     clearMetrics: () => void;
 }
 
+export interface LatenessRecord {
+    streamId: string;
+    streamName: string;
+    platform: string;
+    /** Scheduled start, ms since epoch. */
+    scheduledMs: number;
+    /** Actual start, ms since epoch. */
+    actualMs: number;
+}
+
+export interface TrackerSlice {
+    /** Matched schedule-vs-actual records, keyed by streamer (wsKey). */
+    latenessHistory: Record<string, LatenessRecord[]>;
+    addLatenessRecords: (wsKey: string, records: LatenessRecord[]) => void;
+    /** Clears a single streamer's history, or every streamer when omitted. */
+    clearLatenessHistory: (wsKey?: string) => void;
+    /**
+     * Dev-only Stream Tracker schedule scenario; "off" uses the real schedule.
+     * Deliberately not persisted, so a refresh always returns to the real data.
+     */
+    scheduleMock: string;
+    setScheduleMock: (scenario: string) => void;
+}
+
 export interface TagFormatterSlice {
     formattedRows: any[];
     controls: Record<string, any>;
@@ -181,7 +205,8 @@ export type AppStore = AudioSlice &
     SettingsSlice &
     PerformanceSlice &
     TagFormatterSlice &
-    PastStreamSlice;
+    PastStreamSlice &
+    TrackerSlice;
 
 // Helper type for creating slices
 export type AppSliceCreator<T> = StateCreator<AppStore, [], [], T>;

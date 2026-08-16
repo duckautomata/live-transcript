@@ -232,7 +232,7 @@ export default function HelpPopup() {
                                         </blockquote>
                                     </li>
                                     <li>
-                                        Developer Mode
+                                        Testing Mode
                                         <blockquote>
                                             Enables technical details for debugging, such as the Live Timer and server
                                             status metrics.
@@ -271,8 +271,8 @@ export default function HelpPopup() {
                                     <li>
                                         Pages
                                         <blockquote>
-                                            Select how you want to use the transcripts. Either view them, graph them, or
-                                            use it to fix tags.
+                                            Select how you want to use the transcripts. Either view them, graph them,
+                                            track how punctual the streams are, or use it to fix tags.
                                         </blockquote>
                                     </li>
                                     <li>
@@ -697,22 +697,22 @@ export default function HelpPopup() {
                             </AccordionDetails>
                         </Accordion>
 
-                        {/* Developer Mode */}
+                        {/* Testing Mode */}
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
                                 aria-controls="panel1a-content"
                                 id="panel1a-header"
                             >
-                                <Typography>Developer Mode</Typography>
+                                <Typography>Testing Mode</Typography>
                             </AccordionSummary>
                             <AccordionDetails>
                                 <Typography variant="body1" gutterBottom>
-                                    Developer Mode enables technical details primarily used for debugging and
-                                    performance monitoring.
+                                    Testing Mode enables technical details primarily used for debugging and performance
+                                    monitoring.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>
-                                    To open the Dev Tools, enable Developer Mode in Settings and click on the Dev Tools
+                                    To open the Dev Tools, enable Testing Mode in Settings and click on the Dev Tools
                                     icon that appears below the Tag Fixer icon and above the GitHub icon.
                                 </Typography>
                                 <Typography variant="body1" gutterBottom>

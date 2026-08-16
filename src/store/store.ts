@@ -13,6 +13,7 @@ import { createSettingsSlice } from "./settingsSlice";
 import { createPerformanceSlice } from "./performanceSlice";
 import { createTagFormatterSlice } from "./tagFormatterSlice";
 import { createPastStreamSlice } from "./pastStreamSlice";
+import { createTrackerSlice } from "./trackerSlice";
 
 export const useAppStore = create<AppStore>()(
     persist(
@@ -28,6 +29,7 @@ export const useAppStore = create<AppStore>()(
             ...createPerformanceSlice(set, get, api),
             ...createTagFormatterSlice(set, get, api),
             ...createPastStreamSlice(set, get, api),
+            ...createTrackerSlice(set, get, api),
         }),
         {
             name: "live-transcript-settings", // The key in localStorage
@@ -44,6 +46,7 @@ export const useAppStore = create<AppStore>()(
                 membershipKey: state.membershipKey,
                 membershipInfo: state.membershipInfo,
                 useVirtualList: state.useVirtualList,
+                latenessHistory: state.latenessHistory,
             }),
         },
     ),

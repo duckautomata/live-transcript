@@ -10,7 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import { Construction, GitHub, Help, Home, DeveloperMode, Info } from "@mui/icons-material";
+import { Construction, GitHub, Help, Home, DeveloperMode, Info, QueryBuilder } from "@mui/icons-material";
 import { Tooltip, useMediaQuery } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import AudioFooter from "./AudioFooter";
@@ -48,6 +48,7 @@ export default function Sidebar({ wsKey, children }) {
     const pages = [
         { name: "View", icon: <LiveTvIcon />, value: "", testId: "page-button-view" },
         { name: "Graph", icon: <AssessmentIcon />, value: "graph", testId: "page-button-graph" },
+        { name: "Tracker", icon: <QueryBuilder />, value: "track", testId: "page-button-track" },
         { name: "Tag Formatter", icon: <Construction />, value: "tagFixer", testId: "page-button-tagFixer" },
     ];
 
