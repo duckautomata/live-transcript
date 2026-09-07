@@ -1,6 +1,7 @@
 import {
     Box,
     Button,
+    Divider,
     IconButton,
     InputAdornment,
     Tab,
@@ -11,7 +12,8 @@ import {
     useMediaQuery,
 } from "@mui/material";
 import { Clear, ExpandLess, ExpandMore, Info, Search, ContentCut } from "@mui/icons-material";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useDeferredValue, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import LineMenu from "../../components/LineMenu";
 import DevHeaderInfo from "../../components/DevHeaderInfo";
 import { useAppStore } from "../../store/store";
@@ -19,14 +21,24 @@ import ViewSkeleton from "./ViewSkeleton";
 import TranscriptVirtual from "./TranscriptVirtual";
 import TranscriptPagination from "./TranscriptPagination";
 import TranscriptFrame from "./TranscriptFrame";
+import TranscriptSkeleton from "./TranscriptSkeleton";
 import ConnectionBanner from "../../components/ConnectionBanner";
 import { timeToSeconds } from "../../logic/tagHelpers";
 import ViewTitleSelection from "./ViewTitleSelection";
 import { server } from "../../config";
+import { filterTranscript, normalizeSearchTerm } from "../../logic/search";
+import { STREAM_PARAM, parseLineHash } from "../../logic/links";
+
+/** Shared by every render without tags so memoized lines keep receiving a stable `undefined`. */
+const EMPTY_TAGS = new Map();
 
 /**
  * View component for the StreamLogs.
  * Acts as the main controller, displaying the header and the virtual transcript.
+ *
+ * The URL carries two pieces of view state so any line or past stream can be linked to, opened in a new
+ * tab, and restored with back/forward: `?stream=<id>` (the past stream being viewed) and `#L<id>` (a line
+ * to scroll to and highlight).
  *
  * @param {object} props
  * @param {string} props.wsKey
@@ -35,6 +47,7 @@ export default function View({ wsKey }) {
     const streamId = useAppStore((state) => state.streamId);
     const streamTitle = useAppStore((state) => state.streamTitle);
     const isLive = useAppStore((state) => state.isLive);
+    const isSynced = useAppStore((state) => state.isSynced);
     const startTime = useAppStore((state) => state.startTime);
     const mediaType = useAppStore((state) => state.mediaType);
     const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
@@ -48,19 +61,84 @@ export default function View({ wsKey }) {
     const clipMode = useAppStore((state) => state.clipMode);
     const toggleClipMode = useAppStore((state) => state.toggleClipMode);
     const clipStartIndex = useAppStore((state) => state.clipStartIndex);
+    const setAudioId = useAppStore((state) => state.setAudioId);
+    const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
+    const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
 
     const pastStreams = useAppStore((state) => state.pastStreams);
+    const pastStreamsLoaded = useAppStore((state) => state.pastStreamsLoaded);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
     const setPastStreamViewing = useAppStore((state) => state.setPastStreamViewing);
     const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
     const setPastStreamTranscript = useAppStore((state) => state.setPastStreamTranscript);
     const resetPastStreamTranscript = useAppStore((state) => state.resetPastStreamTranscript);
 
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const [searchTerm, setSearchTerm] = useState("");
     const [pendingJumpId, setPendingJumpId] = useState(-1);
     const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
     const [isLoadingPastStream, setIsLoadingPastStream] = useState(false);
     const [pastStreamError, setPastStreamError] = useState(null);
+    const searchInputRef = useRef(null);
+
+    // ---------------------------------------------------------------------------------------------
+    // Past stream selection: while this view is mounted the `?stream=` search param is the source of
+    // truth and the store mirrors it, so links, new tabs and back/forward all agree.
+    // ---------------------------------------------------------------------------------------------
+    const streamParam = useMemo(() => new URLSearchParams(location.search).get(STREAM_PARAM), [location.search]);
+    // Until the server has listed its past streams, a `?stream=` cannot be resolved (start time, media type),
+    // so the content area shows a skeleton instead of a transcript with zeroed stream info.
+    const showPastStreamLoading = isLoadingPastStream || (!!streamParam && !pastStreamsLoaded);
+
+    useEffect(() => {
+        setPastStreamViewing(streamParam);
+    }, [streamParam, setPastStreamViewing]);
+
+    useEffect(() => {
+        return () => {
+            setPastStreamViewing(null);
+        };
+    }, [setPastStreamViewing]);
+
+    // Drop a `?stream=` that points at the live stream or at a stream the server no longer has.
+    useEffect(() => {
+        if (!streamParam) return;
+        const isLiveStream = streamId !== "" && streamParam === streamId;
+        const isUnknown = pastStreamsLoaded && !pastStreams.some((s) => s.streamId === streamParam);
+        if (!isLiveStream && !isUnknown) return;
+
+        const params = new URLSearchParams(location.search);
+        params.delete(STREAM_PARAM);
+        const search = params.toString();
+        // Say why the page did not open where the link pointed (unless the deleted-stream toast already does).
+        if (isUnknown && !useAppStore.getState().deletedStreamNotice) {
+            useAppStore.getState().showToast("That stream is no longer available, showing the latest one", "info");
+        }
+        // A line hash belongs to the stream it was made on: keep it for the live stream, drop it with a
+        // stream the server no longer has.
+        navigate(
+            { pathname: location.pathname, search: search ? `?${search}` : "", hash: isUnknown ? "" : location.hash },
+            { replace: true },
+        );
+    }, [
+        streamParam,
+        streamId,
+        pastStreamsLoaded,
+        pastStreams,
+        location.pathname,
+        location.search,
+        location.hash,
+        navigate,
+    ]);
+
+    // Audio playback and a half-built clip belong to the stream they were started on.
+    useEffect(() => {
+        setAudioId(-1);
+        setClipStartIndex(-1);
+        setClipEndIndex(-1);
+    }, [pastStreamViewing, setAudioId, setClipStartIndex, setClipEndIndex]);
 
     // Fetch past stream transcript when viewing a past stream
     useEffect(() => {
@@ -103,17 +181,6 @@ export default function View({ wsKey }) {
         };
     }, [pastStreamViewing, wsKey, setPastStreamTranscript, resetPastStreamTranscript]);
 
-    // Validate pastStreamViewing is still in pastStreams
-    useEffect(() => {
-        if (pastStreamViewing && pastStreams.length > 0) {
-            const streamExists = pastStreams.some((s) => s.streamId === pastStreamViewing);
-            if (!streamExists) {
-                setPastStreamViewing(null);
-                resetPastStreamTranscript();
-            }
-        }
-    }, [pastStreamViewing, pastStreams, setPastStreamViewing, resetPastStreamTranscript]);
-
     const currentStreamInfo = useMemo(() => {
         if (pastStreamViewing) {
             return pastStreams.find((s) => s.streamId === pastStreamViewing);
@@ -143,34 +210,36 @@ export default function View({ wsKey }) {
 
     const isMobile = useMediaQuery("(max-width:768px)");
     const isOnline = serverStatus === "online";
-    const isEmpty = transcript.length === 0 && streamTitle === "";
+    const isEmpty = !pastStreamViewing && !streamParam && transcript.length === 0 && streamTitle === "";
 
-    // Height calculation
+    // Height: see the .view-height-* classes in App.css (dvh with a vh fallback for older browsers).
     const heightMap = {
-        "100%": "100vh",
-        "90%": "90vh",
-        "75%": "75vh",
-        "50%": "50vh",
+        "100%": 100,
+        "90%": 90,
+        "75%": 75,
+        "50%": 50,
     };
-    const containerHeight = `calc(${heightMap[transcriptHeight] || "100vh"} - 24px)`;
+    const containerHeightClass = `view-height-${heightMap[transcriptHeight] || 100}`;
 
     // Use correct transcript based on mode
     const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
 
-    // Filter transcript based on search term
+    // ---------------------------------------------------------------------------------------------
+    // Search. Typing is deferred so the input never waits for the list to re-render; clearing applies
+    // at once (it is cheap, and jump-to-line relies on the unfiltered list being there immediately).
+    // ---------------------------------------------------------------------------------------------
+    const deferredSearchTerm = useDeferredValue(searchTerm);
+    const activeSearchTerm = normalizeSearchTerm(searchTerm === "" ? "" : deferredSearchTerm);
+    const isFiltering = activeSearchTerm !== "";
 
-    const filteredTranscript = useMemo(() => {
-        if (!searchTerm) {
-            return activeTranscript;
-        }
-        return activeTranscript.filter((line) => {
-            let text = "";
-            line?.segments?.forEach((segment) => {
-                text += segment.text + " ";
-            });
-            return text.toLowerCase().includes(searchTerm.toLowerCase());
-        });
-    }, [activeTranscript, searchTerm]);
+    const filteredTranscript = useMemo(
+        () => filterTranscript(activeTranscript, activeSearchTerm),
+        [activeTranscript, activeSearchTerm],
+    );
+
+    // Latest filtered list for the hash effect below, without re-running it on every keystroke.
+    const filteredTranscriptRef = useRef(filteredTranscript);
+    filteredTranscriptRef.current = filteredTranscript;
 
     const isOutOfSync = useMemo(() => {
         if (activeTranscript.length < 2) return false;
@@ -185,14 +254,104 @@ export default function View({ wsKey }) {
 
     const displayData = filteredTranscript;
 
-    const jumpToLine = (/** @type {number} */ id) => {
-        if (tabValue === 2) {
-            setTabValue(useVirtualList ? 1 : 0);
-        }
-        if (searchTerm) {
+    /** Base every line link is built on, so `?stream=` survives a click on a timestamp. */
+    const linkBase = location.pathname + location.search;
+
+    // ---------------------------------------------------------------------------------------------
+    // Jumping to a line. React Router applies a navigation as a low-priority transition, so the URL
+    // (and any effect keyed on it) can commit well after the click. In-app clicks therefore jump right
+    // away and pre-announce the line id; the hash effect below only acts on navigations it was not told
+    // about (initial load, back/forward, a pasted link).
+    // ---------------------------------------------------------------------------------------------
+    const expectedHashJumpRef = useRef(null);
+    const handledJumpKeyRef = useRef(null);
+
+    /**
+     * Show a line: leave the frame grid for the list the user last used, drop the filter when the line
+     * is hidden by it (or when asked to), and scroll to the line.
+     */
+    const revealLine = useCallback((/** @type {number} */ id, { clearSearch = false } = {}) => {
+        expectedHashJumpRef.current = id;
+        setTabValue((current) => (current === 2 ? (useAppStore.getState().useVirtualList ? 1 : 0) : current));
+        if (clearSearch || !filteredTranscriptRef.current.some((line) => line.id === id)) {
             setSearchTerm("");
         }
         setPendingJumpId(id);
+    }, []);
+
+    /** "Jump to line" from the line menu: show the line in the full, unfiltered transcript. */
+    const jumpToLine = useCallback((/** @type {number} */ id) => revealLine(id, { clearSearch: true }), [revealLine]);
+
+    /** A click on a line's timestamp link. Modified clicks are left to the browser (new tab / window). */
+    const handleLineLinkClick = useCallback(
+        (event, /** @type {number} */ id) => {
+            if (event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
+            revealLine(id);
+        },
+        [revealLine],
+    );
+
+    // Scroll to and highlight the line named in the hash (#L<id>) for navigations that did not come from a
+    // click handled above. location.key makes re-navigating to the same hash scroll again. Waits until the
+    // transcript it refers to has fully loaded so a deep link opened in a new tab lands on the right line.
+    const dataReady = pastStreamViewing ? !isLoadingPastStream && pastStreamTranscript.length > 0 : isSynced;
+    useEffect(() => {
+        const targetId = parseLineHash(location.hash);
+        if (targetId === null || handledJumpKeyRef.current === location.key) return;
+
+        if (expectedHashJumpRef.current === targetId) {
+            // An in-app click already performed this jump.
+            expectedHashJumpRef.current = null;
+            handledJumpKeyRef.current = location.key;
+            return;
+        }
+
+        if (!dataReady) return;
+        // Not there yet: keep checking as lines arrive (a link shared during a live stream can be a few
+        // seconds ahead of this client). The check is cheap and stops once the line shows up.
+        if (!activeTranscript.some((line) => line.id === targetId)) return;
+        handledJumpKeyRef.current = location.key;
+        revealLine(targetId);
+    }, [location.key, location.hash, dataReady, activeTranscript, revealLine]);
+
+    // Ctrl/Cmd+F focuses the transcript search (the browser's find cannot see virtualized lines);
+    // Escape clears it, then blurs it. Left alone while a dialog or menu is open.
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            const input = searchInputRef.current;
+            if (!input) return;
+
+            if (
+                (event.ctrlKey || event.metaKey) &&
+                !event.altKey &&
+                !event.shiftKey &&
+                event.key.toLowerCase() === "f"
+            ) {
+                // Leave the browser's own find alone while a dialog or menu is open, or when the field
+                // already has focus (a second Ctrl+F then reaches the page as usual).
+                if (document.querySelector(".MuiModal-root") || document.activeElement === input) return;
+                event.preventDefault();
+                input.focus();
+                input.select();
+            } else if (event.key === "Escape" && document.activeElement === input) {
+                if (input.value) {
+                    setSearchTerm("");
+                } else {
+                    input.blur();
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
+    /** Clears the search and puts the cursor back into the field. */
+    const handleClearSearch = () => {
+        setSearchTerm("");
+        searchInputRef.current?.focus();
     };
 
     const handleTabChange = (event, newValue) => {
@@ -206,135 +365,131 @@ export default function View({ wsKey }) {
         // or we could leave it as is so if they switch back it remembers the last list mode.
     };
 
-    // Memoize tags map for performance
+    // Tag helper markers, keyed by line id and then segment index. Built from the whole transcript (not
+    // the filtered list) so typing never rebuilds it and a tag always sits on its true nearest line. A
+    // shared empty map is returned when there are no tags, so memoized lines keep a stable `undefined`.
     const tagsMap = useMemo(() => {
+        if (!formattedRows?.length || activeTranscript.length === 0) return EMPTY_TAGS;
+
         const map = new Map();
-        if (!formattedRows || !displayData || displayData.length === 0) return map;
-
-        const firstLine = displayData[0];
-        const lastLine = displayData[displayData.length - 1];
-        const firstLineTimestamp = firstLine.timestamp;
-        const lastLineTimestamp = lastLine.timestamp;
-        // const THRESHOLD = 5; // Seconds beyond last line
-
-        // Optimized approach:
-        // 1. Iterate tags.
-        // 2. Binary search displayData for closest line.
-        // 3. Scan segments in that line for closest segment.
-        // 4. Map Key: `${lineId}_${segmentIndex}`
+        const lines = activeTranscript;
+        const firstLineTimestamp = lines[0].timestamp;
+        const lastLineTimestamp = lines[lines.length - 1].timestamp;
+        const baseTime = Number(activeStartTime) || 0;
 
         formattedRows.forEach((row) => {
             // Collection headers share a timestamp with their first tag, which already
-            // carries the group name in its tooltip — skip them to avoid duplicate entries.
+            // carries the group name in its tooltip - skip them to avoid duplicate entries.
             if (row.type === "header" && row.subtype === "collection") return;
-            if (row.timestamp) {
-                const relativeSeconds = timeToSeconds(row.timestamp);
-                const absoluteTimestamp = (activeStartTime || 0) + relativeSeconds;
+            if (!row.timestamp) return;
+            const absoluteTimestamp = baseTime + timeToSeconds(row.timestamp);
 
-                // Filter out tags before first line or after last line
-                if (absoluteTimestamp < firstLineTimestamp || absoluteTimestamp > lastLineTimestamp) {
-                    return;
+            // Filter out tags before first line or after last line
+            if (absoluteTimestamp < firstLineTimestamp || absoluteTimestamp > lastLineTimestamp) {
+                return;
+            }
+
+            // Binary search for the closest line
+            let low = 0;
+            let high = lines.length - 1;
+            let closestLineIndex = -1;
+            let minDiff = Infinity;
+
+            while (low <= high) {
+                const mid = Math.floor((low + high) / 2);
+                const diff = lines[mid].timestamp - absoluteTimestamp;
+
+                if (Math.abs(diff) < minDiff) {
+                    minDiff = Math.abs(diff);
+                    closestLineIndex = mid;
                 }
 
-                // Binary Search for Closest Line
-                let low = 0;
-                let high = displayData.length - 1;
-                let closestLineIndex = -1;
-                let minDiff = Infinity;
-
-                while (low <= high) {
-                    const mid = Math.floor((low + high) / 2);
-                    const line = displayData[mid];
-                    const diff = line.timestamp - absoluteTimestamp;
-
-                    if (Math.abs(diff) < minDiff) {
-                        minDiff = Math.abs(diff);
-                        closestLineIndex = mid;
-                    }
-
-                    if (diff === 0) {
-                        closestLineIndex = mid; // Exact match found
-                        break;
-                    } else if (diff < 0) {
-                        low = mid + 1;
-                    } else {
-                        high = mid - 1;
-                    }
-                }
-
-                // Check neighbors of closestLineIndex just in case
-                let bestLine = displayData[closestLineIndex];
-
-                if (bestLine) {
-                    // Check neighbors
-                    const candidates = [closestLineIndex - 1, closestLineIndex, closestLineIndex + 1];
-                    candidates.forEach((idx) => {
-                        if (idx >= 0 && idx < displayData.length) {
-                            const line = displayData[idx];
-                            if (
-                                Math.abs(line.timestamp - absoluteTimestamp) <
-                                Math.abs(bestLine.timestamp - absoluteTimestamp)
-                            ) {
-                                bestLine = line;
-                            }
-                        }
-                    });
-
-                    // Find closest segment in bestLine
-                    let bestSegIndex = 0;
-                    let minDifference = Math.abs(bestLine.timestamp - absoluteTimestamp);
-
-                    if (bestLine.segments && bestLine.segments.length > 0) {
-                        let minSegDiff = Math.abs(bestLine.segments[0].timestamp - absoluteTimestamp);
-
-                        for (let i = 1; i < bestLine.segments.length; i++) {
-                            const diff = Math.abs(bestLine.segments[i].timestamp - absoluteTimestamp);
-                            if (diff < minSegDiff) {
-                                minSegDiff = diff;
-                                bestSegIndex = i;
-                            }
-                        }
-                        minDifference = minSegDiff;
-                    }
-
-                    // Filter out tags that are too far from the closest line/segment
-                    if (minDifference > 8) {
-                        return;
-                    }
-
-                    // Assign Tag
-                    const key = `${bestLine.id}_${bestSegIndex}`;
-                    if (!map.has(key)) {
-                        map.set(key, []);
-                    }
-                    map.get(key).push(row);
+                if (diff === 0) {
+                    closestLineIndex = mid; // Exact match found
+                    break;
+                } else if (diff < 0) {
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
                 }
             }
+
+            let bestLine = lines[closestLineIndex];
+            if (!bestLine) return;
+
+            // Check neighbors just in case
+            for (const idx of [closestLineIndex - 1, closestLineIndex + 1]) {
+                const line = lines[idx];
+                if (
+                    line &&
+                    Math.abs(line.timestamp - absoluteTimestamp) < Math.abs(bestLine.timestamp - absoluteTimestamp)
+                ) {
+                    bestLine = line;
+                }
+            }
+
+            // Find closest segment in bestLine
+            let bestSegIndex = 0;
+            let minDifference = Math.abs(bestLine.timestamp - absoluteTimestamp);
+
+            if (bestLine.segments && bestLine.segments.length > 0) {
+                let minSegDiff = Math.abs(bestLine.segments[0].timestamp - absoluteTimestamp);
+
+                for (let i = 1; i < bestLine.segments.length; i++) {
+                    const diff = Math.abs(bestLine.segments[i].timestamp - absoluteTimestamp);
+                    if (diff < minSegDiff) {
+                        minSegDiff = diff;
+                        bestSegIndex = i;
+                    }
+                }
+                minDifference = minSegDiff;
+            }
+
+            // Filter out tags that are too far from the closest line/segment
+            if (minDifference > 8) {
+                return;
+            }
+
+            let lineTags = map.get(bestLine.id);
+            if (!lineTags) {
+                lineTags = {};
+                map.set(bestLine.id, lineTags);
+            }
+            (lineTags[bestSegIndex] ??= []).push(row);
         });
         return map;
-    }, [formattedRows, displayData, activeStartTime]);
+    }, [formattedRows, activeTranscript, activeStartTime]);
 
     const showTitle = !isHeaderMinimized || isMobile;
+
+    // A different stream is a different list: remounting it starts at the newest line and resets the
+    // page / live-edge / unread state instead of keeping the scroll position of the previous transcript.
+    const activeStreamKey = pastStreamViewing || "live";
 
     const renderContent = () => {
         switch (tabValue) {
             case 2:
                 return (
                     <TranscriptFrame
+                        key={activeStreamKey}
                         mediaBaseUrl={mediaBaseUrl}
                         displayData={displayData}
                         streamId={pastStreamViewing || streamId}
                         wsKey={wsKey}
                         tagsMap={tagsMap}
                         startTime={activeStartTime}
+                        searchTerm={activeSearchTerm}
+                        linkBase={linkBase}
+                        onLineLinkClick={handleLineLinkClick}
                     />
                 );
             case 1:
                 return (
                     <TranscriptVirtual
+                        key={activeStreamKey}
                         displayData={displayData}
                         transcriptLength={activeTranscript.length}
-                        searchTerm={searchTerm}
+                        searchTerm={activeSearchTerm}
                         setSearchTerm={setSearchTerm}
                         isLive={activeIsLive}
                         isOnline={isOnline}
@@ -342,17 +497,23 @@ export default function View({ wsKey }) {
                         setPendingJumpId={setPendingJumpId}
                         tagsMap={tagsMap}
                         startTime={activeStartTime}
+                        linkBase={linkBase}
+                        onLineLinkClick={handleLineLinkClick}
                     />
                 );
             case 0:
             default:
                 return (
                     <TranscriptPagination
+                        key={activeStreamKey}
                         displayData={displayData}
                         pendingJumpId={pendingJumpId}
                         setPendingJumpId={setPendingJumpId}
                         tagsMap={tagsMap}
                         startTime={activeStartTime}
+                        searchTerm={activeSearchTerm}
+                        linkBase={linkBase}
+                        onLineLinkClick={handleLineLinkClick}
                     />
                 );
         }
@@ -360,19 +521,19 @@ export default function View({ wsKey }) {
 
     return (
         <>
-            {(serverStatus !== "online" && serverStatus !== "reconnecting") || isLoadingPastStream ? (
-                <ViewSkeleton serverStatus={isLoadingPastStream ? "loading" : serverStatus} />
+            {serverStatus !== "online" && serverStatus !== "reconnecting" ? (
+                <ViewSkeleton serverStatus={serverStatus} />
             ) : (
                 <>
-                    {isEmpty && !isLoadingPastStream ? (
+                    {isEmpty ? (
                         <Box
+                            className={containerHeightClass}
                             sx={{
                                 display: "flex",
                                 flexDirection: "column",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 textAlign: "center",
-                                height: containerHeight,
                             }}
                         >
                             {pastStreamError ? (
@@ -402,16 +563,17 @@ export default function View({ wsKey }) {
                         </Box>
                     ) : (
                         <Box
+                            className={containerHeightClass}
                             sx={{
                                 display: "flex",
                                 flexDirection: "column",
-                                height: containerHeight,
+
                                 bgcolor: "background.default",
                             }}
                         >
                             <Box sx={{ flexShrink: 0 }}>
                                 {serverStatus === "reconnecting" && <ConnectionBanner />}
-                                <LineMenu wsKey={wsKey} jumpToLine={jumpToLine} />
+                                <LineMenu wsKey={wsKey} jumpToLine={jumpToLine} linkBase={linkBase} />
                                 {showTitle && <ViewTitleSelection />}
                                 {!isHeaderMinimized && isLive && devMode && (
                                     <DevHeaderInfo startTime={activeStartTime} />
@@ -423,10 +585,12 @@ export default function View({ wsKey }) {
                                         </Typography>
                                     </Box>
                                 )}
-                                {transcript.length > 0 && (
+                                {(activeTranscript.length > 0 || showPastStreamLoading) && (
                                     <Box
                                         sx={{
                                             display: "flex",
+                                            flexWrap: "wrap",
+                                            gap: 1,
                                             width: "100%",
                                             alignItems: "center",
                                             justifyContent: "center",
@@ -435,6 +599,7 @@ export default function View({ wsKey }) {
                                         }}
                                     >
                                         <TextField
+                                            inputRef={searchInputRef}
                                             label="Search Transcript"
                                             variant="outlined"
                                             size="small"
@@ -449,19 +614,38 @@ export default function View({ wsKey }) {
                                                             <Search />
                                                         </InputAdornment>
                                                     ),
+                                                    endAdornment: searchTerm ? (
+                                                        <InputAdornment position="end">
+                                                            {isFiltering && (
+                                                                <Typography
+                                                                    variant="caption"
+                                                                    aria-live="polite"
+                                                                    data-testid="search-match-count"
+                                                                    sx={{
+                                                                        mr: 0.5,
+                                                                        whiteSpace: "nowrap",
+                                                                        color: "text.secondary",
+                                                                        fontVariantNumeric: "tabular-nums",
+                                                                    }}
+                                                                >
+                                                                    {displayData.length} / {activeTranscript.length}
+                                                                </Typography>
+                                                            )}
+                                                            <IconButton
+                                                                size="small"
+                                                                edge="end"
+                                                                onClick={handleClearSearch}
+                                                                aria-label="clear search"
+                                                                data-testid="clear-search"
+                                                            >
+                                                                <Clear fontSize="small" />
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ) : null,
                                                 },
                                             }}
-                                            sx={{ width: isMobile ? "100%" : "50%" }}
+                                            sx={{ flex: isMobile ? "1 1 200px" : "0 1 50%" }}
                                         />
-                                        {searchTerm && (
-                                            <IconButton
-                                                onClick={() => setSearchTerm("")}
-                                                aria-label="clear search"
-                                                data-testid="clear-search"
-                                            >
-                                                <Clear />
-                                            </IconButton>
-                                        )}
                                         <Tooltip title={clipMode ? "Exit Clip Mode" : "Enter Clip Mode"}>
                                             <Button
                                                 data-testid="clip-mode-button"
@@ -470,13 +654,17 @@ export default function View({ wsKey }) {
                                                 variant={clipMode ? "contained" : "text"}
                                                 startIcon={<ContentCut />}
                                                 size="small"
-                                                sx={{ ml: 1, whiteSpace: "nowrap" }}
+                                                sx={{ whiteSpace: "nowrap" }}
                                             >
                                                 {isMobile ? "Clip" : "Clip Mode"}
                                             </Button>
                                         </Tooltip>
                                         <Tooltip title={isHeaderMinimized ? "Show Header" : "Minimize Header"}>
-                                            <IconButton onClick={() => setIsHeaderMinimized(!isHeaderMinimized)}>
+                                            <IconButton
+                                                onClick={() => setIsHeaderMinimized(!isHeaderMinimized)}
+                                                aria-label={isHeaderMinimized ? "Show header" : "Minimize header"}
+                                                aria-expanded={!isHeaderMinimized}
+                                            >
                                                 {isHeaderMinimized ? <ExpandMore /> : <ExpandLess />}
                                             </IconButton>
                                         </Tooltip>
@@ -508,8 +696,9 @@ export default function View({ wsKey }) {
                                             sx={{ minHeight: "48px" }}
                                             indicatorColor="primary"
                                             textColor="primary"
-                                            variant="scrollable"
+                                            variant={isMobile ? "fullWidth" : "scrollable"}
                                             scrollButtons="auto"
+                                            aria-label="Transcript layout"
                                             allowScrollButtonsMobile
                                         >
                                             <Tab
@@ -535,6 +724,7 @@ export default function View({ wsKey }) {
                                                                 fontSize: "0.7rem",
                                                                 opacity: 0.8,
                                                                 textTransform: "none",
+                                                                display: { xs: "none", sm: "block" },
                                                             }}
                                                         >
                                                             Original Pagination
@@ -566,6 +756,7 @@ export default function View({ wsKey }) {
                                                                 fontSize: "0.7rem",
                                                                 opacity: 0.8,
                                                                 textTransform: "none",
+                                                                display: { xs: "none", sm: "block" },
                                                             }}
                                                         >
                                                             Pauses when scrolling
@@ -598,6 +789,7 @@ export default function View({ wsKey }) {
                                                                     fontSize: "0.7rem",
                                                                     opacity: 0.8,
                                                                     textTransform: "none",
+                                                                    display: { xs: "none", sm: "block" },
                                                                 }}
                                                             >
                                                                 Grid of Line Images
@@ -610,16 +802,16 @@ export default function View({ wsKey }) {
                                         </Tabs>
                                     </Box>
                                 )}
-                                <hr />
+                                <Divider />
                             </Box>
                             {pastStreamError ? (
                                 <Box
+                                    className={containerHeightClass}
                                     sx={{
                                         display: "flex",
                                         flexDirection: "column",
                                         alignItems: "center",
                                         textAlign: "center",
-                                        height: containerHeight,
                                     }}
                                 >
                                     <Typography variant="h6" color="error" gutterBottom>
@@ -627,6 +819,9 @@ export default function View({ wsKey }) {
                                     </Typography>
                                     <Typography variant="body1">{pastStreamError}</Typography>
                                 </Box>
+                            ) : showPastStreamLoading ? (
+                                // The header (title picker, search, tabs) stays put while a past stream loads.
+                                <TranscriptSkeleton />
                             ) : (
                                 renderContent()
                             )}

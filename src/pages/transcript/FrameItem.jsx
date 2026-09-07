@@ -6,7 +6,19 @@ import { useAppStore } from "../../store/store";
 import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
 import { getFrameUrl } from "../../logic/mediaUrls";
 
-const FrameItem = memo(({ mediaBaseUrl, line, tagsMap, streamId, wsKey, lastSelectedId, onFrameClick, startTime }) => {
+/**
+ * One tile of the frame grid. Keyboard reachable (Enter / Space open the same dialog as a click).
+ * @param {object} props
+ * @param {string} props.mediaBaseUrl
+ * @param {import("../../store/types").TranscriptLine} props.line
+ * @param {Record<number, any[]> | undefined} props.lineTags - Tag rows for this line, keyed by segment index.
+ * @param {string} props.streamId
+ * @param {string} props.wsKey
+ * @param {boolean} props.isSelected - Whether this is the tile last opened in the dialog.
+ * @param {function(import("../../store/types").TranscriptLine): void} props.onFrameClick
+ * @param {number} props.startTime
+ */
+const FrameItem = memo(({ mediaBaseUrl, line, lineTags, streamId, wsKey, isSelected, onFrameClick, startTime }) => {
     const theme = useTheme();
     const timeFormat = useAppStore((state) => state.timeFormat);
     const storeStartTime = useAppStore((state) => state.startTime);
@@ -27,27 +39,23 @@ const FrameItem = memo(({ mediaBaseUrl, line, tagsMap, streamId, wsKey, lastSele
     let borderColor = "transparent";
     const tooltipLines = [];
 
-    if (tagsMap && line.segments) {
+    if (lineTags) {
         let isChapter = false;
         let isCollection = false;
         let isTag = false;
 
-        line.segments.forEach((seg, i) => {
-            const key = `${line.id}_${i}`;
-            const tags = tagsMap.get(key);
-            if (tags) {
-                tags.forEach((t) => {
-                    if (t.type === "header") {
-                        if (t.subtype === "chapter") isChapter = true;
-                        if (t.subtype === "collection") isCollection = true;
-                        tooltipLines.push(`[${t.subtype}] ${t.name}`);
-                    } else {
-                        if (t.subtype === "collection") isCollection = true;
-                        isTag = true;
-                        tooltipLines.push(t.text);
-                    }
-                });
-            }
+        Object.values(lineTags).forEach((tags) => {
+            tags.forEach((t) => {
+                if (t.type === "header") {
+                    if (t.subtype === "chapter") isChapter = true;
+                    if (t.subtype === "collection") isCollection = true;
+                    tooltipLines.push(`[${t.subtype}] ${t.name}`);
+                } else {
+                    if (t.subtype === "collection") isCollection = true;
+                    isTag = true;
+                    tooltipLines.push(t.text);
+                }
+            });
         });
 
         if (isChapter) borderColor = orange[500];
@@ -68,24 +76,37 @@ const FrameItem = memo(({ mediaBaseUrl, line, tagsMap, streamId, wsKey, lastSele
             ""
         );
 
+    const timestampText = formatTimestamp(line.timestamp);
+
+    const handleKeyDown = (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onFrameClick(line);
+        }
+    };
+
     return (
-        <Box data-testid={`transcript-frame-${line.id}`} role="transcript-frame" sx={{ width: "100%" }}>
+        <Box data-testid={`transcript-frame-${line.id}`} sx={{ width: "100%" }}>
             <Tooltip title={tooltipContent} arrow placement="top">
                 <Paper
                     elevation={2}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Frame ${line.id}, ${timestampText}`}
                     sx={{
                         cursor: "pointer",
                         overflow: "hidden",
                         position: "relative",
-                        outline: line.id === lastSelectedId ? `3px solid ${theme.palette.primary.main}` : "none",
+                        outline: isSelected ? `3px solid ${theme.palette.primary.main}` : "none",
                         border: `4px solid ${borderColor}`,
-                        "&:hover": {
+                        "&:hover, &:focus-visible": {
                             outline: `3px solid ${theme.palette.primary.light}`,
                         },
                         aspectRatio: "16/9",
                         boxSizing: "border-box", // Ensure border doesn't break size
                     }}
                     onClick={() => onFrameClick(line)}
+                    onKeyDown={handleKeyDown}
                 >
                     {line.mediaAvailable ? (
                         <FrameImage
@@ -126,7 +147,7 @@ const FrameItem = memo(({ mediaBaseUrl, line, tagsMap, streamId, wsKey, lastSele
                         }}
                     >
                         <Typography variant="caption" sx={{ display: "block", lineHeight: 1 }}>
-                            {formatTimestamp(line.timestamp)}
+                            {timestampText}
                         </Typography>
                     </Box>
                 </Paper>

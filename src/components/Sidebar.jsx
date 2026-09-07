@@ -12,27 +12,29 @@ import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import { Construction, GitHub, Help, Home, DeveloperMode, Info, QueryBuilder } from "@mui/icons-material";
 import { Tooltip, useMediaQuery } from "@mui/material";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import AudioFooter from "./AudioFooter";
 import { keyIcons } from "../config";
 import { useAppStore } from "../store/store";
+import { currentPage, pagePath } from "../logic/links";
+
+const GITHUB_URL = "https://github.com/duckautomata/live-transcript";
 
 /**
  * The main application sidebar containing navigation and streamers list.
+ * Navigation items are real links so they can be opened in a new tab (middle-click / ctrl+click).
  * @param {object} props
  * @param {string} props.wsKey - The current active WebSocket channel key.
  * @param {React.ReactNode} props.children - The main content area children.
  */
 export default function Sidebar({ wsKey, children }) {
-    const location = useLocation();
-    const navigate = useNavigate();
+    const { pathname } = useLocation();
 
     const sidebarOpen = useAppStore((state) => state.sidebarOpen);
     const setSidebarOpen = useAppStore((state) => state.setSidebarOpen);
     const setAudioId = useAppStore((state) => state.setAudioId);
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
     const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
-    const setPastStreamViewing = useAppStore((state) => state.setPastStreamViewing);
     const devMode = useAppStore((state) => state.devMode);
 
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -40,10 +42,14 @@ export default function Sidebar({ wsKey, children }) {
     const setInfoOpen = useAppStore((state) => state.setInfoOpen);
     const setSettingsOpen = useAppStore((state) => state.setSettingsOpen);
     const setDevToolsOpen = useAppStore((state) => state.setDevToolsOpen);
-    const [width, setWidth] = useState(window.innerWidth);
     const isMobile = useMediaQuery("(max-width:768px)");
     const drawerWidth = isMobile ? 180 : 200; // Slightly wider on mobile for better touch targets if needed, or keep same.
     const drawerWidthCollapsed = 60;
+
+    // On desktop the drawer can be collapsed to icons only; on mobile it is either fully open or hidden.
+    const showLabels = isMobile || sidebarOpen;
+    const collapsed = !isMobile && !sidebarOpen;
+    const activePage = currentPage(pathname);
 
     const pages = [
         { name: "View", icon: <LiveTvIcon />, value: "", testId: "page-button-view" },
@@ -51,6 +57,14 @@ export default function Sidebar({ wsKey, children }) {
         { name: "Tracker", icon: <QueryBuilder />, value: "track", testId: "page-button-track" },
         { name: "Tag Formatter", icon: <Construction />, value: "tagFixer", testId: "page-button-tagFixer" },
     ];
+
+    // Leaving a page ends audio playback and any half-built clip. Keyed on the path so it also runs
+    // for back/forward navigation and links opened from anywhere, not just sidebar clicks.
+    useEffect(() => {
+        setAudioId(-1);
+        setClipStartIndex(-1);
+        setClipEndIndex(-1);
+    }, [pathname, setAudioId, setClipStartIndex, setClipEndIndex]);
 
     const handleCollapseToggle = () => {
         if (isMobile) {
@@ -60,77 +74,32 @@ export default function Sidebar({ wsKey, children }) {
         }
     };
 
-    const handleHomeButton = () => {
-        // On mobile, close sidebar when navigating
+    /** On mobile the drawer covers the page, so close it once a link is followed. */
+    const closeMobileDrawer = () => {
         if (isMobile) setMobileOpen(false);
-        navigate("/");
-        setAudioId(-1);
-        setClipStartIndex(-1);
-        setClipEndIndex(-1);
-        setPastStreamViewing(null);
     };
 
-    const handleStreamerChange = (value) => {
-        // On mobile, close sidebar when navigating
-        if (isMobile) setMobileOpen(false);
-
-        const parts = location.pathname.split("/");
-        if (parts.length < 2) {
-            parts.push(value);
-        } else {
-            parts[1] = value;
-        }
-        // ensures we do not get a /key (View would not show as selected), always /key/
-        if (parts.length === 2) {
-            parts.push("");
-        }
-        if (parts.join("/") !== location.pathname) {
-            navigate(parts.join("/"));
-            setAudioId(-1);
-            setClipStartIndex(-1);
-            setClipEndIndex(-1);
-            setPastStreamViewing(null);
-        }
+    const itemButtonSx = {
+        minHeight: 48,
+        justifyContent: sidebarOpen ? "initial" : "center",
+        px: 2.5,
+        overflow: "hidden",
     };
 
-    const handlePageChange = (value) => {
-        // On mobile, close sidebar when navigating
-        if (isMobile) setMobileOpen(false);
-
-        const parts = location.pathname.split("/");
-        if (parts.length === 2 && parts[1] !== "") {
-            parts.push(value);
-        } else if (parts.length > 2) {
-            parts[2] = value;
-        } else {
-            return;
-        }
-
-        if (parts.join("/") !== location.pathname) {
-            navigate(parts.join("/"));
-            setAudioId(-1);
-            setClipStartIndex(-1);
-            setClipEndIndex(-1);
-            setPastStreamViewing(null);
-        }
+    const itemIconSx = {
+        minWidth: 0,
+        mr: sidebarOpen ? 3 : "auto",
+        justifyContent: "center",
     };
 
-    useEffect(() => {
-        const updateWidth = () => {
-            setWidth(window.innerWidth);
-        };
+    const groupLabelSx = {
+        mt: 2,
+        ml: 1,
+        display: showLabels ? "block" : "none",
+    };
 
-        // Log initial width
-        updateWidth();
-
-        // Add resize event listener
-        window.addEventListener("resize", updateWidth);
-
-        // Cleanup on unmount
-        return () => {
-            window.removeEventListener("resize", updateWidth);
-        };
-    }, []);
+    /** Tooltip text shown next to an icon-only item; hidden when the label is visible. */
+    const tooltipFor = (name) => (collapsed ? name : "");
 
     return (
         <Box sx={{ display: "flex" }}>
@@ -150,6 +119,7 @@ export default function Sidebar({ wsKey, children }) {
                     <ListItemButton
                         data-testid="sidebar-open-button"
                         onClick={() => setMobileOpen(true)}
+                        aria-label="Open sidebar"
                         sx={{ borderRadius: "50%", p: 1 }}
                     >
                         <MenuIcon />
@@ -164,6 +134,8 @@ export default function Sidebar({ wsKey, children }) {
                 sx={{
                     width: isMobile ? drawerWidth : sidebarOpen ? drawerWidth : drawerWidthCollapsed,
                     flexShrink: 0,
+                    // Animate the reserved space in step with the (fixed) drawer paper so content does not jump
+                    transition: "width 0.3s ease-in-out",
                     "& .MuiDrawer-paper": {
                         width: isMobile ? drawerWidth : sidebarOpen ? drawerWidth : drawerWidthCollapsed,
                         boxSizing: "border-box",
@@ -172,168 +144,116 @@ export default function Sidebar({ wsKey, children }) {
                     },
                 }}
             >
-                <Box sx={{ overflowY: "auto", overflowX: "hidden", height: "100%" }}>
+                <Box component="nav" aria-label="Main" sx={{ overflowY: "auto", overflowX: "hidden", height: "100%" }}>
                     <List>
                         {/* Collapse/Expand Button */}
                         <ListItem disablePadding>
                             <ListItemButton
                                 data-testid="sidebar-collapse-button"
                                 onClick={handleCollapseToggle}
+                                aria-label="Toggle sidebar"
+                                aria-expanded={isMobile ? mobileOpen : sidebarOpen}
                                 sx={{ justifyContent: "center" }}
                             >
                                 <ListItemIcon sx={{ minWidth: 0 }}>
                                     <MenuIcon />
                                 </ListItemIcon>
-                                {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="" />}
+                                {showLabels && <ListItemText primary="" />}
                             </ListItemButton>
                         </ListItem>
+                        {/* Home */}
                         <ListItem disablePadding>
-                            <Tooltip title={!isMobile && !sidebarOpen ? "Home" : ""} placement="right">
+                            <Tooltip title={tooltipFor("Home")} placement="right">
                                 <ListItemButton
-                                    onClick={handleHomeButton}
-                                    sx={{
-                                        minHeight: 48,
-                                        justifyContent: sidebarOpen ? "initial" : "center",
-                                        px: 2.5,
-                                        overflow: "hidden",
-                                    }}
+                                    component={RouterLink}
+                                    to="/"
+                                    selected={pathname === "/"}
+                                    aria-current={pathname === "/" ? "page" : undefined}
+                                    onClick={closeMobileDrawer}
+                                    data-testid="page-button-home"
+                                    sx={itemButtonSx}
                                 >
-                                    <ListItemIcon
-                                        sx={{
-                                            minWidth: 0,
-                                            mr: sidebarOpen ? 3 : "auto",
-                                            justifyContent: "center",
-                                        }}
-                                    >
+                                    <ListItemIcon sx={itemIconSx}>
                                         <Home />
                                     </ListItemIcon>
-                                    {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Home" />}
+                                    {showLabels && <ListItemText primary="Home" />}
                                 </ListItemButton>
                             </Tooltip>
                         </ListItem>
-                        {!isMobile && !sidebarOpen && <ListItem sx={{ height: 16 }} />}
+                        {collapsed && <ListItem sx={{ height: 16 }} />}
                         {/* Streamers List */}
                         {wsKey && (
                             <>
                                 <ListItemText
                                     primary="Transcripts"
-                                    sx={{ ml: 1, display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none" }}
+                                    sx={{ ml: 1, display: showLabels ? "block" : "none" }}
                                 />
                                 {keyIcons(32, devMode)
                                     .filter((streamer) => streamer.value === wsKey)
                                     .map((streamer) => (
                                         <ListItem key={streamer.value} disablePadding>
-                                            <Tooltip
-                                                title={!isMobile && !sidebarOpen ? streamer.name : ""}
-                                                placement="right"
-                                            >
+                                            <Tooltip title={tooltipFor(streamer.name)} placement="right">
                                                 <ListItemButton
+                                                    component={RouterLink}
+                                                    to={pagePath(streamer.value, activePage)}
+                                                    replace
                                                     selected={wsKey === streamer.value}
-                                                    onClick={() => handleStreamerChange(streamer.value)}
-                                                    sx={{
-                                                        minHeight: 48,
-                                                        justifyContent: sidebarOpen ? "initial" : "center",
-                                                        px: 2.5,
-                                                        overflow: "hidden",
-                                                    }}
+                                                    onClick={closeMobileDrawer}
+                                                    sx={itemButtonSx}
                                                 >
-                                                    <ListItemIcon
-                                                        sx={{
-                                                            minWidth: 0,
-                                                            mr: sidebarOpen ? 3 : "auto",
-                                                            justifyContent: "center",
-                                                        }}
-                                                    >
-                                                        {streamer.icon}
-                                                    </ListItemIcon>
-                                                    {((!isMobile && sidebarOpen) || isMobile) && (
-                                                        <ListItemText primary={streamer.name} />
-                                                    )}
+                                                    <ListItemIcon sx={itemIconSx}>{streamer.icon}</ListItemIcon>
+                                                    {showLabels && <ListItemText primary={streamer.name} />}
                                                 </ListItemButton>
                                             </Tooltip>
                                         </ListItem>
                                     ))}
-                                {!isMobile && !sidebarOpen && <ListItem sx={{ height: 16 }} />}
+                                {collapsed && <ListItem sx={{ height: 16 }} />}
                             </>
                         )}
                         {/* Page Selection Only when key is set */}
                         {wsKey && (
                             <>
-                                <ListItemText
-                                    primary="Pages"
-                                    sx={{
-                                        mt: 2,
-                                        ml: 1,
-                                        display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none",
-                                    }}
-                                />
-                                {pages.map((page) => (
-                                    <ListItem key={page.value} disablePadding>
-                                        <Tooltip title={!isMobile && !sidebarOpen ? page.name : ""} placement="right">
-                                            <ListItemButton
-                                                selected={window.location.pathname.split("/")[3] === page.value}
-                                                onClick={() => handlePageChange(page.value)}
-                                                sx={{
-                                                    minHeight: 48,
-                                                    justifyContent: sidebarOpen ? "initial" : "center",
-                                                    px: 2.5,
-                                                    overflow: "hidden",
-                                                }}
-                                                data-testid={page.testId}
-                                            >
-                                                <ListItemIcon
-                                                    sx={{
-                                                        minWidth: 0,
-                                                        mr: sidebarOpen ? 3 : "auto",
-                                                        justifyContent: "center",
-                                                    }}
+                                <ListItemText primary="Pages" sx={groupLabelSx} />
+                                {pages.map((page) => {
+                                    const to = pagePath(wsKey, page.value);
+                                    const isActive = activePage === page.value;
+                                    return (
+                                        <ListItem key={page.value} disablePadding>
+                                            <Tooltip title={tooltipFor(page.name)} placement="right">
+                                                <ListItemButton
+                                                    component={RouterLink}
+                                                    to={to}
+                                                    replace={isActive}
+                                                    selected={isActive}
+                                                    aria-current={isActive ? "page" : undefined}
+                                                    onClick={closeMobileDrawer}
+                                                    sx={itemButtonSx}
+                                                    data-testid={page.testId}
                                                 >
-                                                    {page.icon}
-                                                </ListItemIcon>
-                                                {((!isMobile && sidebarOpen) || isMobile) && (
-                                                    <ListItemText primary={page.name} />
-                                                )}
-                                            </ListItemButton>
-                                        </Tooltip>
-                                    </ListItem>
-                                ))}
+                                                    <ListItemIcon sx={itemIconSx}>{page.icon}</ListItemIcon>
+                                                    {showLabels && <ListItemText primary={page.name} />}
+                                                </ListItemButton>
+                                            </Tooltip>
+                                        </ListItem>
+                                    );
+                                })}
                             </>
                         )}
                         {/* Developer Group */}
                         {devMode && (
                             <>
-                                <ListItemText
-                                    primary="Developer"
-                                    sx={{
-                                        mt: 2,
-                                        ml: 1,
-                                        display: (!isMobile && sidebarOpen) || isMobile ? "block" : "none",
-                                    }}
-                                />
+                                <ListItemText primary="Developer" sx={groupLabelSx} />
                                 <ListItem disablePadding>
-                                    <Tooltip title={!isMobile && !sidebarOpen ? "Dev Tools" : ""} placement="right">
+                                    <Tooltip title={tooltipFor("Dev Tools")} placement="right">
                                         <ListItemButton
                                             data-testid="page-button-devTools"
                                             onClick={() => setDevToolsOpen(true)}
-                                            sx={{
-                                                minHeight: 48,
-                                                justifyContent: sidebarOpen ? "initial" : "center",
-                                                px: 2.5,
-                                                overflow: "hidden",
-                                            }}
+                                            sx={itemButtonSx}
                                         >
-                                            <ListItemIcon
-                                                sx={{
-                                                    minWidth: 0,
-                                                    mr: sidebarOpen ? 3 : "auto",
-                                                    justifyContent: "center",
-                                                }}
-                                            >
+                                            <ListItemIcon sx={itemIconSx}>
                                                 <DeveloperMode />
                                             </ListItemIcon>
-                                            {((!isMobile && sidebarOpen) || isMobile) && (
-                                                <ListItemText primary="Dev Tools" />
-                                            )}
+                                            {showLabels && <ListItemText primary="Dev Tools" />}
                                         </ListItemButton>
                                     </Tooltip>
                                 </ListItem>
@@ -341,128 +261,64 @@ export default function Sidebar({ wsKey, children }) {
                         )}
                         {/* GitHub */}
                         <ListItem disablePadding sx={{ mt: 2 }}>
-                            <Tooltip title="https://github.com/duckautomata/live-transcript" placement="right">
+                            <Tooltip title="Source code on GitHub (opens in a new tab)" placement="right" describeChild>
                                 <ListItemButton
-                                    onClick={() => {
-                                        window.open(
-                                            "https://github.com/duckautomata/live-transcript",
-                                            "_blank",
-                                            "noopener noreferrer",
-                                        );
-                                    }}
-                                    sx={{
-                                        minHeight: 48,
-                                        justifyContent: sidebarOpen ? "initial" : "center",
-                                        px: 2.5,
-                                        overflow: "hidden",
-                                    }}
+                                    component="a"
+                                    href={GITHUB_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="GitHub"
+                                    data-testid="page-button-github"
+                                    sx={itemButtonSx}
                                 >
-                                    <ListItemIcon
-                                        sx={{
-                                            minWidth: 0,
-                                            mr: sidebarOpen ? 3 : "auto",
-                                            justifyContent: "center",
-                                        }}
-                                    >
+                                    <ListItemIcon sx={itemIconSx}>
                                         <GitHub />
                                     </ListItemIcon>
-                                    {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="GitHub" />}
+                                    {showLabels && <ListItemText primary="GitHub" />}
                                 </ListItemButton>
                             </Tooltip>
                         </ListItem>
                         {/* Help */}
                         <ListItem disablePadding>
-                            <Tooltip title={!isMobile && !sidebarOpen ? "Help" : ""} placement="right">
-                                <ListItemButton
-                                    onClick={() => setHelpOpen(true)}
-                                    sx={{
-                                        minHeight: 48,
-                                        justifyContent: sidebarOpen ? "initial" : "center",
-                                        px: 2.5,
-                                        overflow: "hidden",
-                                    }}
-                                >
-                                    <ListItemIcon
-                                        sx={{
-                                            minWidth: 0,
-                                            mr: sidebarOpen ? 3 : "auto",
-                                            justifyContent: "center",
-                                        }}
-                                    >
+                            <Tooltip title={tooltipFor("Help")} placement="right">
+                                <ListItemButton onClick={() => setHelpOpen(true)} sx={itemButtonSx}>
+                                    <ListItemIcon sx={itemIconSx}>
                                         <Help />
                                     </ListItemIcon>
-                                    {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Help" />}
+                                    {showLabels && <ListItemText primary="Help" />}
                                 </ListItemButton>
                             </Tooltip>
                         </ListItem>
                         {/* Info */}
                         <ListItem disablePadding>
-                            <Tooltip title={!isMobile && !sidebarOpen ? "Info" : ""} placement="right">
-                                <ListItemButton
-                                    onClick={() => setInfoOpen(true)}
-                                    sx={{
-                                        minHeight: 48,
-                                        justifyContent: sidebarOpen ? "initial" : "center",
-                                        px: 2.5,
-                                        overflow: "hidden",
-                                    }}
-                                >
-                                    <ListItemIcon
-                                        sx={{
-                                            minWidth: 0,
-                                            mr: sidebarOpen ? 3 : "auto",
-                                            justifyContent: "center",
-                                        }}
-                                    >
+                            <Tooltip title={tooltipFor("Info")} placement="right">
+                                <ListItemButton onClick={() => setInfoOpen(true)} sx={itemButtonSx}>
+                                    <ListItemIcon sx={itemIconSx}>
                                         <Info />
                                     </ListItemIcon>
-                                    {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Info" />}
+                                    {showLabels && <ListItemText primary="Info" />}
                                 </ListItemButton>
                             </Tooltip>
                         </ListItem>
                         {/* Settings */}
                         <ListItem disablePadding>
-                            <Tooltip title={!isMobile && !sidebarOpen ? "Settings" : ""} placement="right">
-                                <ListItemButton
-                                    onClick={() => setSettingsOpen(true)}
-                                    sx={{
-                                        minHeight: 48,
-                                        justifyContent: sidebarOpen ? "initial" : "center",
-                                        px: 2.5,
-                                        overflow: "hidden",
-                                    }}
-                                >
-                                    <ListItemIcon
-                                        sx={{
-                                            minWidth: 0,
-                                            mr: sidebarOpen ? 3 : "auto",
-                                            justifyContent: "center",
-                                        }}
-                                    >
+                            <Tooltip title={tooltipFor("Settings")} placement="right">
+                                <ListItemButton onClick={() => setSettingsOpen(true)} sx={itemButtonSx}>
+                                    <ListItemIcon sx={itemIconSx}>
                                         <SettingsIcon />
                                     </ListItemIcon>
-                                    {((!isMobile && sidebarOpen) || isMobile) && <ListItemText primary="Settings" />}
+                                    {showLabels && <ListItemText primary="Settings" />}
                                 </ListItemButton>
                             </Tooltip>
                         </ListItem>
                     </List>
                 </Box>
             </Drawer>
-            <Box
-                component="main"
-                sx={{
-                    flexGrow: 1,
-                    padding: 1,
-                    width: isMobile ? "100%" : `calc(97vw - ${sidebarOpen ? drawerWidth : drawerWidthCollapsed}px)`,
-                    transition: "width 0.3s ease-in-out, margin-left 0.3s ease-in-out",
-                }}
-            >
-                {children}
-                <AudioFooter
-                    wsKey={wsKey}
-                    offset={isMobile ? 0 : sidebarOpen ? drawerWidth : drawerWidthCollapsed}
-                    width={width}
-                />
+            {/* The main column fills the space next to the drawer; pages are capped to a comfortable reading
+                width and centred inside it, so the layout does not drift away from the drawer on wide screens. */}
+            <Box component="main" sx={{ flexGrow: 1, minWidth: 0, width: "100%", padding: 1 }}>
+                <Box sx={{ maxWidth: 1280, mx: "auto" }}>{children}</Box>
+                <AudioFooter wsKey={wsKey} />
             </Box>
         </Box>
     );

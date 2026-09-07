@@ -109,7 +109,6 @@ export const Websocket = ({ wsKey }) => {
     const updateLineMedia = useAppStore((state) => state.updateLineMedia);
     const recalculateClipRange = useAppStore((state) => state.recalculateClipRange);
     const addMetric = useAppStore((state) => state.addMetric);
-    const setLastLineReceivedAt = useAppStore((state) => state.setLastLineReceivedAt);
     const resetTranscript = useAppStore((state) => state.resetTranscript);
     const resetPastStreams = useAppStore((state) => state.resetPastStreams);
     const setAudioId = useAppStore((state) => state.setAudioId);
@@ -145,11 +144,11 @@ export const Websocket = ({ wsKey }) => {
                     // sync instead of us replaying the queued newLine events.
                     triggerReconnect();
                 } else if (readyStateRef.current === ReadyState.OPEN) {
-                    // Came back quickly and the socket survived — resume as-is.
+                    // Came back quickly and the socket survived - resume as-is.
                     setServerStatus("online");
                 } else {
                     // Came back quickly but the socket dropped while hidden
-                    // (or the disconnect timer fired) — re-enable to reconnect.
+                    // (or the disconnect timer fired) - re-enable to reconnect.
                     setShouldConnect(true);
                 }
             } else {
@@ -297,11 +296,13 @@ export const Websocket = ({ wsKey }) => {
             case "pong": {
                 const { timestamp } = data;
                 const latency = Date.now() - timestamp;
-                addMetric({
-                    type: "ping",
-                    latency,
-                    receivedAt: Date.now(),
-                });
+                if (useAppStore.getState().devMode) {
+                    addMetric({
+                        type: "ping",
+                        latency,
+                        receivedAt: Date.now(),
+                    });
+                }
                 break;
             }
             default:
@@ -347,18 +348,21 @@ export const Websocket = ({ wsKey }) => {
         const now = Date.now();
         const interArrival = now - lastReceiveTime.current;
         lastReceiveTime.current = now;
-        setLastLineReceivedAt(now);
 
         const { lineId, timestamp, uploadTime, segments, mediaAvailable, vodAccurate } = data;
 
-        addMetric({
-            type: "line",
-            id: lineId,
-            receivedAt: now,
-            uploadTime: uploadTime,
-            latency: 0, // No emittedTime to calc latency against
-            interArrival,
-        });
+        // Metrics only exist for the Dev Tools charts. Guarded at the call site so the persist middleware
+        // does not write localStorage for every line when they are off.
+        if (useAppStore.getState().devMode) {
+            addMetric({
+                type: "line",
+                id: lineId,
+                receivedAt: now,
+                uploadTime: uploadTime,
+                latency: 0, // No emittedTime to calc latency against
+                interArrival,
+            });
+        }
 
         const newLine = {
             id: lineId,
@@ -368,7 +372,8 @@ export const Websocket = ({ wsKey }) => {
             vodAccurate: vodAccurate,
         };
 
-        addTranscriptLine(newLine);
+        // One store update for the line and its arrival time, so subscribers are notified once.
+        addTranscriptLine(newLine, now);
     };
 
     /**
@@ -448,7 +453,7 @@ export const Websocket = ({ wsKey }) => {
     /**
      * Force the WebSocket to tear down and reopen so the server can re-sync
      * us from scratch. Used when the local state is no longer reconcilable
-     * with the server (e.g. the active stream just got deleted) — pulling a
+     * with the server (e.g. the active stream just got deleted) - pulling a
      * fresh partialSync + pastStreams is simpler than mutating state in place.
      *
      * Clearing hasConnected makes the imminent onClose go through the
@@ -483,9 +488,9 @@ export const Websocket = ({ wsKey }) => {
         // Surface a toast so the user knows the change was operator-initiated.
         setDeletedStreamNotice(streamTitle || "(untitled)");
 
-        // If the deleted stream is the one currently on screen — either
+        // If the deleted stream is the one currently on screen - either
         // because it was live (wasLive) or because it was still the most
-        // recent stream after going offline — reconnect so the server sends
+        // recent stream after going offline - reconnect so the server sends
         // fresh partialSync + pastStreams. The server won't send a follow-up
         // status event, so reconnecting is the cleanest way to land in a
         // consistent state (next active stream + updated past-streams list).
@@ -495,7 +500,7 @@ export const Websocket = ({ wsKey }) => {
             return;
         }
 
-        // Otherwise it was a non-active stream — drop it from the cache.
+        // Otherwise it was a non-active stream - drop it from the cache.
         // removePastStream also clears pastStreamViewing if the user was
         // viewing the deleted stream.
         removePastStream(streamId);

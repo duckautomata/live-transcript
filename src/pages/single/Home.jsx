@@ -10,20 +10,17 @@ import {
     Container,
     Fade,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { keyIcons } from "../../config";
 import { useAppStore } from "../../store/store";
+import { streamerPath } from "../../logic/links";
 
+/**
+ * Landing page: one card per streamer. The cards are real links so they can be opened in a new tab.
+ */
 export default function Home() {
-    const navigate = useNavigate();
     const isMobile = useMediaQuery("(max-width:768px)");
     const devMode = useAppStore((state) => state.devMode);
-    const setPastStreamViewing = useAppStore((state) => state.setPastStreamViewing);
-
-    const handleStreamerChange = (value) => {
-        setPastStreamViewing(null);
-        navigate(`/${value}/`);
-    };
 
     return (
         <Container
@@ -78,7 +75,8 @@ export default function Home() {
                                 elevation={4}
                             >
                                 <CardActionArea
-                                    onClick={() => handleStreamerChange(streamer.value)}
+                                    component={RouterLink}
+                                    to={streamerPath(streamer.value)}
                                     data-testid={streamer.testId}
                                     sx={{
                                         height: "100%",

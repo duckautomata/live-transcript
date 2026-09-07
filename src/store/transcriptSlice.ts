@@ -20,27 +20,47 @@ export const createTranscriptSlice: AppSliceCreator<TranscriptSlice> = (set) => 
     setMediaBaseUrl: (mediaUrl) => set({ mediaBaseUrl: mediaUrl }),
     setIsLive: (live) => set({ isLive: live }),
     setTranscript: (data) => set({ transcript: data }),
-    addTranscriptLine: (newLine) => {
+    addTranscriptLine: (newLine, receivedAt) => {
         set((state) => {
             // Used to prevent duplicate lines if the same line is received multiple times.
             // If we receive a line with the same id, we replace it and delete all lines after it.
-            const index = state.transcript.findIndex((t) => t.id === newLine.id);
+            // Lines normally arrive in order, so check the tail before scanning the whole array.
+            const transcript = state.transcript;
+            const last = transcript[transcript.length - 1];
+            const index = last && last.id < newLine.id ? -1 : transcript.findIndex((t) => t.id === newLine.id);
+            const lastLineReceivedAt = receivedAt ?? state.lastLineReceivedAt;
             if (index !== -1) {
-                return { transcript: [...state.transcript.slice(0, index), newLine] };
+                return { transcript: [...transcript.slice(0, index), newLine], lastLineReceivedAt };
             }
-            return { transcript: [...state.transcript, newLine] };
+            return { transcript: [...transcript, newLine], lastLineReceivedAt };
         });
     },
     updateLineMedia: (streamId, files, available = true) => {
-        set((state) => ({
-            transcript: state.transcript.map((line) => {
-                if (state.streamId != streamId) {
-                    return line;
-                }
-                const fileId = files[line.id];
-                return fileId ? { ...line, mediaAvailable: available, fileId: fileId } : line;
-            }),
-        }));
+        set((state) => {
+            const apply = (lines: typeof state.transcript) => {
+                let changed = false;
+                const next = lines.map((line) => {
+                    const fileId = files[line.id];
+                    if (!fileId) return line;
+                    changed = true;
+                    return { ...line, mediaAvailable: available, fileId: fileId };
+                });
+                return changed ? next : null;
+            };
+
+            // Media can finish processing after a stream ended, so the past stream on screen gets it too.
+            // Returning the same state skips the notification (and the array copies) when nothing changes.
+            const partial: Partial<TranscriptSlice & { pastStreamTranscript: typeof state.transcript }> = {};
+            if (state.streamId == streamId) {
+                const transcript = apply(state.transcript);
+                if (transcript) partial.transcript = transcript;
+            }
+            if (state.pastStreamViewing && state.pastStreamViewing == streamId) {
+                const pastStreamTranscript = apply(state.pastStreamTranscript);
+                if (pastStreamTranscript) partial.pastStreamTranscript = pastStreamTranscript;
+            }
+            return Object.keys(partial).length > 0 ? partial : state;
+        });
     },
     updateLineVodAccurate: (ids, vodAccurate) => {
         set((state) => {

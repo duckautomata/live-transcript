@@ -1,9 +1,13 @@
 import { useRef, useState, useEffect } from "react";
-import { Box, IconButton, Paper, Divider, Tooltip, Typography, useMediaQuery } from "@mui/material";
+import { Alert, Box, IconButton, Paper, Divider, Tooltip, Typography, useMediaQuery } from "@mui/material";
 import { VerticalAlignTop, VerticalAlignBottom, Pause, PlayArrow, Search } from "@mui/icons-material";
 import { Virtuoso } from "react-virtuoso";
 import Line from "./Line";
 import { LOG_MSG } from "../../logic/debug";
+
+// Module-level so Virtuoso does not see a new component type (and remount the footer) on every render.
+const Footer = () => <Box sx={{ height: 50 }} />;
+const VIRTUOSO_COMPONENTS = { Footer };
 
 /**
  * TranscriptVirtual component for efficiently rendering the transcript logs.
@@ -12,15 +16,15 @@ import { LOG_MSG } from "../../logic/debug";
  * @param {object} props
  * @param {object[]} props.displayData
  * @param {number} props.transcriptLength
- * @param {string} props.searchTerm
+ * @param {string} props.searchTerm - Normalized search term ("" when not filtering).
  * @param {function(string)} props.setSearchTerm
  * @param {boolean} props.isLive
  * @param {boolean} props.isOnline
  * @param {number} props.pendingJumpId
  * @param {function(number)} props.setPendingJumpId
- * @param {Map<string, any[]>} props.tagsMap
- * @param {boolean} props.hasOverflow
+ * @param {Map<number, Record<number, any[]>>} props.tagsMap - Tag rows per line id (per segment index).
  * @param {number} props.startTime
+ * @param {string} props.linkBase - Path (+ search) line links are built on.
  */
 export default function TranscriptVirtual({
     displayData,
@@ -33,6 +37,8 @@ export default function TranscriptVirtual({
     setPendingJumpId,
     tagsMap,
     startTime,
+    linkBase,
+    onLineLinkClick,
 }) {
     const isMobile = useMediaQuery("(max-width:768px)");
     const virtuosoRef = useRef(null);
@@ -51,14 +57,19 @@ export default function TranscriptVirtual({
     const transcriptLengthRef = useRef(transcriptLength);
     const atBottomTimerRef = useRef(null);
     const lastStreamUpdateRef = useRef(0);
+    const jumpTimersRef = useRef([]);
+    const jumpAttemptRef = useRef(0);
+    const visibleRangeRef = useRef({ startIndex: 0, endIndex: 0 });
     const [highlightedId, setHighlightedId] = useState(-1);
 
-    // Cleanup timer on unmount
+    // Cleanup timers on unmount only: a new live line must not cancel a pending highlight removal.
     useEffect(() => {
+        const jumpTimers = jumpTimersRef.current;
         return () => {
             if (atBottomTimerRef.current) {
                 clearTimeout(atBottomTimerRef.current);
             }
+            jumpTimers.forEach(clearTimeout);
         };
     }, []);
 
@@ -86,31 +97,52 @@ export default function TranscriptVirtual({
 
     // Handle Pending Jump
     useEffect(() => {
-        if (pendingJumpId !== -1) {
-            const index = displayData.findIndex((line) => line.id === pendingJumpId);
-            if (index !== -1) {
-                // If the ref is available (updates), scroll to it.
-                // If we used initialTopMostItemIndex (mount), this is redundant but safe.
-                if (virtuosoRef.current) {
-                    virtuosoRef.current.scrollToIndex({
-                        index: index,
-                        align: "start",
-                        behavior: "auto",
-                    });
-                }
+        if (pendingJumpId === -1) return;
+        const index = displayData.findIndex((line) => line.id === pendingJumpId);
+        if (index === -1) return;
 
-                // Set highlight and clear Pending Jump ID
-                // We do this regardless of virtuosoRef because initialTopMostItemIndex might have handled the scroll
+        // Leave the live edge first so followOutput cannot pull the list back to the bottom
+        // if a new line lands between the scroll and the timeout below.
+        // oxlint-disable-next-line react-hooks/set-state-in-effect
+        setAtLiveEdge(false);
+
+        // Only the newest jump attempt may finish; an older chain (from a previous data update) is dropped.
+        const attemptId = ++jumpAttemptRef.current;
+
+        // The list re-measures itself shortly after its data changes (for example the full transcript
+        // replacing the partial one on load), which can throw an early scrollToIndex away. Scroll, check
+        // that the line is in view, and try again a few times when it is not.
+        const attempt = (attemptsLeft) => {
+            virtuosoRef.current?.scrollToIndex({
+                index: index,
+                align: "start",
+                behavior: "auto",
+            });
+
+            jumpTimersRef.current.push(
                 setTimeout(() => {
+                    if (jumpAttemptRef.current !== attemptId) return;
+                    const { startIndex, endIndex } = visibleRangeRef.current;
+                    const inView = index >= startIndex && index <= endIndex;
+                    if (!inView && attemptsLeft > 0) {
+                        attempt(attemptsLeft - 1);
+                        return;
+                    }
+
+                    // Set highlight and clear Pending Jump ID
                     setAtLiveEdge(false);
                     setHighlightedId(pendingJumpId);
                     setPendingJumpId(-1);
-                    setTimeout(() => {
-                        setHighlightedId(-1);
-                    }, 2000);
-                }, 100);
-            }
-        }
+                    jumpTimersRef.current.push(
+                        setTimeout(() => {
+                            setHighlightedId(-1);
+                        }, 2000),
+                    );
+                }, 100),
+            );
+        };
+
+        attempt(4);
     }, [displayData, pendingJumpId, setPendingJumpId]);
 
     useEffect(() => {
@@ -128,7 +160,9 @@ export default function TranscriptVirtual({
                 transcriptLength === 0 ? (
                     <Typography>No transcripts at this time.</Typography>
                 ) : (
-                    <Typography>Nothing found.</Typography>
+                    <Alert severity="info" data-testid="search-no-match" sx={{ mx: "auto", maxWidth: 600 }}>
+                        No lines match “{searchTerm}”
+                    </Alert>
                 )
             ) : (
                 <Virtuoso
@@ -160,19 +194,21 @@ export default function TranscriptVirtual({
                             highlight={highlightedId === line.id}
                             mediaAvailable={line.mediaAvailable}
                             vodAccurate={line.vodAccurate}
-                            tagsMap={tagsMap}
+                            lineTags={tagsMap.get(line.id)}
                             startTime={startTime}
+                            searchTerm={searchTerm}
+                            linkBase={linkBase}
+                            onLinkClick={onLineLinkClick}
                         />
                     )}
                     followOutput={atLiveEdge ? "auto" : false}
                     initialTopMostItemIndex={initialJumpIndex !== -1 ? initialJumpIndex : displayData.length - 1}
                     style={{ height: "100%" }}
-                    components={{
-                        Footer: () => <Box sx={{ height: 50 }} />,
-                    }}
+                    components={VIRTUOSO_COMPONENTS}
                     defaultItemHeight={30}
                     rangeChanged={(range) => {
                         const dist = displayData.length - 1 - range.endIndex;
+                        visibleRangeRef.current = range;
                         setVisibleRange(range);
 
                         // Safety check: specific case where user scrolls up quickly while logs are streaming.
@@ -214,6 +250,7 @@ export default function TranscriptVirtual({
                     <Tooltip title="Jump to Top">
                         <IconButton
                             size="small"
+                            aria-label="Jump to top"
                             data-testid="transcript-jumpToTop"
                             onClick={() => {
                                 setAtLiveEdge(false);
@@ -258,12 +295,27 @@ export default function TranscriptVirtual({
                             }
                         >
                             <Box
+                                role="button"
+                                tabIndex={0}
+                                aria-label={
+                                    searchTerm
+                                        ? "Clear search and jump to live"
+                                        : atLiveEdge
+                                          ? "Pause auto-scroll"
+                                          : "Resume auto-scroll"
+                                }
                                 sx={{
                                     display: "flex",
                                     alignItems: "center",
                                     cursor: "pointer",
                                     gap: 0.5,
                                     mx: 0.5,
+                                    borderRadius: "16px",
+                                    "&:focus-visible": {
+                                        outline: "2px solid",
+                                        outlineColor: "primary.main",
+                                        outlineOffset: 2,
+                                    },
                                 }}
                                 onClick={() => {
                                     if (searchTerm) {
@@ -279,11 +331,21 @@ export default function TranscriptVirtual({
                                         setAtLiveEdge(false);
                                     }
                                 }}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter" || event.key === " ") {
+                                        event.preventDefault();
+                                        event.currentTarget.click();
+                                    }
+                                }}
                             >
-                                <IconButton
-                                    size="small"
-                                    color={searchTerm ? "primary" : atLiveEdge ? "primary" : "warning"}
-                                    sx={{ p: 0.5 }}
+                                {/* A plain icon: the surrounding Box is the (single) button. */}
+                                <Box
+                                    component="span"
+                                    sx={{
+                                        display: "inline-flex",
+                                        p: 0.5,
+                                        color: searchTerm || atLiveEdge ? "primary.main" : "warning.main",
+                                    }}
                                 >
                                     {searchTerm ? (
                                         <Search fontSize="small" />
@@ -292,7 +354,7 @@ export default function TranscriptVirtual({
                                     ) : (
                                         <PlayArrow fontSize="small" />
                                     )}
-                                </IconButton>
+                                </Box>
                                 <Typography
                                     variant="caption"
                                     sx={{
@@ -325,6 +387,7 @@ export default function TranscriptVirtual({
                                 <IconButton
                                     size="small"
                                     color="primary"
+                                    aria-label="Jump to bottom"
                                     data-testid="transcript-jumpToBottom"
                                     onClick={() => {
                                         if (isOnline && isLive) {

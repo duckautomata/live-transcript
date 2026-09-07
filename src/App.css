@@ -1,12 +1,32 @@
 #root {
-    max-width: 1280px;
-    margin: 0 auto;
+    width: 100%;
     text-align: center;
 }
 
 .highlight {
     background-color: rgb(123, 138, 145) !important;
     transition: background-color 1s ease-out;
+}
+
+/* Transcript container heights. dvh follows the mobile browser chrome; vh is the fallback. */
+.view-height-100 {
+    height: calc(100vh - 24px);
+    height: calc(100dvh - 24px);
+}
+
+.view-height-90 {
+    height: calc(90vh - 24px);
+    height: calc(90dvh - 24px);
+}
+
+.view-height-75 {
+    height: calc(75vh - 24px);
+    height: calc(75dvh - 24px);
+}
+
+.view-height-50 {
+    height: calc(50vh - 24px);
+    height: calc(50dvh - 24px);
 }
 
 @keyframes loadingDots {

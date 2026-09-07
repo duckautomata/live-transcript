@@ -3,10 +3,21 @@ import { PastStreamSlice, AppSliceCreator } from "./types";
 export const createPastStreamSlice: AppSliceCreator<PastStreamSlice> = (set) => ({
     pastStreamViewing: null,
     pastStreams: [],
+    pastStreamsLoaded: false,
     pastStreamTranscript: [],
     deletedStreamNotice: null,
     setPastStreamViewing: (id) => set({ pastStreamViewing: id }),
-    setPastStreams: (data) => set({ pastStreams: data }),
+    // The server sends times as strings; the live stream's are coerced on arrival, so match that here
+    // (relative timestamps and the tag helper do arithmetic on startTime).
+    setPastStreams: (data) =>
+        set({
+            pastStreams: data.map((stream) => ({
+                ...stream,
+                startTime: Number(stream.startTime) || 0,
+                activatedTime: Number(stream.activatedTime) || 0,
+            })),
+            pastStreamsLoaded: true,
+        }),
     setPastStreamTranscript: (data) => set({ pastStreamTranscript: data }),
     removePastStream: (streamId) =>
         set((state) => {
@@ -23,6 +34,7 @@ export const createPastStreamSlice: AppSliceCreator<PastStreamSlice> = (set) => 
             return next;
         }),
     setDeletedStreamNotice: (title) => set({ deletedStreamNotice: title }),
-    resetPastStreams: () => set({ pastStreams: [], pastStreamViewing: null, pastStreamTranscript: [] }),
+    resetPastStreams: () =>
+        set({ pastStreams: [], pastStreamsLoaded: false, pastStreamViewing: null, pastStreamTranscript: [] }),
     resetPastStreamTranscript: () => set({ pastStreamTranscript: [] }),
 });

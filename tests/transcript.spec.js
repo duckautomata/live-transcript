@@ -1,10 +1,12 @@
 import { test, expect } from "./custom-test";
 import {
     loadInDevmode,
+    readCopiedText,
     setMediaAvailability,
     setMediaType,
     setStreamLive,
     simulateLive,
+    stubClipboard,
     takeScreenshots,
     waitForFullSync,
 } from "./helper";
@@ -735,5 +737,131 @@ test.describe("Transcript clipping", () => {
 
         // Reset returns Start to 0. confirms the hotkey ran.
         await expect(page.getByRole("spinbutton", { name: "Start" })).toHaveValue(/^0(\.0+)?$/);
+    });
+});
+
+test.describe("Transcript links and highlighting", () => {
+    test("highlights every search match and shows the match count", async ({ page }, testInfo) => {
+        await loadInDevmode(page, mockconst.keyName);
+        await waitForFullSync(page);
+
+        const searchInput = page.locator("#search-transcript");
+        await searchInput.fill(mockconst.searchTerm);
+        await expect(page.getByTestId(`transcript-line-${mockconst.searchLineId}`)).toBeVisible();
+
+        const hits = page.getByTestId("search-hit");
+        await expect(hits.first()).toBeVisible();
+        const hitTexts = await hits.allTextContents();
+        expect(hitTexts.length).toBeGreaterThanOrEqual(mockconst.searchTermSize);
+        for (const text of hitTexts) {
+            expect(text.toLowerCase()).toBe(mockconst.searchTerm.toLowerCase());
+        }
+        await expect(page.getByTestId("search-match-count")).toHaveText(
+            new RegExp(`^${mockconst.searchTermSize} / \\d+$`),
+        );
+        await takeScreenshots(page, testInfo, "search-highlight");
+
+        // The clear button inside the field empties the search and removes the highlights.
+        await page.getByTestId("clear-search").click();
+        await expect(searchInput).toHaveValue("");
+        await expect(hits).toHaveCount(0);
+        await expect(page.getByTestId("search-match-count")).not.toBeVisible();
+    });
+
+    test("ignores surrounding whitespace and shows an empty state", async ({ page }) => {
+        await loadInDevmode(page, mockconst.keyName);
+        await waitForFullSync(page);
+
+        const searchInput = page.locator("#search-transcript");
+        await searchInput.fill(`  ${mockconst.searchTerm}  `);
+        await expect(page.getByTestId(`transcript-line-${mockconst.searchLineId}`)).toBeVisible();
+        await expect(page.locator('[data-testid^="transcript-line-"]')).toHaveCount(mockconst.searchTermSize);
+
+        await searchInput.fill("zzzz-no-such-text-zzzz");
+        await expect(page.getByTestId("search-no-match")).toBeVisible();
+        await expect(page.getByTestId("search-no-match")).toContainText("zzzz-no-such-text-zzzz");
+    });
+
+    test("timestamps are links that deep link to the line", async ({ page }) => {
+        await loadInDevmode(page, mockconst.keyName);
+        await waitForFullSync(page);
+        await page.getByTestId("transcript-tab-pagination").click();
+
+        const anchor = page.getByTestId(`line-anchor-${mockconst.emptyLineId}`);
+        await expect(anchor).toHaveAttribute(
+            "href",
+            new RegExp(`/live-transcript/${mockconst.keyName}/?#L${mockconst.emptyLineId}$`),
+        );
+        await anchor.click();
+        await expect(page).toHaveURL(new RegExp(`#L${mockconst.emptyLineId}$`));
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toHaveClass(/highlight/);
+    });
+
+    test("opens a deep link on the line", async ({ page }) => {
+        await loadInDevmode(page, `${mockconst.keyName}/#L${mockconst.searchLineId}`);
+        await waitForFullSync(page);
+        // The virtual list starts at the newest line, so this (old) line only shows once the jump ran.
+        await expect(page.getByTestId(`transcript-line-${mockconst.searchLineId}`)).toBeVisible({ timeout: 10000 });
+        await expect(page).toHaveURL(new RegExp(`#L${mockconst.searchLineId}$`));
+    });
+
+    test("line menu offers real links and copies a line link", async ({ page }) => {
+        await stubClipboard(page);
+        await loadInDevmode(page, mockconst.keyName);
+        await waitForFullSync(page);
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+
+        await page.getByTestId(`line-button-${mockconst.emptyLineId}`).click();
+        const menu = page.getByTestId("line-menu");
+        await expect(menu).toBeVisible();
+        await expect(page.getByTestId("line-menu-open-stream")).toHaveAttribute("href", /youtube\.com|twitch\.tv/);
+        await expect(page.getByTestId("line-menu-open-stream")).toHaveAttribute("target", "_blank");
+        await expect(page.getByTestId("line-menu-jump")).toHaveAttribute(
+            "href",
+            new RegExp(`#L${mockconst.emptyLineId}$`),
+        );
+
+        await page.getByTestId("line-menu-copy-link").click();
+        await expect(page.getByTestId("toast")).toContainText("Line link copied");
+        // The copied link names the stream so it still resolves once the stream has moved to the past list.
+        expect(await readCopiedText(page)).toMatch(
+            new RegExp(`/live-transcript/${mockconst.keyName}/?\\?stream=[^#]+#L${mockconst.emptyLineId}$`),
+        );
+        await expect(menu).not.toBeVisible();
+    });
+});
+
+test.describe("Past stream in the URL", () => {
+    test("selecting a past stream updates the URL and back returns to live", async ({ page }) => {
+        await loadInDevmode(page, mockconst.keyName);
+        await waitForFullSync(page);
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+
+        // Pick the newest past stream from the title dropdown.
+        await page.getByRole("combobox").click();
+        await page.getByRole("option", { name: mockconst.pastStreamTitle }).click();
+        await expect(page).toHaveURL(new RegExp(`\\?stream=${mockconst.pastStreamId}$`));
+        await expect(page.getByTestId(`transcript-line-${mockconst.pastStreamLastLineId}`)).toBeVisible({
+            timeout: 10000,
+        });
+
+        await page.goBack();
+        await expect(page).not.toHaveURL(/\?stream=/);
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+    });
+
+    test("a pasted past stream link opens on that stream", async ({ page }) => {
+        await loadInDevmode(page, `${mockconst.keyName}/?stream=${mockconst.pastStreamId}`);
+        await expect(page.getByTestId(`transcript-line-${mockconst.pastStreamLastLineId}`)).toBeVisible({
+            timeout: 10000,
+        });
+        await expect(page).toHaveURL(new RegExp(`\\?stream=${mockconst.pastStreamId}$`));
+    });
+
+    test("an unknown past stream falls back to the live stream", async ({ page }) => {
+        await loadInDevmode(page, `${mockconst.keyName}/?stream=does-not-exist`);
+        await waitForFullSync(page);
+        await expect(page).not.toHaveURL(/\?stream=/);
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
     });
 });

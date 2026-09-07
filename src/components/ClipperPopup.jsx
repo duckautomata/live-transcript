@@ -19,11 +19,15 @@ import {
 import { useState, useRef, useEffect, useMemo } from "react";
 import { server } from "../config";
 import { useAppStore } from "../store/store";
+import { selectActiveStartTime, selectActiveTranscript } from "../store/selectors";
 import WaveSurfer from "wavesurfer.js";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js";
 import { RestartAlt, PlayArrow, Pause, VolumeUp } from "@mui/icons-material";
 import { unixToRelative } from "../logic/dateTime";
 import { downloadClipUrl, playClipUrl } from "../logic/mediaUrls";
+
+/** Stable empty list for the idle state (see the transcript selector below). */
+const EMPTY_TRANSCRIPT = [];
 
 /**
  * A popup dialog for configuring and downloading media clips.
@@ -36,8 +40,12 @@ const ClipperPopup = ({ wsKey }) => {
     const clipEndIndex = useAppStore((state) => state.clipEndIndex);
     const mediaType = useAppStore((state) => state.mediaType);
     const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
-    const transcript = useAppStore((state) => state.transcript);
-    const startTime = useAppStore((state) => state.startTime);
+    // Only subscribe to the (large) transcript while a clip is being built or the editor is open, so the
+    // dialog does not re-render for every new line the rest of the time.
+    const transcript = useAppStore((state) =>
+        state.clipPopupOpen || state.clipStartIndex >= 0 ? selectActiveTranscript(state) : EMPTY_TRANSCRIPT,
+    );
+    const startTime = useAppStore(selectActiveStartTime);
     const streamId = useAppStore((state) => state.streamId);
     const pastStreams = useAppStore((state) => state.pastStreams);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
@@ -66,7 +74,7 @@ const ClipperPopup = ({ wsKey }) => {
     const regions = useRef(null);
     const isLooping = useRef(false);
     const transportRef = useRef(null);
-    // True while the user is actively dragging the seek slider — suppresses the
+    // True while the user is actively dragging the seek slider - suppresses the
     // wavesurfer `timeupdate` -> setCurrentTime path so playback's continuous time
     // updates don't yank the slider thumb away from the drag position.
     const isSeekingRef = useRef(false);
@@ -416,7 +424,7 @@ const ClipperPopup = ({ wsKey }) => {
                 isLooping.current = false;
                 setLoopingActive(false);
                 region.play();
-                // Reflect the jump immediately — wavesurfer's first `timeupdate`
+                // Reflect the jump immediately - wavesurfer's first `timeupdate`
                 // after a seek lags by a frame or two, which made the slider thumb
                 // visibly drift back to region.start instead of snapping.
                 setCurrentTime(region.start);
@@ -461,7 +469,7 @@ const ClipperPopup = ({ wsKey }) => {
 
             if (transportRef.current?.contains(active)) {
                 // Inside the transport bar, only skip the keys the focused widget natively
-                // handles — let all other hotkeys (A/D/R/etc.) through so the user can
+                // handles - let all other hotkeys (A/D/R/etc.) through so the user can
                 // still trim while a slider thumb is focused. MUI Slider focuses a hidden
                 // <input type="range">, so check both that and role="slider".
                 if (e.code === "Space" && active instanceof HTMLButtonElement) return;
@@ -723,7 +731,7 @@ const ClipperPopup = ({ wsKey }) => {
                             )}
                         </Box>
 
-                        {/* Transport bar (custom — avoids native <audio controls> shadow-DOM
+                        {/* Transport bar (custom - avoids native <audio controls> shadow-DOM
                             keydown swallowing in Chromium). Uses a CSS grid so on mobile
                             the seek slider drops to its own full-width row, giving room to
                             grab the thumb. */}

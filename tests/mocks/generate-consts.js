@@ -81,6 +81,18 @@ const topSearchText = getText(transcript[topOfPage1Idx]);
 const botSearchText = getText(transcript[bottomOfPage0Idx]);
 const midSearchText = getText(transcript[midOfPage0Idx]);
 
+// Newest past stream (the first entry of the title dropdown) and the transcript the mock serves for it.
+const pastStreams = data.pastStreams?.data?.streams ?? [];
+const newestPastStream = pastStreams.reduce(
+    (newest, stream) => (!newest || Number(stream.startTime) > Number(newest.startTime) ? stream : newest),
+    null,
+);
+const pastStreamTranscript = Array.isArray(data.pastStreamTranscript) ? data.pastStreamTranscript : [];
+const pastStreamId = newestPastStream?.streamId ?? "";
+const pastStreamTitle = newestPastStream?.streamTitle ?? "";
+const pastStreamLastLineId =
+    pastStreamTranscript.length > 0 ? pastStreamTranscript[pastStreamTranscript.length - 1].id : -1;
+
 const mockconstOutput = `
 /**
  * NOTE: Auto-generated from mockData.json
@@ -99,6 +111,10 @@ export const paginationSearchBottom = "${botSearchText}";
 export const paginationBottomLineId = ${transcript[bottomOfPage0Idx].id};
 export const paginationSearchMiddle = "${midSearchText}";
 export const paginationMiddleLineId = ${transcript[midOfPage0Idx].id};
+
+export const pastStreamId = "${pastStreamId}";
+export const pastStreamTitle = "${pastStreamTitle}";
+export const pastStreamLastLineId = ${pastStreamLastLineId};
 `;
 
 fs.writeFileSync("tests/mocks/mockconst.js", mockconstOutput);

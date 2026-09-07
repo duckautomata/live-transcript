@@ -19,14 +19,14 @@ export const SCHEDULE_MOCK_OFF = "off";
  * @type {{ value: string, label: string, needsActiveStream?: boolean }[]}
  */
 export const SCHEDULE_MOCK_OPTIONS = [
-    { value: SCHEDULE_MOCK_OFF, label: "Off — use the real schedule" },
-    { value: "upcoming", label: "Countdown — next stream in 30 minutes" },
-    { value: "imminent", label: "Countdown — next stream in 20 seconds" },
-    { value: "overdue", label: "Countdown — stream overdue by 10 minutes" },
-    { value: "late", label: "Lateness — current stream started 8m late", needsActiveStream: true },
-    { value: "early", label: "Lateness — current stream started 4m early", needsActiveStream: true },
-    { value: "onTime", label: "Lateness — current stream started on time", needsActiveStream: true },
-    { value: "unlisted", label: "Fallback — stream is not in the schedule" },
+    { value: SCHEDULE_MOCK_OFF, label: "Off - use the real schedule" },
+    { value: "upcoming", label: "Countdown - next stream in 30 minutes" },
+    { value: "imminent", label: "Countdown - next stream in 20 seconds" },
+    { value: "overdue", label: "Countdown - stream overdue by 10 minutes" },
+    { value: "late", label: "Lateness - current stream started 8m late", needsActiveStream: true },
+    { value: "early", label: "Lateness - current stream started 4m early", needsActiveStream: true },
+    { value: "onTime", label: "Lateness - current stream started on time", needsActiveStream: true },
+    { value: "unlisted", label: "Fallback - stream is not in the schedule" },
 ];
 
 /**

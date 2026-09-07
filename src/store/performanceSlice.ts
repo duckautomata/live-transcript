@@ -5,7 +5,8 @@ export const createPerformanceSlice: AppSliceCreator<PerformanceSlice> = (set) =
     lastLineReceivedAt: 0,
     addMetric: (metric) =>
         set((state) => {
-            if (!state.devMode) return { metrics: state.metrics };
+            // Returning the same state object skips the store notification entirely.
+            if (!state.devMode) return state;
 
             const newMetrics = [...state.metrics, metric];
             // Limit history to last 200 points to prevent memory issues

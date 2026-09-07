@@ -6,36 +6,41 @@ import { Close, Download } from "@mui/icons-material";
 import { useAppStore } from "../store/store";
 import { downloadAudioUrl, playAudioUrl } from "../logic/mediaUrls";
 
+/** Stable empty list so the footer does not re-render for every new line while nothing is playing. */
+const EMPTY_TRANSCRIPT = [];
+
 /**
  * A floating footer providing audio controls and playback.
  * @param {object} props
  * @param {string} props.wsKey - The WebSocket channel key.
- * @param {number} props.width - The available width.
  */
-export default function AudioFooter({ wsKey, width }) {
+export default function AudioFooter({ wsKey }) {
     const audioId = useAppStore((state) => state.audioId);
     const setAudioId = useAppStore((state) => state.setAudioId);
     const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
-    const transcript = useAppStore((state) => state.transcript);
-    const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
-    const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
-    const streamId = useAppStore((state) => state.streamId);
-    const selectedId = pastStreamViewing || streamId;
-    const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
-    const activeLine = activeTranscript.find((line) => line.id === audioId);
+    const selectedId = useAppStore((state) => state.pastStreamViewing || state.streamId);
+    // Only subscribe to the (large) transcript while something is playing.
+    const activeTranscript = useAppStore((state) =>
+        state.audioId < 0 ? EMPTY_TRANSCRIPT : state.pastStreamViewing ? state.pastStreamTranscript : state.transcript,
+    );
     const theme = useTheme();
     const isMobile = useMediaQuery("(max-width:768px)");
 
-    const playUrl = playAudioUrl(mediaBaseUrl, wsKey, selectedId, activeLine?.fileId);
-    const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, activeLine?.fileId, audioId);
     const desktopWidth = 400;
 
-    const prevAudioId = audioId > 0 ? audioId - 1 : -1;
-    const nextAudioId = audioId < activeTranscript.length - 1 ? audioId + 1 : -1;
+    // Line ids are not guaranteed to equal array indexes (holes, deleted lines, past streams), so the
+    // neighbours are looked up by position in the list.
+    const activeIndex = audioId < 0 ? -1 : activeTranscript.findIndex((line) => line.id === audioId);
+    const activeLine = activeIndex === -1 ? undefined : activeTranscript[activeIndex];
+    const playUrl = playAudioUrl(mediaBaseUrl, wsKey, selectedId, activeLine?.fileId);
 
-    const prevLine = activeTranscript.find((line) => line.id === prevAudioId);
-    const nextLine = activeTranscript.find((line) => line.id === nextAudioId);
+    if (!activeLine || !playUrl) {
+        return null;
+    }
 
+    const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, activeLine.fileId, audioId);
+    const prevLine = activeTranscript[activeIndex - 1];
+    const nextLine = activeTranscript[activeIndex + 1];
     const prevPlayUrl = playAudioUrl(mediaBaseUrl, wsKey, selectedId, prevLine?.fileId);
     const nextPlayUrl = playAudioUrl(mediaBaseUrl, wsKey, selectedId, nextLine?.fileId);
 
@@ -43,22 +48,14 @@ export default function AudioFooter({ wsKey, width }) {
         setAudioId(-1);
     };
 
-    const handleDownload = () => {
-        window.location.href = downloadUrl;
-    };
-
-    if (!playUrl || audioId < 0 || audioId >= activeTranscript.length) {
-        return null;
-    }
-
     return (
         <AppBar
             position="fixed"
             sx={{
                 top: "auto",
                 bottom: 0,
-                background: "green",
-                left: isMobile ? 0 : `${width - desktopWidth + 9}px`,
+                left: "auto",
+                right: 0,
                 width: isMobile ? "100%" : desktopWidth,
             }}
         >
@@ -79,22 +76,23 @@ export default function AudioFooter({ wsKey, width }) {
                         }}
                         customAdditionalControls={[
                             <Tooltip title="Close" key="close">
-                                <IconButton onClick={handleClose}>
+                                <IconButton onClick={handleClose} aria-label="Close audio player">
                                     <Close style={{ color: "black" }} />
                                 </IconButton>
                             </Tooltip>,
                             <Tooltip title="Download" key="download">
-                                <IconButton onClick={handleDownload}>
+                                <IconButton
+                                    component="a"
+                                    href={downloadUrl}
+                                    aria-label="Download audio"
+                                    data-testid="audio-footer-download"
+                                >
                                     <Download style={{ color: "black" }} />
                                 </IconButton>
                             </Tooltip>,
                         ]}
-                        onClickNext={() =>
-                            setAudioId(
-                                audioId < activeTranscript.length - 1 ? audioId + 1 : activeTranscript.length - 1,
-                            )
-                        }
-                        onClickPrevious={() => setAudioId(audioId > 0 ? audioId - 1 : 0)}
+                        onClickNext={() => setAudioId(nextLine?.id ?? audioId)}
+                        onClickPrevious={() => setAudioId(prevLine?.id ?? audioId)}
                     />
                 </Box>
             </Toolbar>

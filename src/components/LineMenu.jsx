@@ -1,25 +1,38 @@
 import { Menu, MenuItem } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import { unixToRelative } from "../logic/dateTime";
 import { maxClipSize } from "../config";
 import { useAppStore } from "../store/store";
+import {
+    selectActiveMediaType,
+    selectActiveStartTime,
+    selectActiveStreamId,
+    selectActiveTranscript,
+} from "../store/selectors";
 import { downloadAudioUrl } from "../logic/mediaUrls";
+import { STREAM_PARAM, lineHash, streamUrl, toAbsoluteUrl } from "../logic/links";
+import { copyWithToast } from "../logic/clipboard";
+
+/** Stable empty list so a closed menu never re-renders when transcript lines arrive. */
+const EMPTY_TRANSCRIPT = [];
 
 /**
  * A context menu for a specific line in the transcript.
+ * Navigation entries are real links so they can be middle-clicked or copied.
  * @param {object} props
  * @param {string} props.wsKey - The WebSocket channel key.
  * @param {function(number): void} props.jumpToLine - Callback to scroll to a specific line id.
+ * @param {string} props.linkBase - Path (+ search) the line link is built on ("/doki/?stream=x").
  */
-export default function LineMenu({ wsKey, jumpToLine }) {
+export default function LineMenu({ wsKey, jumpToLine, linkBase }) {
     const lineMenuId = useAppStore((state) => state.lineMenuId);
-    const streamId = useAppStore((state) => state.streamId);
-    const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
-    const transcript = useAppStore((state) => state.transcript);
-    const pastStreamTranscript = useAppStore((state) => state.pastStreamTranscript);
-    const pastStreams = useAppStore((state) => state.pastStreams);
-    const activeTranscript = pastStreamViewing ? pastStreamTranscript : transcript;
-    const startTime = useAppStore((state) => state.startTime);
-    const mediaType = useAppStore((state) => state.mediaType);
+    const isRequested = lineMenuId > -1;
+
+    // Only subscribe to the (large) transcript while a menu is actually open.
+    const activeTranscript = useAppStore((state) => (isRequested ? selectActiveTranscript(state) : EMPTY_TRANSCRIPT));
+    const selectedId = useAppStore(selectActiveStreamId);
+    const activeStartTime = useAppStore(selectActiveStartTime);
+    const mediaType = useAppStore(selectActiveMediaType);
     const mediaBaseUrl = useAppStore((state) => state.mediaBaseUrl);
     const clipStartIndex = useAppStore((state) => state.clipStartIndex);
     const setLineMenuId = useAppStore((state) => state.setLineMenuId);
@@ -27,26 +40,30 @@ export default function LineMenu({ wsKey, jumpToLine }) {
     const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
     const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
     const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
-    const selectedId = pastStreamViewing || streamId;
 
-    const lineAnchorEl = document.getElementById(`line-button-${lineMenuId}`);
-    const open = lineMenuId > -1 ? Boolean(lineAnchorEl) : false;
-    const selectedLine = activeTranscript.filter((line) => line.id === lineMenuId)[0];
+    const lineAnchorEl = isRequested ? document.getElementById(`line-button-${lineMenuId}`) : null;
+    const open = Boolean(lineAnchorEl);
+    const selectedLine = isRequested ? activeTranscript.find((line) => line.id === lineMenuId) : undefined;
     const ts = selectedLine?.timestamp;
-    const activeStartTime = pastStreamViewing
-        ? (pastStreams.find((s) => s.streamId === pastStreamViewing)?.startTime ?? 0)
-        : startTime;
-    const formattedTime = unixToRelative(ts, activeStartTime);
     const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, selectedLine?.fileId, lineMenuId);
+    // Only a real offset into the stream makes a usable `?t=`; otherwise the link opens the stream itself.
+    const relativeTime = ts && activeStartTime && ts > activeStartTime ? unixToRelative(ts, activeStartTime) : "";
+    const openUrl = streamUrl(selectedId, relativeTime);
+    const linePath = `${linkBase ?? ""}${lineHash(lineMenuId)}`;
 
-    let openUrl = "";
-    if (/^\d+$/.test(selectedId)) {
-        // twitch
-        openUrl = `https://www.twitch.tv/videos/${selectedId}?t=${formattedTime}`;
-    } else {
-        // yt
-        openUrl = `https://www.youtube.com/live/${selectedId}?t=${formattedTime}`;
-    }
+    /**
+     * The copied link always names the stream, so it still opens on the right line once this stream has
+     * ended and moved to the past-streams list. (The address bar itself stays clean while live.)
+     */
+    const buildShareableLinePath = () => {
+        const [pathname, search = ""] = (linkBase ?? "").split("?");
+        const params = new URLSearchParams(search);
+        if (selectedId && !params.has(STREAM_PARAM)) {
+            params.set(STREAM_PARAM, selectedId);
+        }
+        const query = params.toString();
+        return `${pathname}${query ? `?${query}` : ""}${lineHash(lineMenuId)}`;
+    };
 
     const handleClose = () => {
         setLineMenuId(-1);
@@ -75,21 +92,19 @@ export default function LineMenu({ wsKey, jumpToLine }) {
         setClipEndIndex(-1);
         handleClose();
     };
-    const handleDownload = () => {
-        window.location.href = downloadUrl;
-        handleClose();
-    };
     const handlePlay = () => {
         setAudioId(lineMenuId);
         handleClose();
     };
-    const handleOpenStream = () => {
-        window.open(openUrl, "_blank");
+
+    const handleCopyTimestamp = () => {
+        copyWithToast(String(ts ?? ""), "Timestamp copied");
         handleClose();
     };
 
-    const handleCopyTimestamp = () => {
-        navigator.clipboard.writeText(ts);
+    const handleCopyLineLink = () => {
+        copyWithToast(toAbsoluteUrl(buildShareableLinePath()), "Line link copied");
+        handleClose();
     };
 
     const hasAudio = mediaType === "audio" || mediaType === "video";
@@ -110,7 +125,7 @@ export default function LineMenu({ wsKey, jumpToLine }) {
         return !missingMediaLine;
     };
 
-    const currentLineMediaAvailable = isMediaAvailable(lineMenuId);
+    const currentLineMediaAvailable = isRequested ? isMediaAvailable(lineMenuId) : true;
 
     const shouldRenderStartClip = hasAudio && clipStartIndex < 0 && currentLineMediaAvailable;
 
@@ -157,15 +172,46 @@ export default function LineMenu({ wsKey, jumpToLine }) {
             {shouldRenderStartClip && <MenuItem onClick={handleStartClip}>Start Clip</MenuItem>}
             {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Process Clip</MenuItem>}
             {shouldRenderResetClip && <MenuItem onClick={handleResetClip}>Reset Clip</MenuItem>}
-            {hasAudio && <MenuItem onClick={handleDownload}>Download Audio</MenuItem>}
+            {hasAudio && (
+                <MenuItem
+                    component="a"
+                    href={downloadUrl}
+                    onClick={handleClose}
+                    disabled={!downloadUrl || !currentLineMediaAvailable}
+                    data-testid="line-menu-download"
+                >
+                    Download Audio
+                </MenuItem>
+            )}
             {hasAudio && (
                 <MenuItem onClick={handlePlay} disabled={!currentLineMediaAvailable}>
                     Play Audio
                 </MenuItem>
             )}
-            <MenuItem onClick={handleOpenStream}>Open Stream</MenuItem>
+            <MenuItem
+                component="a"
+                href={openUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={handleClose}
+                disabled={!selectedId || !ts}
+                data-testid="line-menu-open-stream"
+            >
+                Open Stream
+            </MenuItem>
             <MenuItem onClick={handleCopyTimestamp}>Copy Timestamp</MenuItem>
-            <MenuItem onClick={handleJumpToLine}>Jump to line</MenuItem>
+            <MenuItem onClick={handleCopyLineLink} data-testid="line-menu-copy-link">
+                Copy line link
+            </MenuItem>
+            <MenuItem
+                component={RouterLink}
+                to={linePath}
+                replace
+                onClick={handleJumpToLine}
+                data-testid="line-menu-jump"
+            >
+                Jump to line
+            </MenuItem>
         </Menu>
     );
 }

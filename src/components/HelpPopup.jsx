@@ -183,12 +183,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-1-content"
+                                id="help-panel-1-header"
                             >
                                 <Typography>Settings</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-1-content" aria-labelledby="help-panel-1-header">
                                 <Typography variant="body1" gutterBottom>
                                     Settings are at the left of the page. Click the cogwheel icon to view the settings
                                     menu.
@@ -246,12 +246,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-2-content"
+                                id="help-panel-2-header"
                             >
                                 <Typography>Sidebar</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-2-content" aria-labelledby="help-panel-2-header">
                                 <Typography variant="body1" gutterBottom>
                                     Allows you to easily jump between pages and streamers. Located on the left of your
                                     screen.
@@ -293,12 +293,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-3-content"
+                                id="help-panel-3-header"
                             >
                                 <Typography>Transcript Viewer</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-3-content" aria-labelledby="help-panel-3-header">
                                 <Typography variant="body1" gutterBottom>
                                     The transcript viewer allows you to review what was said during the stream. This
                                     updates in real time, so there is no need to refresh.
@@ -318,7 +318,10 @@ export default function HelpPopup() {
                                 The transcript is broken up into 3 parts.
                                 <ol>
                                     <li>Options (three dots in green)</li>
-                                    <li>The timestamp</li>
+                                    <li>
+                                        The timestamp. It is a link to the line: click it to highlight the line, or copy
+                                        / middle-click it to open the line in a new tab.
+                                    </li>
                                     <li>The text</li>
                                 </ol>
                                 Clicking on the options button will open a menu. This is where you can
@@ -327,8 +330,18 @@ export default function HelpPopup() {
                                     <li>Play or download the audio</li>
                                     <li>Open the stream to this spot if DVR or Vod is available</li>
                                     <li>Copy the unix timestamp of when the line starts</li>
+                                    <li>Copy a link to the line, or jump to it in the full transcript</li>
                                 </ul>
                                 <HelpImage src={images.linemenu} />
+                                <Typography variant="h6" gutterBottom>
+                                    Searching
+                                </Typography>
+                                <Typography variant="body1" gutterBottom>
+                                    Typing in the search bar filters the transcript down to the lines containing that
+                                    text and highlights every match. Press Ctrl+F (Cmd+F on Mac) to jump to the search
+                                    bar and Escape to clear it. When viewing a past stream, the stream is part of the
+                                    page address, so a copied link opens on the same stream and line.
+                                </Typography>
                                 <Typography variant="h6" gutterBottom>
                                     Live vs Paused vs Offline
                                 </Typography>
@@ -364,12 +377,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-4-content"
+                                id="help-panel-4-header"
                             >
                                 <Typography>Audio Player</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-4-content" aria-labelledby="help-panel-4-header">
                                 <Typography variant="body1" gutterBottom>
                                     When you click on a line id and select &quot;Play Audio&quot;, it will open the
                                     audio player and start playing the audio of that line.
@@ -399,12 +412,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-5-content"
+                                id="help-panel-5-header"
                             >
                                 <Typography>Clipping</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-5-content" aria-labelledby="help-panel-5-header">
                                 Clipping allows you to generate a media clip that spans multiple lines in the
                                 transcript. The benefits with using this instead of downloading each line separately is
                                 <ul>
@@ -471,12 +484,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-6-content"
+                                id="help-panel-6-header"
                             >
                                 <Typography>Word Count</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-6-content" aria-labelledby="help-panel-6-header">
                                 <Typography variant="body1" gutterBottom>
                                     Word Count allows you to view the usage of a word or text in real time over the
                                     course of the stream. The graph and values will automatically update.
@@ -496,12 +509,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-7-content"
+                                id="help-panel-7-header"
                             >
                                 <Typography>Tag Formatter</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-7-content" aria-labelledby="help-panel-7-header">
                                 <Typography variant="h6" gutterBottom>
                                     Input View
                                 </Typography>
@@ -606,12 +619,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-8-content"
+                                id="help-panel-8-header"
                             >
                                 <Typography>Tagging Feature</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-8-content" aria-labelledby="help-panel-8-header">
                                 <Typography variant="body1" gutterBottom>
                                     The tagging feature allows you to time a tag to a specific point in the transcript.
                                     This feature is disabled by default - enable it by toggling the switch below. You
@@ -701,12 +714,12 @@ export default function HelpPopup() {
                         <Accordion>
                             <AccordionSummary
                                 expandIcon={<ExpandMore />}
-                                aria-controls="panel1a-content"
-                                id="panel1a-header"
+                                aria-controls="help-panel-9-content"
+                                id="help-panel-9-header"
                             >
                                 <Typography>Testing Mode</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails id="help-panel-9-content" aria-labelledby="help-panel-9-header">
                                 <Typography variant="body1" gutterBottom>
                                     Testing Mode enables technical details primarily used for debugging and performance
                                     monitoring.

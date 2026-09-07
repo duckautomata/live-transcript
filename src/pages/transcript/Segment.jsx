@@ -1,9 +1,9 @@
-import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { useAppStore } from "../../store/store";
 import { Tooltip, Box, Typography } from "@mui/material";
 import { orange, purple, pink, blue } from "@mui/material/colors";
 import { memo } from "react";
+
+/** @typedef {import("../../logic/search").TextPart} TextPart */
 
 const SegmentTheme = styled("span")(({ theme }) => ({
     cursor: "pointer",
@@ -12,21 +12,48 @@ const SegmentTheme = styled("span")(({ theme }) => ({
     },
 }));
 
+/** A search hit inside a line: tinted and underlined so it stands out in both themes. */
+const SearchHit = styled("mark")(({ theme }) => ({
+    backgroundColor: theme.palette.searchHighlight.background,
+    color: theme.palette.searchHighlight.text,
+    textDecoration: "underline",
+    borderRadius: "2px",
+}));
+
+/**
+ * Render a segment's text, wrapping every search hit in a highlight.
+ * @param {string} text
+ * @param {TextPart[] | null | undefined} parts - from `splitSegmentsByTerm`; falsy renders plain text
+ */
+function renderText(text, parts) {
+    if (!parts) return text;
+    return parts.map((part, index) =>
+        part.hit ? (
+            <SearchHit key={index} data-testid="search-hit">
+                {part.text}
+            </SearchHit>
+        ) : (
+            part.text
+        ),
+    );
+}
+
 /**
  * A single segment of text within a transcript line.
+ * Subscribes to nothing itself: the line passes everything down so thousands of segments do not each
+ * register a store listener.
  * @param {object} props
  * @param {number} props.id - The id of the segment.
  * @param {number} props.timestamp - The Unix timestamp of the segment.
  * @param {string} props.text - The text content of the segment.
  * @param {function(number, string): void} props.onClick - Callback when the segment is clicked.
+ * @param {boolean} props.enableTagHelper - Whether the tag helper (click to open the offset calculator) is on.
  * @param {object[]} [props.tags] - List of tags associated with this segment.
+ * @param {TextPart[] | null} [props.parts] - Search highlight parts for this segment, if any.
  */
-function Segment({ id, timestamp, text, onClick, tags }) {
-    const theme = useTheme();
-    const enableTagHelper = useAppStore((state) => state.enableTagHelper);
-
+function Segment({ id, timestamp, text, onClick, enableTagHelper, tags, parts }) {
     if (!enableTagHelper) {
-        return <>{text}</>;
+        return <>{renderText(text, parts)}</>;
     }
 
     let decorationStyle = {};
@@ -102,11 +129,10 @@ function Segment({ id, timestamp, text, onClick, tags }) {
     const content = (
         <SegmentTheme
             data-testid={`transcript-segment-${id}`}
-            theme={theme}
             onClick={() => onClick(timestamp, text)}
             style={decorationStyle}
         >
-            {text}
+            {renderText(text, parts)}
         </SegmentTheme>
     );
 

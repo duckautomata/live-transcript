@@ -18,6 +18,11 @@ export const darkTheme = createTheme({
             main: "#395553",
             clip: "#39254D",
         },
+        searchHighlight: {
+            // Opaque so the contrast holds on selected / playing / jump-highlighted rows too.
+            background: "#B59F00",
+            text: "rgba(0, 0, 0, 0.87)",
+        },
         primary: {
             main: "#20A79A",
             alt: "#71e2d7ff",
@@ -56,6 +61,10 @@ export const lightTheme = createTheme({
         lineground: {
             main: "#89A5A3",
             clip: "#C5B4E3",
+        },
+        searchHighlight: {
+            background: "#FFEB3B",
+            text: "rgba(0, 0, 0, 0.87)",
         },
         primary: {
             main: "#12645B",

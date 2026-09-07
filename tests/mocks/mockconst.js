@@ -15,3 +15,7 @@ export const paginationSearchBottom = "oh, you can't recharge shields? what the 
 export const paginationBottomLineId = 1220;
 export const paginationSearchMiddle = "turn it off! oh wait.";
 export const paginationMiddleLineId = 1370;
+
+export const pastStreamId = "GwX-cIhMEAk";
+export const pastStreamTitle = "【NEW OUTFIT REVEAL】Swimsuit 👀 #DokiFillerEpisode【Dokibird】";
+export const pastStreamLastLineId = 1194;

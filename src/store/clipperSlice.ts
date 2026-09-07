@@ -1,5 +1,6 @@
 import { ClipperSlice, AppSliceCreator } from "./types";
 import { maxClipSize } from "../config";
+import { selectActiveMediaType, selectActiveTranscript } from "./selectors";
 
 export const createClipperSlice: AppSliceCreator<ClipperSlice> = (set, get) => ({
     clipPopupOpen: false,
@@ -25,7 +26,9 @@ export const createClipperSlice: AppSliceCreator<ClipperSlice> = (set, get) => (
     },
     setClipStartIndex: (index) => {
         const state = get();
-        const { transcript, mediaType } = state;
+        // Bounds are computed against the stream on screen: a past stream has its own transcript and media type.
+        const transcript = selectActiveTranscript(state);
+        const mediaType = selectActiveMediaType(state);
 
         let before = -1;
         let after = Number.MAX_SAFE_INTEGER;
@@ -66,6 +69,8 @@ export const createClipperSlice: AppSliceCreator<ClipperSlice> = (set, get) => (
     recalculateClipRange: () => {
         const state = get();
         const { clipStartIndex } = state;
+        // Nothing to recompute (and no store notification) unless a clip start is set.
+        if (clipStartIndex < 0) return;
         state.setClipStartIndex(clipStartIndex);
     },
 });

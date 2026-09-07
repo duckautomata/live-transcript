@@ -1,3 +1,4 @@
+import { copyWithToast } from "../../logic/clipboard";
 import { useState } from "react";
 import { Box, TextField, Typography, Paper, Button } from "@mui/material";
 import { genericCensor } from "../../logic/censors";
@@ -19,7 +20,7 @@ export default function CensorPage() {
 
     const handleCopy = () => {
         if (output) {
-            navigator.clipboard.writeText(output);
+            copyWithToast(output, "Censored text copied");
         }
     };
 

@@ -99,7 +99,8 @@ export interface TranscriptSlice {
     setMediaBaseUrl: (url: string) => void;
     setIsLive: (live: boolean) => void;
     setTranscript: (data: TranscriptLine[]) => void;
-    addTranscriptLine: (newLine: TranscriptLine) => void;
+    /** Appends (or replaces) a line; `receivedAt` also stamps `lastLineReceivedAt` in the same update. */
+    addTranscriptLine: (newLine: TranscriptLine, receivedAt?: number) => void;
     updateLineMedia: (streamId: string, files: Files, available?: boolean) => void;
     updateLineVodAccurate: (ids: number[], vodAccurate: boolean) => void;
     resetTranscript: () => void;
@@ -108,6 +109,8 @@ export interface TranscriptSlice {
 export interface PastStreamSlice {
     pastStreamViewing: string | null;
     pastStreams: StreamInfo[];
+    /** True once the server has sent its past-streams list (even an empty one) for this channel. */
+    pastStreamsLoaded: boolean;
     pastStreamTranscript: TranscriptLine[];
     deletedStreamNotice: string | null;
     setPastStreamViewing: (streamId: string) => void;
@@ -185,6 +188,18 @@ export interface TrackerSlice {
     setScheduleMock: (scenario: string) => void;
 }
 
+export interface Toast {
+    key: number;
+    message: string;
+    severity: "success" | "info" | "warning" | "error";
+}
+
+export interface ToastSlice {
+    toast: Toast | null;
+    showToast: (message: string, severity?: Toast["severity"]) => void;
+    hideToast: () => void;
+}
+
 export interface TagFormatterSlice {
     formattedRows: any[];
     controls: Record<string, any>;
@@ -206,7 +221,8 @@ export type AppStore = AudioSlice &
     PerformanceSlice &
     TagFormatterSlice &
     PastStreamSlice &
-    TrackerSlice;
+    TrackerSlice &
+    ToastSlice;
 
 // Helper type for creating slices
 export type AppSliceCreator<T> = StateCreator<AppStore, [], [], T>;

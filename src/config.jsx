@@ -12,6 +12,12 @@ export const server = import.meta.env.VITE_API_URL;
 export const wsServer = import.meta.env.VITE_WS_URL;
 export const maxClipSize = 40;
 
+/** Path the app is served under. Must match `base` in vite.config.js. */
+export const basename = "/live-transcript/";
+
+/** Title used in the browser tab. Pages put their own name in front of it. */
+export const baseTitle = import.meta.env.VITE_PAGE_TITLE || "Live Transcript";
+
 export const keyIcons = (size, devMode = false) => {
     const icons = [
         {
@@ -82,3 +88,12 @@ export const keys = (devMode = false) => {
 
     return keys;
 };
+
+const streamerNames = Object.fromEntries(keyIcons(0, true).map((streamer) => [streamer.value, streamer.name]));
+
+/**
+ * Display name of a streamer key ("doki" -> "Doki"). Falls back to the key itself.
+ * @param {string} wsKey
+ * @returns {string}
+ */
+export const streamerName = (wsKey) => streamerNames[wsKey] ?? wsKey;

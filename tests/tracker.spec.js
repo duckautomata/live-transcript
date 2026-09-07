@@ -153,7 +153,7 @@ test("dev tools schedule scenario drives the tracker", async ({ page }) => {
     await loadInDevmode(page, `${mockconst.keyName}/track/`);
     await page.getByTestId("tracker-page").waitFor();
 
-    await pickScheduleScenario(page, "Countdown — next stream in 30 minutes");
+    await pickScheduleScenario(page, "Countdown - next stream in 30 minutes");
 
     const card = page.getByTestId("tracker-countdown-card");
     await expect(card).toBeVisible();
@@ -165,7 +165,7 @@ test("schedule scenario is not persisted and resets on refresh", async ({ page }
     await loadInDevmode(page, `${mockconst.keyName}/track/`);
     await page.getByTestId("tracker-page").waitFor();
 
-    await pickScheduleScenario(page, "Countdown — next stream in 30 minutes");
+    await pickScheduleScenario(page, "Countdown - next stream in 30 minutes");
     await expect(page.getByTestId("tracker-countdown-card")).toBeVisible();
 
     // Dev-tool state must stay out of the persisted settings.
@@ -190,7 +190,7 @@ test("mocked schedules are never saved to the punctuality history", async ({ pag
         page.evaluate(() => JSON.parse(window.localStorage.getItem("live-transcript-settings")).state.latenessHistory);
     const before = await readHistory();
 
-    await pickScheduleScenario(page, "Lateness — current stream started 8m late");
+    await pickScheduleScenario(page, "Lateness - current stream started 8m late");
     await expect(page.getByTestId("tracker-lateness-card")).toContainText("Started Late by");
 
     expect(await readHistory()).toEqual(before);

@@ -1,3 +1,4 @@
+import { copyWithToast } from "../logic/clipboard";
 import {
     Dialog,
     DialogTitle,
@@ -22,6 +23,7 @@ import { calculateOffset, offsetToCommand, snowflakeToUnix } from "../logic/time
 import { unixToRelative } from "../logic/dateTime";
 import { secondsToTime, mergeTags } from "../logic/tagHelpers";
 import { useAppStore } from "../store/store";
+import { selectActiveStartTime } from "../store/selectors";
 
 /**
  * A dialog for calculating the offset of a transcript tag relative to a Discord message ID.
@@ -35,7 +37,8 @@ const TagOffsetPopup = ({ wsKey }) => {
     const tagPopupText = useAppStore((state) => state.tagPopupText);
     const defaultOffset = useAppStore((state) => state.defaultOffset);
     const setDefaultOffset = useAppStore((state) => state.setDefaultOffset);
-    const startTime = useAppStore((state) => state.startTime);
+    // Offsets are relative to the stream on screen (a past stream when one is selected).
+    const startTime = useAppStore(selectActiveStartTime);
 
     // ... (keep usage of useAppStore at top)
     const formattedRows = useAppStore((state) => state.formattedRows);
@@ -87,7 +90,7 @@ const TagOffsetPopup = ({ wsKey }) => {
 
     const handleCopyToClipboard = () => {
         if (command !== null) {
-            navigator.clipboard.writeText(command.toString());
+            copyWithToast(command.toString(), "Command copied");
         }
     };
 

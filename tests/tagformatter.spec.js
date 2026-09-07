@@ -345,7 +345,7 @@ test.describe("Tag Formatter Formatted Page", () => {
 
     test("disabling all tags in a chapter crosses out the control", async ({ page }) => {
         await loadInDevmode(page, pagePath);
-        // No inline chapter text — only the header and one child tag at 01:30.
+        // No inline chapter text - only the header and one child tag at 01:30.
         await fillInput(page, "01:00 [Short Chapter]\n01:30 only child");
         await formatTags(page);
 
@@ -656,7 +656,7 @@ test.describe("Tag Formatter Parsing Edge Cases", () => {
         await expect(page.getByTestId("tag-row").filter({ hasText: "unsmart" })).toBeVisible();
         await expect(page.getByTestId("tag-row").filter({ hasText: "clean tag" })).toBeVisible();
 
-        // Flip on Highlight Censored — it's the 2nd switch in the Bulk Edit panel
+        // Flip on Highlight Censored - it's the 2nd switch in the Bulk Edit panel
         const bulkPaper = page.locator(".MuiPaper-root", { hasText: "Bulk Edit" });
         const censoredSwitch = bulkPaper.getByRole("switch").nth(1);
         await censoredSwitch.check();
@@ -999,7 +999,7 @@ test.describe("Tag Formatter Integration with Transcript", () => {
         await expect(frame).toBeVisible();
         await frame.click();
 
-        // Frame opens a dialog containing a Line with segments — click a segment to open TagOffsetPopup
+        // Frame opens a dialog containing a Line with segments - click a segment to open TagOffsetPopup
         const frameDialog = page.getByRole("dialog");
         await expect(frameDialog).toBeVisible();
         const segmentInDialog = frameDialog.locator('[data-testid^="transcript-segment-"]').first();
@@ -1045,7 +1045,7 @@ test.describe("Tag Formatter Integration with Transcript", () => {
         // Use a different case of the existing chapter
         await chapterField.fill("opening");
 
-        // Expectation per guide: case-insensitive uniqueness — should error out and disable Create
+        // Expectation per guide: case-insensitive uniqueness - should error out and disable Create
         await expect(dialog.getByText("Chapter name already exists")).toBeVisible();
         await expect(dialog.getByRole("button", { name: "Create Tag" })).toBeDisabled();
     });
@@ -1173,7 +1173,7 @@ test.describe("Tag Formatter Transcript Segment Tooltip", () => {
     });
 
     test("collection header does not duplicate its first tag's tooltip", async ({ page }) => {
-        // Two tags in the same group — the first shares its timestamp with the header row,
+        // Two tags in the same group - the first shares its timestamp with the header row,
         // which previously caused the tooltip to render `collection: g1collection: g1 [...] ...`.
         await loadInDevmode(page, pagePath);
         await fillInput(page, "2:05:00 group1 :: tag one\n2:06:00 group1 :: tag two");
@@ -1215,7 +1215,7 @@ test.describe("Tag Formatter Transcript Segment Tooltip", () => {
         }
 
         expect(tooltipText).not.toBeNull();
-        // Exactly one "collection:" prefix — the header shouldn't add a second one.
+        // Exactly one "collection:" prefix - the header shouldn't add a second one.
         const matches = tooltipText.match(/collection:/gi) || [];
         expect(matches.length).toBe(1);
         expect(tooltipText).toMatch(/collection:\s*group1\s*\[\d+:\d+:\d+\]\s*tag one/);

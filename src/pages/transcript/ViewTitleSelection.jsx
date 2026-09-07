@@ -10,37 +10,51 @@ import {
 } from "@mui/material";
 import { EditCalendar, InfoOutlined } from "@mui/icons-material";
 import { orange } from "@mui/material/colors";
+import { useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAppStore } from "../../store/store";
+import { selectActiveIsLive, selectActiveMediaType, selectActiveStartTime } from "../../store/selectors";
 import { unixToLocal } from "../../logic/dateTime";
+import { STREAM_PARAM } from "../../logic/links";
+
+/** The title doubles as the picker, so the dropdown arrow is not shown. Module-level to keep one component type. */
+const NoIcon = () => null;
 
 /**
  * Component for displaying the stream title.
  * If past streams are available, it renders a dropdown to switch between the live stream and past streams.
  * If no past streams are available, it renders a simple title with a tooltip.
+ * The selection is written to the URL (`?stream=<id>`); View mirrors it into the store.
  */
 export default function ViewTitleSelection() {
     const streamTitle = useAppStore((state) => state.streamTitle);
     const pastStreams = useAppStore((state) => state.pastStreams);
     const pastStreamViewing = useAppStore((state) => state.pastStreamViewing);
-    const setPastStreamViewing = useAppStore((state) => state.setPastStreamViewing);
-    const setAudioId = useAppStore((state) => state.setAudioId);
-    const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
-    const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
     const isLive = useAppStore((state) => state.isLive);
-    const startTime = useAppStore((state) => state.startTime);
-    const mediaType = useAppStore((state) => state.mediaType);
+    // The tooltip describes the stream on screen (a past stream when one is selected).
+    const activeIsLive = useAppStore(selectActiveIsLive);
+    const activeStartTime = useAppStore(selectActiveStartTime);
+    const activeMediaType = useAppStore(selectActiveMediaType);
     const isSynced = useAppStore((state) => state.isSynced);
 
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const isMobile = useMediaQuery("(max-width:768px)");
-    const liveText = isLive ? "live" : "offline";
+    const liveText = activeIsLive ? "live" : "offline";
 
     const handleChange = (event) => {
         const newValue = event.target.value;
-        const newViewing = newValue === "live" ? null : newValue;
-        setPastStreamViewing(newViewing);
-        setAudioId(-1);
-        setClipStartIndex(-1);
-        setClipEndIndex(-1);
+        const stream = newValue === "live" ? null : newValue;
+        const params = new URLSearchParams(location.search);
+        if (stream) {
+            params.set(STREAM_PARAM, stream);
+        } else {
+            params.delete(STREAM_PARAM);
+        }
+        const search = params.toString();
+        // A line hash belongs to the stream it was made on, so it is dropped here.
+        navigate({ pathname: location.pathname, search: search ? `?${search}` : "", hash: "" });
     };
 
     const streamInfoTooltip = (
@@ -49,17 +63,17 @@ export default function ViewTitleSelection() {
                 <strong>Stream status:</strong> {liveText}
             </p>
             <p style={{ margin: "4px 0 0" }}>
-                <strong>Start Time:</strong> {unixToLocal(startTime)}
+                <strong>Start Time:</strong> {unixToLocal(activeStartTime)}
             </p>
             <p style={{ margin: "4px 0 0" }}>
                 <strong>Media Available:</strong>{" "}
-                {mediaType === "video" ? "Video and Audio" : mediaType === "audio" ? "Audio Only" : "None"}
+                {activeMediaType === "video" ? "Video and Audio" : activeMediaType === "audio" ? "Audio Only" : "None"}
             </p>
         </div>
     );
 
     // Sort past streams by start time descending (newest first)
-    const sortedPastStreams = [...pastStreams].sort((a, b) => b.startTime - a.startTime);
+    const sortedPastStreams = useMemo(() => [...pastStreams].sort((a, b) => b.startTime - a.startTime), [pastStreams]);
 
     return (
         <>
@@ -70,7 +84,7 @@ export default function ViewTitleSelection() {
                         value={pastStreamViewing || "live"}
                         onChange={handleChange}
                         displayEmpty
-                        IconComponent={() => null}
+                        IconComponent={NoIcon}
                         renderValue={(selected) => {
                             let titleText = streamTitle || "Live Stream";
                             if (selected !== "live") {

@@ -1,4 +1,4 @@
-import { Box, Skeleton, Typography } from "@mui/material";
+import { Box, Divider, Skeleton, Typography } from "@mui/material";
 import { CloudOff } from "@mui/icons-material";
 import TranscriptSkeleton from "./TranscriptSkeleton";
 
@@ -41,7 +41,7 @@ export default function ViewSkeleton({ serverStatus = "loading" }) {
                             {statusText}
                         </Typography>
                     </Box>
-                    <hr />
+                    <Divider />
                     <TranscriptSkeleton />
                 </Box>
             )}

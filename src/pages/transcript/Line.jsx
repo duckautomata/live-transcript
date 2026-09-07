@@ -1,5 +1,6 @@
-import { IconButton, Typography, Tooltip } from "@mui/material";
+import { IconButton, Link, Typography, Tooltip } from "@mui/material";
 import { forwardRef, Fragment, memo, useMemo } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import Segment from "./Segment";
 import { useTheme, keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
@@ -7,10 +8,14 @@ import { unixToLocal, unixToRelative, unixToUTC } from "../../logic/dateTime";
 import { MoreHoriz, ContentCut, RestartAlt } from "@mui/icons-material";
 import { maxClipSize } from "../../config";
 import { useAppStore } from "../../store/store";
+import { selectActiveMediaType } from "../../store/selectors";
 import { useShallow } from "zustand/shallow";
+import { splitSegmentsByTerm } from "../../logic/search";
+import { lineHash } from "../../logic/links";
 
 /** @typedef {import("../../store/types").Segment} Segment */
 /** @typedef {import('react').ForwardedRef<HTMLDivElement>} Ref */
+/** @typedef {Record<number, object[]>} LineTags - Tag rows per segment index. */
 
 const TimestampTheme = styled("span")(({ theme }) => ({
     "&": {
@@ -31,6 +36,33 @@ const loadingAnimation = keyframes`
 `;
 
 /**
+ * Opens the tag offset calculator for a segment. Module-level so every memoized Segment keeps a stable
+ * `onClick` prop and the line does not need a store subscription per setter.
+ * @param {number} timestamp
+ * @param {string} text
+ */
+const onSegmentClick = (timestamp, text) => {
+    const { setTagPopupTimestamp, setTagPopupText, setTagPopupOpen } = useAppStore.getState();
+    setTagPopupTimestamp(timestamp);
+    setTagPopupText(text);
+    setTagPopupOpen(true);
+};
+
+/**
+ * Wraps `children` in a Tooltip only when there is something to show; an empty Tooltip still costs a
+ * component, listeners and a ref per line.
+ * @param {{ title: string, describeChild?: boolean, children: React.ReactElement }} props
+ */
+function OptionalTooltip({ title, describeChild, children }) {
+    if (!title) return children;
+    return (
+        <Tooltip title={title} describeChild={describeChild}>
+            {children}
+        </Tooltip>
+    );
+}
+
+/**
  * A full line in the transcript, containing multiple segments.
  * @param {object} props
  * @param {Ref} props.ref - The ref of the line.
@@ -40,28 +72,39 @@ const loadingAnimation = keyframes`
  * @param {boolean} [props.highlight] - Whether to highlight the line.
  * @param {boolean} [props.mediaAvailable] - Whether media is available for this line.
  * @param {boolean} [props.vodAccurate] - Whether the line timestamp matches the VOD precisely.
+ * @param {LineTags} [props.lineTags] - Tag rows for this line, keyed by segment index (undefined for most lines).
+ * @param {string} [props.searchTerm] - Normalized search term; every occurrence in the text is highlighted.
+ * @param {string} [props.linkBase] - Path (+ search) the timestamp link is built on ("/doki/?stream=x").
+ * @param {function(MouseEvent, number): void} [props.onLinkClick] - Called with the click event and the line id when the timestamp link is clicked.
  */
 const Line = memo(
     forwardRef(
         /**
-         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean, vodAccurate?: boolean, startTime?: number }} props
+         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean, vodAccurate?: boolean, startTime?: number, lineTags?: LineTags, searchTerm?: string, linkBase?: string, onLinkClick?: function }} props
          * @param {Ref} ref
          */
-        ({ id, lineTimestamp, segments, highlight, tagsMap, startTime, ...props }, ref) => {
+        (
+            {
+                id,
+                lineTimestamp,
+                segments,
+                highlight,
+                lineTags,
+                startTime,
+                searchTerm,
+                linkBase,
+                onLinkClick,
+                ...props
+            },
+            ref,
+        ) => {
             const theme = useTheme();
-
-            const setTagPopupOpen = useAppStore((state) => state.setTagPopupOpen);
-            const setTagPopupTimestamp = useAppStore((state) => state.setTagPopupTimestamp);
-            const setTagPopupText = useAppStore((state) => state.setTagPopupText);
-            const setLineMenuId = useAppStore((state) => state.setLineMenuId);
-            const setClipPopupOpen = useAppStore((state) => state.setClipPopupOpen);
-            const setClipStartIndex = useAppStore((state) => state.setClipStartIndex);
-            const setClipEndIndex = useAppStore((state) => state.setClipEndIndex);
 
             const storeStartTime = useAppStore((state) => state.startTime);
             const timeFormat = useAppStore((state) => state.timeFormat);
             const density = useAppStore((state) => state.density);
-            const mediaType = useAppStore((state) => state.mediaType);
+            const mediaType = useAppStore(selectActiveMediaType);
+            const enableTagHelper = useAppStore((state) => state.enableTagHelper);
 
             const effectiveStartTime = startTime ?? storeStartTime;
 
@@ -119,11 +162,11 @@ const Line = memo(
                 }),
             );
 
-            const onSegmentClick = (timestamp, text) => {
-                setTagPopupTimestamp(timestamp);
-                setTagPopupText(text);
-                setTagPopupOpen(true);
-            };
+            // Only lines that are actually rendered pay for this, and only while a search is active.
+            const highlightParts = useMemo(
+                () => (searchTerm ? splitSegmentsByTerm(segments, searchTerm) : null),
+                [segments, searchTerm],
+            );
 
             const isClipTargetValid = useMemo(() => {
                 if (isMediaMissing) return false;
@@ -131,7 +174,9 @@ const Line = memo(
                 return isRangeValid && Math.abs(clipStartIndex - id) < maxClipSize;
             }, [isMediaMissing, clipStartIndex, isRangeValid, id]);
 
+            // Store actions are read at event time instead of through one subscription per setter per line.
             const onIdClick = () => {
+                const { setClipStartIndex, setClipEndIndex, setClipPopupOpen, setLineMenuId } = useAppStore.getState();
                 if (clipMode) {
                     if (!isClipTargetValid) return;
 
@@ -145,6 +190,11 @@ const Line = memo(
                 } else {
                     setLineMenuId(id);
                 }
+            };
+
+            const onResetClipStart = (e) => {
+                e.stopPropagation();
+                useAppStore.getState().setClipStartIndex(-1);
             };
 
             const convertTime = (time) => {
@@ -184,17 +234,16 @@ const Line = memo(
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
             const iconSx = density === "compact" ? { padding: 0 } : {};
-            const timestampColor = theme.palette.timestamp.main;
+            const lineTo = `${linkBase ?? ""}${lineHash(id)}`;
+            const menuOpen = !clipMode && isSelected;
 
             return (
                 <Typography
                     ref={ref}
                     className={highlight ? "highlight" : ""}
                     color="secondary"
-                    aria-live="assertive"
                     align="left"
                     id={id}
-                    role="transcript-line"
                     data-testid={`transcript-line-${id}`}
                     sx={{
                         padding: "1px",
@@ -211,17 +260,15 @@ const Line = memo(
                             <IconButton
                                 size={iconSize}
                                 sx={iconSx}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setClipStartIndex(-1);
-                                }}
+                                onClick={onResetClipStart}
+                                aria-label="Reset clip start"
                                 data-testid={`line-button-${id}-reset`}
                             >
                                 <RestartAlt style={{ color: theme.palette.error.main }} data-testid="RestartAltIcon" />
                             </IconButton>
                         </Tooltip>
                     )}
-                    <Tooltip title={isMediaMissing ? "Media isn't available yet" : ""}>
+                    <OptionalTooltip title={isMediaMissing ? "Media isn't available yet" : ""}>
                         <IconButton
                             size={iconSize}
                             sx={{
@@ -232,6 +279,10 @@ const Line = memo(
                             id={`line-button-${id}`}
                             data-testid={isMediaMissing ? `line-button-${id}-loading` : `line-button-${id}`}
                             disabled={clipMode && !isClipTargetValid}
+                            aria-label={clipMode ? `Select line ${id} for the clip` : `Line ${id} options`}
+                            aria-haspopup={clipMode ? undefined : "menu"}
+                            aria-expanded={menuOpen ? true : undefined}
+                            aria-controls={menuOpen ? "line-menu" : undefined}
                         >
                             {clipMode ? (
                                 isClipTargetValid ? (
@@ -243,53 +294,59 @@ const Line = memo(
                                 <MoreHoriz style={{ color: iconColor }} data-testid="MoreHorizIcon" />
                             )}
                         </IconButton>
-                    </Tooltip>{" "}
-                    <Tooltip
+                    </OptionalTooltip>{" "}
+                    <OptionalTooltip
                         title={
                             isTimestampApproximated
                                 ? "Timestamp is approximated and may not align precisely with the VOD"
                                 : ""
                         }
+                        describeChild
                     >
-                        <span data-testid={isTimestampApproximated ? `line-timestamp-${id}-approx` : undefined}>
+                        {/* A real link, so a line can be opened in a new tab or its address copied. `replace` keeps
+                            a series of jumps from cluttering the back button. */}
+                        <Link
+                            component={RouterLink}
+                            to={lineTo}
+                            replace
+                            onClick={onLinkClick ? (event) => onLinkClick(event, id) : undefined}
+                            underline="hover"
+                            color="inherit"
+                            // The tooltip describes an approximated timestamp, so no native title next to it.
+                            title={isTimestampApproximated ? undefined : "Link to this line"}
+                            data-testid={isTimestampApproximated ? `line-timestamp-${id}-approx` : `line-anchor-${id}`}
+                        >
                             [
-                            <TimestampTheme
-                                theme={theme}
-                                style={{
-                                    color: timestampColor,
-                                    opacity: isTimestampApproximated ? 0.75 : 1,
-                                }}
-                            >
+                            <TimestampTheme style={{ opacity: isTimestampApproximated ? 0.75 : 1 }}>
                                 {isTimestampApproximated ? "≈" : ""}
                                 {convertTime(lineTimestamp)}
                             </TimestampTheme>
                             ]
-                        </span>
-                    </Tooltip>{" "}
+                        </Link>
+                    </OptionalTooltip>{" "}
                     {hasSegments ? (
-                        segments.map((segment, index) => {
-                            const segmentTags = tagsMap?.get(`${id}_${index}`);
-                            return (
-                                <Fragment key={`line-${id}-segment-${index}`}>
-                                    <Segment
-                                        id={index}
-                                        timestamp={segment?.timestamp}
-                                        text={segment?.text}
-                                        onClick={onSegmentClick}
-                                        tags={segmentTags}
-                                    />
-                                    <span />
-                                    {index < segments.length - 1 && " "}
-                                </Fragment>
-                            );
-                        })
+                        segments.map((segment, index) => (
+                            <Fragment key={`line-${id}-segment-${index}`}>
+                                <Segment
+                                    id={index}
+                                    timestamp={segment?.timestamp}
+                                    text={segment?.text}
+                                    onClick={onSegmentClick}
+                                    enableTagHelper={enableTagHelper}
+                                    tags={lineTags ? lineTags[index] : undefined}
+                                    parts={highlightParts ? highlightParts[index] : null}
+                                />
+                                {index < segments.length - 1 && " "}
+                            </Fragment>
+                        ))
                     ) : (
                         <Segment
                             id={0}
                             timestamp={lineTimestamp}
                             text={"          "}
                             onClick={onSegmentClick}
-                            tags={tagsMap?.get(`${id}_0`)}
+                            enableTagHelper={enableTagHelper}
+                            tags={lineTags ? lineTags[0] : undefined}
                         />
                     )}
                 </Typography>

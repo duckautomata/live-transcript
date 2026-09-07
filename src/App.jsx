@@ -6,7 +6,7 @@ import { darkTheme, lightTheme } from "./theme";
 import { Websocket } from "./Websocket";
 import Sidebar from "./components/Sidebar";
 import ClipperPopup from "./components/ClipperPopup";
-import { keys } from "./config";
+import { keys, streamerName } from "./config";
 import { useAppStore } from "./store/store";
 import TagOffsetPopup from "./components/TagOffsetPopup";
 import UpdateAlert from "./components/UpdateAlert";
@@ -24,6 +24,32 @@ import HelpPopup from "./components/HelpPopup";
 import InfoPopup from "./components/InfoPopup";
 import DevToolsPopup from "./components/DevToolsPopup";
 import DeletedStreamSnackbar from "./components/DeletedStreamSnackbar";
+import ToastSnackbar from "./components/ToastSnackbar";
+import { usePageTitle } from "./logic/usePageTitle";
+import { currentPage } from "./logic/links";
+
+/** Tab title suffix per page segment; the transcript view itself has none. */
+const PAGE_LABELS = {
+    graph: "Graph",
+    track: "Tracker",
+    tagFixer: "Tag Formatter",
+};
+
+/**
+ * Browser tab title for the current route ("Doki", "Doki Graph", "Censor", or "" for home).
+ * @param {string | undefined} wsKey
+ * @param {string} pathname
+ * @returns {string}
+ */
+function pageTitle(wsKey, pathname) {
+    if (wsKey) {
+        const label = PAGE_LABELS[currentPage(pathname)];
+        return label ? `${streamerName(wsKey)} ${label}` : streamerName(wsKey);
+    }
+    if (pathname.startsWith("/censor")) return "Censor";
+    if (pathname.startsWith("/tagFixer")) return PAGE_LABELS.tagFixer;
+    return "";
+}
 
 /**
  * The root application component.
@@ -45,10 +71,12 @@ function App() {
     const wsKey = keys(devMode).find((k) => k === pathSegment);
 
     useTagIntegration(wsKey);
+    usePageTitle(pageTitle(wsKey, location.pathname));
 
     return (
         <ThemeProvider theme={colorTheme}>
-            <CssBaseline />
+            {/* enableColorScheme makes native controls (scrollbars, inputs) follow the chosen theme */}
+            <CssBaseline enableColorScheme />
             <EnvironmentBadge />
             <UpdateAlert />
             {window.maintenance ? (
@@ -65,7 +93,8 @@ function App() {
                             <>
                                 <Websocket wsKey={wsKey} />
                                 <Routes>
-                                    <Route path={`${wsKey}/*`} element={<View wsKey={wsKey} />} />
+                                    {/* Keyed so search, tab and jump state never leak from one streamer to the next. */}
+                                    <Route path={`${wsKey}/*`} element={<View key={wsKey} wsKey={wsKey} />} />
                                     <Route path={`${wsKey}/graph/`} element={<StreamWordCount />} />
                                     <Route path={`${wsKey}/track/`} element={<Tracker wsKey={wsKey} />} />
                                     <Route path={`${wsKey}/tagFixer/`} element={<TagFormatter wsKey={wsKey} />} />
@@ -85,6 +114,7 @@ function App() {
             <InfoPopup />
             <DevToolsPopup />
             <DeletedStreamSnackbar />
+            <ToastSnackbar />
         </ThemeProvider>
     );
 }

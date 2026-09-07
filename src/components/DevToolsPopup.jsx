@@ -46,8 +46,7 @@ export default function DevToolsPopup() {
     const setDevToolsOpen = useAppStore((state) => state.setDevToolsOpen);
     const [tabValue, setTabValue] = useState(0);
 
-    // Store Access
-    const transcript = useAppStore((state) => state.transcript);
+    // Store Access (the transcript itself is read on demand so this dialog does not re-render per new line)
     const resetTranscript = useAppStore((state) => state.resetTranscript);
     const addTranscriptLine = useAppStore((state) => state.addTranscriptLine);
     const updateLineMedia = useAppStore((state) => state.updateLineMedia);
@@ -138,7 +137,7 @@ export default function DevToolsPopup() {
     const handleDeleteLine = () => {
         const idToDelete = parseInt(deleteId);
         if (!isNaN(idToDelete)) {
-            const newTranscript = transcript.filter((line) => line.id !== idToDelete);
+            const newTranscript = useAppStore.getState().transcript.filter((line) => line.id !== idToDelete);
             setTranscript(newTranscript);
         }
     };
@@ -366,7 +365,7 @@ export default function DevToolsPopup() {
                             </Typography>
                             {scenarioNeedsActiveStream(scheduleMock) && startTime <= 0 && (
                                 <Typography variant="caption" sx={{ color: "warning.main", display: "block", mt: 1 }}>
-                                    This scenario is measured against the active stream — set a Start Time above for it
+                                    This scenario is measured against the active stream - set a Start Time above for it
                                     to render.
                                 </Typography>
                             )}
