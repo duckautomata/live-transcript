@@ -54,6 +54,13 @@ const GridList = forwardRef(function GridList({ context, ...props }, ref) {
 
 const GRID_COMPONENTS = { List: GridList, Item: GridItem };
 
+// Frames are 16/9 until a real one has been measured, so the grid does not reflow on first paint for
+// the common case.
+const DEFAULT_ASPECT_RATIO = 16 / 9;
+// The longest side of a desktop tile. Widescreen tiles are 200x113, vertical ones 113x200, so a
+// column of either takes about the same room.
+const TILE_MAX_PX = 200;
+
 /**
  * TranscriptFrame component for displaying the transcript as a grid of frames.
  *
@@ -99,10 +106,44 @@ export default function TranscriptFrame({
     const selectedLineRef = useRef(null);
     selectedLineRef.current = selectedLine;
 
-    const gridContext = useMemo(
-        () => ({ itemWidth: isMobile ? "50%" : "200px" }), // 2 per row on mobile, fixed width on desktop
-        [isMobile],
-    );
+    // Every frame of a stream comes from the same video, so one measured frame sizes the whole grid.
+    // The component is keyed by stream, so this resets when a different stream is opened.
+    const [measuredRatio, setMeasuredRatio] = useState(null);
+
+    const probeUrl = useMemo(() => {
+        const line = reversedDisplayData.find((l) => l.mediaAvailable);
+        return line ? getFrameUrl(mediaBaseUrl, wsKey, streamId, line.fileId) : undefined;
+    }, [reversedDisplayData, mediaBaseUrl, wsKey, streamId]);
+
+    useEffect(() => {
+        if (measuredRatio !== null || !probeUrl) return;
+
+        let cancelled = false;
+        const img = new Image();
+        img.onload = () => {
+            if (!cancelled && img.naturalWidth > 0 && img.naturalHeight > 0) {
+                setMeasuredRatio(img.naturalWidth / img.naturalHeight);
+            }
+        };
+        img.src = probeUrl;
+
+        return () => {
+            cancelled = true;
+            img.onload = null;
+        };
+    }, [probeUrl, measuredRatio]);
+
+    const aspectRatio = measuredRatio ?? DEFAULT_ASPECT_RATIO;
+    const isVertical = aspectRatio < 1;
+
+    const gridContext = useMemo(() => {
+        if (isMobile) {
+            // Vertical tiles are much taller than they are wide, so fit more of them per row.
+            return { itemWidth: isVertical ? "33.3333%" : "50%" };
+        }
+        const width = isVertical ? Math.round(TILE_MAX_PX * aspectRatio) : TILE_MAX_PX;
+        return { itemWidth: `${width}px` };
+    }, [isMobile, isVertical, aspectRatio]);
 
     const handleFrameClick = useCallback((/** @type {TranscriptLine} */ line) => {
         setSelectedId(line.id);
@@ -226,6 +267,7 @@ export default function TranscriptFrame({
                             isSelected={line.id === lastSelectedId}
                             onFrameClick={handleFrameClick}
                             startTime={startTime}
+                            aspectRatio={aspectRatio}
                         />
                     )}
                 />
@@ -237,8 +279,12 @@ export default function TranscriptFrame({
                         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                             <Box
                                 sx={{
-                                    width: "100%",
-                                    aspectRatio: "16/9",
+                                    // A vertical frame is capped by height instead of width, so the box
+                                    // hugs the image rather than leaving black bars down both sides.
+                                    width: isVertical ? `min(100%, calc(70vh * ${aspectRatio}))` : "100%",
+                                    maxHeight: "70vh",
+                                    mx: "auto",
+                                    aspectRatio: String(aspectRatio),
                                     overflow: "hidden",
                                     borderRadius: 1,
                                     bgcolor: "black",
