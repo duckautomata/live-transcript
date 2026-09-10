@@ -2,6 +2,7 @@ import dokiIcon from "./assets/icons/doki.jpg";
 import mintIcon from "./assets/icons/mint.jpg";
 import vicIcon from "./assets/icons/victoria.jpg";
 import phoebeIcon from "./assets/icons/phoebe.jpg";
+import densetsuIcon from "./assets/icons/densetsu-exe.jpg";
 import beriIcon from "./assets/icons/beri.jpg";
 import { Avatar } from "@mui/material";
 import { Engineering } from "@mui/icons-material";
@@ -43,6 +44,12 @@ export const keyIcons = (size, devMode = false) => {
             icon: <Avatar src={phoebeIcon} alt="phoebe" sx={{ width: size, height: size }} />,
             value: "phoebe",
             testId: "key-icon-phoebe",
+        },
+        {
+            name: "Densetsu·EXE",
+            icon: <Avatar src={densetsuIcon} alt="densetsu" sx={{ width: size, height: size }} />,
+            value: "densetsu-exe",
+            testId: "key-icon-densetsu",
         },
         {
             name: "Beri",
