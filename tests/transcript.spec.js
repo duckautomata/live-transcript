@@ -829,6 +829,34 @@ test.describe("Transcript links and highlighting", () => {
         );
         await expect(menu).not.toBeVisible();
     });
+
+    test("line menu links still act on the line while the menu closes", async ({ page, context }) => {
+        await loadInDevmode(page, mockconst.keyName);
+        await waitForFullSync(page);
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toBeVisible();
+        const menu = page.getByTestId("line-menu");
+
+        // Closing the menu must not cancel the click that triggered it.
+        await page.getByTestId(`line-button-${mockconst.emptyLineId}`).click();
+        const downloadPromise = page.waitForEvent("download");
+        await page.getByTestId("line-menu-download").click();
+        expect((await downloadPromise).url()).toContain(`_${mockconst.emptyLineId}`);
+        await expect(menu).not.toBeVisible();
+
+        await page.getByTestId(`line-button-${mockconst.emptyLineId}`).click();
+        const popupPromise = context.waitForEvent("page");
+        await page.getByTestId("line-menu-open-stream").click();
+        const popup = await popupPromise;
+        expect(popup.url()).toMatch(/youtube\.com|twitch\.tv/);
+        await popup.close();
+        await expect(menu).not.toBeVisible();
+
+        // Reopening on another line must target that line, not the one the menu last remembered.
+        const otherLineId = mockconst.emptyLineId - 1;
+        await page.getByTestId(`line-button-${otherLineId}`).click();
+        await expect(menu).toBeVisible();
+        await expect(page.getByTestId("line-menu-download")).toHaveAttribute("href", new RegExp(`_${otherLineId}\\b`));
+    });
 });
 
 test.describe("Past stream in the URL", () => {

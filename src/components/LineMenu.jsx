@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { unixToRelative } from "../logic/dateTime";
@@ -43,13 +44,24 @@ export default function LineMenu({ wsKey, jumpToLine, linkBase }) {
 
     const lineAnchorEl = isRequested ? document.getElementById(`line-button-${lineMenuId}`) : null;
     const open = Boolean(lineAnchorEl);
-    const selectedLine = isRequested ? activeTranscript.find((line) => line.id === lineMenuId) : undefined;
+
+    /**
+     * The entries stay mounted through the menu's closing transition, so they must keep rendering the line
+     * they were opened for. Re-rendering them for "no line" would strip the `href` off the link entries
+     * while the browser is still acting on the click that closed the menu, cancelling the navigation.
+     */
+    const lastOpenRef = useRef({ id: -1, line: undefined });
+    if (isRequested) {
+        lastOpenRef.current = { id: lineMenuId, line: activeTranscript.find((line) => line.id === lineMenuId) };
+    }
+    const menuId = lastOpenRef.current.id;
+    const selectedLine = lastOpenRef.current.line;
     const ts = selectedLine?.timestamp;
-    const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, selectedLine?.fileId, lineMenuId);
+    const downloadUrl = downloadAudioUrl(mediaBaseUrl, wsKey, selectedId, selectedLine?.fileId, menuId);
     // Only a real offset into the stream makes a usable `?t=`; otherwise the link opens the stream itself.
     const relativeTime = ts && activeStartTime && ts > activeStartTime ? unixToRelative(ts, activeStartTime) : "";
     const openUrl = streamUrl(selectedId, relativeTime);
-    const linePath = `${linkBase ?? ""}${lineHash(lineMenuId)}`;
+    const linePath = `${linkBase ?? ""}${lineHash(menuId)}`;
 
     /**
      * The copied link always names the stream, so it still opens on the right line once this stream has
@@ -62,28 +74,28 @@ export default function LineMenu({ wsKey, jumpToLine, linkBase }) {
             params.set(STREAM_PARAM, selectedId);
         }
         const query = params.toString();
-        return `${pathname}${query ? `?${query}` : ""}${lineHash(lineMenuId)}`;
+        return `${pathname}${query ? `?${query}` : ""}${lineHash(menuId)}`;
     };
 
     const handleClose = () => {
         setLineMenuId(-1);
     };
     const handleJumpToLine = () => {
-        jumpToLine(lineMenuId);
+        jumpToLine(menuId);
         setLineMenuId(-1);
     };
     const handleStartClip = () => {
-        setClipStartIndex(lineMenuId);
+        setClipStartIndex(menuId);
         handleClose();
     };
     const handleClipLine = () => {
-        setClipStartIndex(lineMenuId);
-        setClipEndIndex(lineMenuId);
+        setClipStartIndex(menuId);
+        setClipEndIndex(menuId);
         setClipPopupOpen(true);
         handleClose();
     };
     const handleDownloadClip = () => {
-        setClipEndIndex(lineMenuId);
+        setClipEndIndex(menuId);
         setClipPopupOpen(true);
         handleClose();
     };
@@ -93,7 +105,7 @@ export default function LineMenu({ wsKey, jumpToLine, linkBase }) {
         handleClose();
     };
     const handlePlay = () => {
-        setAudioId(lineMenuId);
+        setAudioId(menuId);
         handleClose();
     };
 
@@ -125,15 +137,15 @@ export default function LineMenu({ wsKey, jumpToLine, linkBase }) {
         return !missingMediaLine;
     };
 
-    const currentLineMediaAvailable = isRequested ? isMediaAvailable(lineMenuId) : true;
+    const currentLineMediaAvailable = isRequested ? isMediaAvailable(menuId) : true;
 
     const shouldRenderStartClip = hasAudio && clipStartIndex < 0 && currentLineMediaAvailable;
 
     const shouldRenderDownloadClip =
         hasAudio &&
         !shouldRenderStartClip &&
-        Math.abs(clipStartIndex - lineMenuId) < maxClipSize &&
-        isRangeMediaAvailable(clipStartIndex, lineMenuId);
+        Math.abs(clipStartIndex - menuId) < maxClipSize &&
+        isRangeMediaAvailable(clipStartIndex, menuId);
 
     const shouldRenderResetClip = hasAudio && !shouldRenderStartClip;
 
@@ -146,7 +158,7 @@ export default function LineMenu({ wsKey, jumpToLine, linkBase }) {
         horizontal: "left",
     };
 
-    if (clipStartIndex >= 0 && lineMenuId < clipStartIndex) {
+    if (clipStartIndex >= 0 && menuId < clipStartIndex) {
         anchorOrigin = {
             vertical: "top",
             horizontal: "left",
@@ -167,7 +179,7 @@ export default function LineMenu({ wsKey, jumpToLine, linkBase }) {
             anchorOrigin={anchorOrigin}
             transformOrigin={transformOrigin}
         >
-            <MenuItem disabled>id: {lineMenuId > -1 ? lineMenuId : ""}</MenuItem>
+            <MenuItem disabled>id: {menuId > -1 ? menuId : ""}</MenuItem>
             {shouldRenderStartClip && <MenuItem onClick={handleClipLine}>Clip this line</MenuItem>}
             {shouldRenderStartClip && <MenuItem onClick={handleStartClip}>Start Clip</MenuItem>}
             {shouldRenderDownloadClip && <MenuItem onClick={handleDownloadClip}>Process Clip</MenuItem>}
