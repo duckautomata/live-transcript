@@ -43,6 +43,13 @@ export const darkTheme = createTheme({
         error: {
             main: red.A400,
         },
+        // Notification triggers, each its own hue so a row of pills reads at a glance.
+        trigger: {
+            live: "#F06292",
+            scheduled: "#64B5F6",
+            upload: "#BA68C8",
+            short: "#FFB74D",
+        },
     },
 });
 
@@ -85,6 +92,12 @@ export const lightTheme = createTheme({
         },
         error: {
             main: red.A400,
+        },
+        trigger: {
+            live: "#C2185B",
+            scheduled: "#1565C0",
+            upload: "#6A1B9A",
+            short: "#B45309",
         },
     },
 });

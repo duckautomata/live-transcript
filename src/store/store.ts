@@ -15,6 +15,7 @@ import { createTagFormatterSlice } from "./tagFormatterSlice";
 import { createPastStreamSlice } from "./pastStreamSlice";
 import { createTrackerSlice } from "./trackerSlice";
 import { createToastSlice } from "./toastSlice";
+import { createAccountSlice } from "./accountSlice";
 
 export const useAppStore = create<AppStore>()(
     persist(
@@ -32,6 +33,7 @@ export const useAppStore = create<AppStore>()(
             ...createPastStreamSlice(set, get, api),
             ...createTrackerSlice(set, get, api),
             ...createToastSlice(set, get, api),
+            ...createAccountSlice(set, get, api),
         }),
         {
             name: "live-transcript-settings", // The key in localStorage
@@ -49,6 +51,9 @@ export const useAppStore = create<AppStore>()(
                 membershipInfo: state.membershipInfo,
                 useVirtualList: state.useVirtualList,
                 latenessHistory: state.latenessHistory,
+                // The account session: the token is what keeps a visit signed in.
+                accountToken: state.accountToken,
+                accountUser: state.accountUser,
             }),
         },
     ),

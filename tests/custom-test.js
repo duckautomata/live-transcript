@@ -22,11 +22,15 @@ const safeErrors = ["the server responded with a status of 404 (Not Found)"];
 export const test = base.extend({
     page: async ({ page }, use) => {
         const errorLogs = [];
+        // A test that deliberately provokes a failing request (an expired session, say) declares the
+        // console error it expects so it does not count against it.
+        const allowed = [];
+        page.allowConsoleError = (substring) => allowed.push(substring);
 
         page.on("console", (msg) => {
             if (msg.type() === "error") {
                 const text = `${msg.text()} ${locationToText(msg.location())} [${argsToText(msg.args())}]`;
-                if (safeErrors.some((error) => text.includes(error))) {
+                if ([...safeErrors, ...allowed].some((error) => text.includes(error))) {
                     return;
                 }
                 errorLogs.push(text);

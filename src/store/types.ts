@@ -200,6 +200,24 @@ export interface ToastSlice {
     hideToast: () => void;
 }
 
+export interface AccountUser {
+    username: string;
+    createdAt: number;
+}
+
+export interface AccountSlice {
+    /** Session bearer token; empty when signed out. Persisted. */
+    accountToken: string;
+    accountUser: AccountUser | null;
+    /** Why the last sign-out happened ("expired"), shown once; null otherwise. */
+    accountNotice: string | null;
+    accountDialogOpen: boolean;
+    setAccountSession: (token: string, user: AccountUser) => void;
+    signOut: (reason?: string) => void;
+    setAccountDialogOpen: (isOpen: boolean) => void;
+    clearAccountNotice: () => void;
+}
+
 export interface TagFormatterSlice {
     formattedRows: any[];
     controls: Record<string, any>;
@@ -222,7 +240,8 @@ export type AppStore = AudioSlice &
     TagFormatterSlice &
     PastStreamSlice &
     TrackerSlice &
-    ToastSlice;
+    ToastSlice &
+    AccountSlice;
 
 // Helper type for creating slices
 export type AppSliceCreator<T> = StateCreator<AppStore, [], [], T>;

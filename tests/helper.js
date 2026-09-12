@@ -28,8 +28,10 @@ const devSettings = {
  * Load the page in devmode
  * @param {Page} page
  * @param {string} pathUrl
+ * @param {(page: Page) => Promise<void>} [setup] - registers extra route mocks. It runs after the favicon
+ *   warm-up and before the real navigation: a route registered before that first navigation aborts it.
  */
-export async function loadInDevmode(page, pathUrl) {
+export async function loadInDevmode(page, pathUrl, setup) {
     // We need to first load a page to set the devmode. We use the favicon since this is the lightest page possible.
     // Then we go to the actual page after devmode is set.
     await page.goto("favicon.ico");
@@ -38,6 +40,7 @@ export async function loadInDevmode(page, pathUrl) {
     }, JSON.stringify(devSettings));
 
     if (process.env.MOCK_API != "true") {
+        if (setup) await setup(page);
         await page.goto(pathUrl);
         return;
     }
@@ -151,6 +154,7 @@ export async function loadInDevmode(page, pathUrl) {
         });
     });
 
+    if (setup) await setup(page);
     await page.goto(pathUrl);
 }
 

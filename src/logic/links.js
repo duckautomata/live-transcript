@@ -20,6 +20,23 @@ export const streamerPath = (wsKey) => `/${wsKey}/`;
 export const pagePath = (wsKey, page = "") => (page ? `/${wsKey}/${page}/` : `/${wsKey}/`);
 
 /**
+ * In-app path of the Notifications page, preselecting a streamer when one is given.
+ * @param {string} [wsKey]
+ * @returns {string}
+ */
+export const notificationsPath = (wsKey) =>
+    wsKey ? `/notifications/?channel=${encodeURIComponent(wsKey)}` : "/notifications/";
+
+/**
+ * In-app path of the notification event editor: a new event, or an existing one by id.
+ * @param {string} wsKey
+ * @param {number | "new"} [id]
+ * @returns {string}
+ */
+export const eventEditorPath = (wsKey, id = "new") =>
+    `/notifications/events/${encodeURIComponent(id)}/?channel=${encodeURIComponent(wsKey)}`;
+
+/**
  * The page segment of an in-app pathname: "/doki/graph/" -> "graph", "/doki/" and "/doki" -> "".
  * @param {string} pathname - router pathname (without the basename)
  * @returns {string}

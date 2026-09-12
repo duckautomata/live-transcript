@@ -10,13 +10,22 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import AssessmentIcon from "@mui/icons-material/Assessment";
-import { Construction, GitHub, Help, Home, DeveloperMode, Info, QueryBuilder } from "@mui/icons-material";
+import {
+    Construction,
+    GitHub,
+    Help,
+    Home,
+    DeveloperMode,
+    Info,
+    Notifications,
+    QueryBuilder,
+} from "@mui/icons-material";
 import { Tooltip, useMediaQuery } from "@mui/material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import AudioFooter from "./AudioFooter";
 import { keyIcons } from "../config";
 import { useAppStore } from "../store/store";
-import { currentPage, pagePath } from "../logic/links";
+import { currentPage, notificationsPath, pagePath } from "../logic/links";
 
 const GITHUB_URL = "https://github.com/duckautomata/live-transcript";
 
@@ -177,6 +186,25 @@ export default function Sidebar({ wsKey, children }) {
                                         <Home />
                                     </ListItemIcon>
                                     {showLabels && <ListItemText primary="Home" />}
+                                </ListItemButton>
+                            </Tooltip>
+                        </ListItem>
+                        {/* Notifications: get your own Discord pinged when a channel goes live. */}
+                        <ListItem disablePadding>
+                            <Tooltip title={tooltipFor("Notifications")} placement="right">
+                                <ListItemButton
+                                    component={RouterLink}
+                                    to={notificationsPath(wsKey)}
+                                    selected={pathname.startsWith("/notifications")}
+                                    aria-current={pathname.startsWith("/notifications") ? "page" : undefined}
+                                    onClick={closeMobileDrawer}
+                                    data-testid="page-button-notifications"
+                                    sx={itemButtonSx}
+                                >
+                                    <ListItemIcon sx={itemIconSx}>
+                                        <Notifications />
+                                    </ListItemIcon>
+                                    {showLabels && <ListItemText primary="Notifications" />}
                                 </ListItemButton>
                             </Tooltip>
                         </ListItem>

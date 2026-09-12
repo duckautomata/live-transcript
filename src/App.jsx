@@ -17,6 +17,7 @@ import StreamWordCount from "./pages/graph/StreamWordCount";
 import CensorPage from "./pages/single/CensorPage";
 import Home from "./pages/single/Home";
 import Tracker from "./pages/single/Tracker";
+import NotificationsPage from "./pages/notifications/NotificationsPage";
 import { useTagIntegration } from "./hooks/useTagIntegration";
 import EnvironmentBadge from "./components/EnvironmentBadge";
 import SettingsPopup from "./components/SettingsPopup";
@@ -47,6 +48,9 @@ function pageTitle(wsKey, pathname) {
         return label ? `${streamerName(wsKey)} ${label}` : streamerName(wsKey);
     }
     if (pathname.startsWith("/censor")) return "Censor";
+    if (pathname.startsWith("/notifications/events/new")) return "New event";
+    if (pathname.startsWith("/notifications/events/")) return "Edit event";
+    if (pathname.startsWith("/notifications")) return "Notifications";
     if (pathname.startsWith("/tagFixer")) return PAGE_LABELS.tagFixer;
     return "";
 }
@@ -103,6 +107,7 @@ function App() {
                         ) : (
                             <Routes>
                                 <Route path="/censor" element={<CensorPage />} />
+                                <Route path="/notifications/*" element={<NotificationsPage />} />
                                 <Route path="*" element={<Home />} />
                             </Routes>
                         )}
