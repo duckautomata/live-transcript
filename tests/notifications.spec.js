@@ -350,10 +350,27 @@ test("creating an account and a notification event", async ({ page }) => {
     await page.getByTestId("editor-webhook-name-0").fill("#announcements");
     await page.getByTestId("editor-webhook-url-0").fill(hook);
     await expect(page.getByTestId("editor-error")).toHaveCount(0);
-    await page.getByTestId("editor-role-ping").click();
-    await page.getByTestId("editor-role-id").fill("111222333444555666");
-    await page.getByTestId("editor-insert-role").click();
+    // The mention helper inserts Discord's syntax for a role, a user and a channel.
+    await page.getByTestId("editor-mention").click();
+    await page.getByTestId("editor-mention-id").fill("111222333444555666");
+    await page.getByTestId("editor-mention-insert").click();
     await expect(page.getByTestId("editor-content")).toHaveValue("<@&111222333444555666> ");
+    await page.getByTestId("editor-mention").click();
+    await page.getByTestId("editor-mention-user").click();
+    await page.getByTestId("editor-mention-id").fill("777888999000111222");
+    await page.getByTestId("editor-mention-insert").click();
+    await page.getByTestId("editor-mention").click();
+    await page.getByTestId("editor-mention-channel").click();
+    await page.getByTestId("editor-mention-id").fill("333444555666777888");
+    await page.getByTestId("editor-mention-insert").click();
+    await expect(page.getByTestId("editor-content")).toHaveValue(
+        "<@&111222333444555666> <@777888999000111222> <#333444555666777888> ",
+    );
+    await showPane(page, "preview");
+    await expect(page.getByTestId("discord-preview")).toContainText("@role 111222333444555666");
+    await expect(page.getByTestId("discord-preview")).toContainText("@user 777888999000111222");
+    await expect(page.getByTestId("discord-preview")).toContainText("#channel 333444555666777888");
+    await showPane(page, "edit");
     await page.getByTestId("editor-save").click();
 
     // Saved: back on the list with the new row; the webhook token appears nowhere on the page.
@@ -364,7 +381,7 @@ test("creating an account and a notification event", async ({ page }) => {
     expect(events).toHaveLength(1);
     expect(events[0].webhooks[0].url).toBe(hook);
     expect(events[0].webhooks[0].rowId).toBeUndefined();
-    expect(events[0].content).toBe("<@&111222333444555666> ");
+    expect(events[0].content).toBe("<@&111222333444555666> <@777888999000111222> <#333444555666777888> ");
 });
 
 test("a draft survives the list refreshing, a reload and a session expiry", async ({ page }) => {

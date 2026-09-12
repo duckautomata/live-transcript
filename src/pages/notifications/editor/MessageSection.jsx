@@ -26,7 +26,7 @@ export default function MessageSection() {
         <Section
             number={3}
             title="What should it say?"
-            hint="The message is the text above the card. Role pings go here."
+            hint="The message is the text above the card. Pings of roles, users and channels go here."
             help={HELP}
             field="content"
         >
@@ -43,7 +43,7 @@ export default function MessageSection() {
                         inputRef={contentRef}
                         placeholder="Optional. e.g. {channel} is live! {url}"
                     />
-                    <InsertBar path="content" inputRef={contentRef} rolePing />
+                    <InsertBar path="content" inputRef={contentRef} mentions />
                     <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 0.75 }}>
                         Chips insert at the cursor. Markdown works: **bold**, [text](url).
                     </Typography>

@@ -14,7 +14,7 @@ const STEPS = [
     {
         Icon: ChatBubbleOutlineIcon,
         title: "Write the message",
-        text: "Your words, role pings and a card. Preview before you save.",
+        text: "Your words, pings and a card. Preview before you save.",
     },
 ];
 

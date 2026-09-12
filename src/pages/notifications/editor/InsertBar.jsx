@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Button, Chip, Popover, TextField, Typography } from "@mui/material";
+import { Box, Button, Chip, Popover, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
 import { insertAtCaret } from "./paths";
 import { useEditor } from "./editorContext";
@@ -11,14 +11,14 @@ import { useEditor } from "./editorContext";
  * @param {object} props
  * @param {string} props.path - the draft field the bar belongs to
  * @param {{current: any}} props.inputRef
- * @param {boolean} [props.rolePing] - offer the "@ Role ping" chip (message only)
+ * @param {boolean} [props.mentions] - offer the "@ Mention" chip (message only: pings live there)
  */
-export default function InsertBar({ path, inputRef, rolePing }) {
+export default function InsertBar({ path, inputRef, mentions }) {
     const { store, vocab } = useEditor();
     const insert = (text) => insertAtCaret(store, path, inputRef, text);
     return (
         <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", alignItems: "center", mt: 1 }}>
-            {rolePing && <RolePingChip onInsert={insert} />}
+            {mentions && <MentionChip onInsert={insert} />}
             {vocab.placeholders.map((p) => (
                 <Chip
                     key={p.name}
@@ -34,26 +34,64 @@ export default function InsertBar({ path, inputRef, rolePing }) {
     );
 }
 
-/** "@ Role ping": asks for the role id and inserts the mention. */
-function RolePingChip({ onInsert }) {
+/** The three things a Discord message can point at, with Discord's syntax for each. */
+const MENTIONS = {
+    role: {
+        label: "Role",
+        field: "Role ID",
+        syntax: (id) => `<@&${id}> `,
+        how: (
+            <>
+                Server Settings → Roles → ⋯ next to the role → <strong>Copy Role ID</strong>. Everyone in the role gets
+                pinged.
+            </>
+        ),
+    },
+    user: {
+        label: "User",
+        field: "User ID",
+        syntax: (id) => `<@${id}> `,
+        how: (
+            <>
+                Right-click the person → <strong>Copy User ID</strong>. Only that person gets pinged.
+            </>
+        ),
+    },
+    channel: {
+        label: "Channel",
+        field: "Channel ID",
+        syntax: (id) => `<#${id}> `,
+        how: (
+            <>
+                Right-click the channel → <strong>Copy Channel ID</strong>. Inserts a link to the channel; it pings
+                nobody.
+            </>
+        ),
+    },
+};
+
+/** "@ Mention": asks which kind and which id, and inserts Discord's syntax for it. */
+function MentionChip({ onInsert }) {
     const [anchor, setAnchor] = useState(null);
-    const [roleId, setRoleId] = useState("");
-    const ok = /^\d{5,30}$/.test(roleId);
+    const [kind, setKind] = useState("role");
+    const [id, setId] = useState("");
+    const ok = /^\d{5,30}$/.test(id);
     const close = () => setAnchor(null);
     const insert = () => {
-        onInsert(`<@&${roleId}> `);
-        setRoleId("");
+        onInsert(MENTIONS[kind].syntax(id));
+        setId("");
         close();
     };
+    const m = MENTIONS[kind];
     return (
         <>
             <Chip
                 size="small"
                 color="primary"
                 icon={<AlternateEmailIcon />}
-                label="Role ping"
+                label="Mention"
                 onClick={(e) => setAnchor(e.currentTarget)}
-                data-testid="editor-role-ping"
+                data-testid="editor-mention"
                 sx={{ fontWeight: 600 }}
             />
             <Popover
@@ -61,13 +99,29 @@ function RolePingChip({ onInsert }) {
                 anchorEl={anchor}
                 onClose={close}
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                slotProps={{ paper: { sx: { p: 2, maxWidth: 360 } } }}
+                slotProps={{ paper: { sx: { p: 2, maxWidth: 380 } } }}
             >
+                <ToggleButtonGroup
+                    exclusive
+                    size="small"
+                    value={kind}
+                    onChange={(_e, v) => {
+                        if (v) setKind(v);
+                    }}
+                    aria-label="What to mention"
+                    sx={{ mb: 1.5 }}
+                >
+                    {Object.entries(MENTIONS).map(([key, entry]) => (
+                        <ToggleButton key={key} value={key} data-testid={`editor-mention-${key}`} sx={{ px: 1.5 }}>
+                            {entry.label}
+                        </ToggleButton>
+                    ))}
+                </ToggleButtonGroup>
                 <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
                     <TextField
-                        label="Role ID"
-                        value={roleId}
-                        onChange={(e) => setRoleId(e.target.value.replace(/\D/g, ""))}
+                        label={m.field}
+                        value={id}
+                        onChange={(e) => setId(e.target.value.replace(/\D/g, ""))}
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && ok) {
                                 e.preventDefault();
@@ -79,25 +133,25 @@ function RolePingChip({ onInsert }) {
                         variant="outlined"
                         size="small"
                         autoFocus
-                        slotProps={{ htmlInput: { inputMode: "numeric", "data-testid": "editor-role-id" } }}
+                        slotProps={{ htmlInput: { inputMode: "numeric", "data-testid": "editor-mention-id" } }}
                     />
                     <Button
                         variant="contained"
                         size="small"
                         disabled={!ok}
                         onClick={insert}
-                        data-testid="editor-insert-role"
+                        data-testid="editor-mention-insert"
                         sx={{ mt: 0.25, flexShrink: 0 }}
                     >
                         Insert
                     </Button>
                 </Box>
                 <Typography variant="caption" component="div" sx={{ color: "text.secondary", mt: 1.5 }}>
-                    Discord → User Settings → Advanced → turn on <strong>Developer Mode</strong>. Then Server Settings →
-                    Roles → ⋯ next to the role → <strong>Copy Role ID</strong>.
+                    {m.how}
                 </Typography>
                 <Typography variant="caption" component="div" sx={{ color: "text.secondary", mt: 0.5 }}>
-                    Everyone in the role gets pinged. Test sends never ping anyone.
+                    Copying ids needs <strong>Developer Mode</strong>: Discord → User Settings → Advanced. Test sends
+                    never ping anyone.
                 </Typography>
             </Popover>
         </>
