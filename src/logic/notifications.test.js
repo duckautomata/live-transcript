@@ -18,6 +18,10 @@ import {
     defaultEventName,
     previewNoteShort,
     eventSummary,
+    linesToken,
+    placeOnOwnLine,
+    previewBlankNotes,
+    previewShortenedNote,
 } from "./notifications";
 
 const limits = {
@@ -250,6 +254,82 @@ describe("editor helpers", () => {
         );
         expect(previewNoteShort({ source: "recent", title: "T" }, true).example).toContain("image is an example");
         expect(previewNoteShort({ source: "recent", title: "" }, false).example).toContain("{title} is blank");
+    });
+    it("words the placeholders that came up blank, by the server's reason", () => {
+        const twitch = previewBlankNotes({ blanks: [{ name: "{description}", why: "platform" }] });
+        expect(twitch).toEqual([
+            "Twitch streams have no description, so {description} is blank in this preview. On YouTube it fills in.",
+        ]);
+        const youtube = previewBlankNotes({
+            blanks: [
+                { name: "{description}", why: "missing" },
+                { name: "{game}", why: "platform" },
+            ],
+        });
+        expect(youtube).toEqual([
+            "No description is on record for that video, so {description} is blank in this preview.",
+            "{game} is Twitch only, so it is blank for this YouTube video.",
+        ]);
+        expect(previewBlankNotes({ blanks: [{ name: "{game}", why: "missing" }] })).toEqual([
+            "No category was recorded for that stream, so {game} is blank in this preview.",
+        ]);
+        // Left out for want of room is not "shortened": the two notes never claim the same thing.
+        expect(previewBlankNotes({ blanks: [{ name: "{description}", why: "room" }] })).toEqual([
+            "Your own text leaves no room for {description} under Discord's limit, so it is left out.",
+        ]);
+    });
+    it("says nothing about blanks it does not know, or for an older server", () => {
+        expect(previewBlankNotes({})).toEqual([]);
+        expect(previewBlankNotes(undefined)).toEqual([]);
+        expect(previewBlankNotes({ blanks: null })).toEqual([]);
+        expect(previewBlankNotes({ blanks: "{description}" })).toEqual([]);
+        const odd = [
+            { name: "{nope}", why: "platform" },
+            { name: "{description}", why: "because" },
+            { name: "constructor", why: "toString" },
+            null,
+            { name: "{game}", why: "missing" },
+            { name: "{game}", why: "missing" },
+        ];
+        // Unknown pairs are skipped, and a pair sent twice is said once.
+        expect(previewBlankNotes({ blanks: odd })).toHaveLength(1);
+    });
+    it("owns up to a shortened description only when the server says so", () => {
+        expect(previewShortenedNote({ shortened: true })).toBe(
+            "The description was too long for Discord, so it was shortened with …; everything else you wrote is kept.",
+        );
+        expect(previewShortenedNote({ shortened: false })).toBeNull();
+        expect(previewShortenedNote({})).toBeNull();
+        expect(previewShortenedNote(undefined)).toBeNull();
+    });
+    it("builds a line-count token from the served name", () => {
+        expect(linesToken("{description}", "first")).toBe("{description:1}");
+        expect(linesToken("{description}", "first", 7)).toBe("{description:1}");
+        expect(linesToken("{description}", "lines", 3)).toBe("{description:3}");
+        expect(linesToken("{description}", "lines", 20)).toBe("{description:20}");
+        expect(linesToken("{description}", "all")).toBe("{description}");
+        expect(linesToken("{description}", "all", 5)).toBe("{description}");
+        // Whatever the server names a line-aware placeholder, the token follows.
+        expect(linesToken("{notes}", "lines", 2)).toBe("{notes:2}");
+    });
+    it("gives a token a line of its own, adding only the newlines that are missing", () => {
+        const t = "{description:1}";
+        // An empty field.
+        expect(placeOnOwnLine("", t, "")).toEqual({ text: t, caret: t.length });
+        // The caret at the end of a line of text.
+        expect(placeOnOwnLine("**{title}**", t, "")).toEqual({
+            text: `**{title}**\n${t}`,
+            caret: `**{title}**\n${t}`.length,
+        });
+        // The caret at the very start.
+        expect(placeOnOwnLine("", t, "[Open]({url})")).toEqual({ text: `${t}\n[Open]({url})`, caret: t.length });
+        // The caret on an already-empty line between two lines: nothing is added.
+        expect(placeOnOwnLine("a\n", t, "\nb")).toEqual({ text: `a\n${t}\nb`, caret: 2 + t.length });
+        // The caret in the middle of a line splits it around the token.
+        expect(placeOnOwnLine("hel", t, "lo")).toEqual({ text: `hel\n${t}\nlo`, caret: 4 + t.length });
+        // The caret always lands right after the token, before the newline that follows it.
+        const placed = placeOnOwnLine("a", t, "b");
+        expect(placed.text.slice(0, placed.caret)).toBe(`a\n${t}`);
     });
     it("summarises an event in one line", () => {
         const ev = {

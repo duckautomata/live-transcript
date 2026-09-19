@@ -198,6 +198,98 @@ export function previewNoteShort(s, mockedImage) {
 }
 
 /**
+ * What the preview says about a placeholder that came up blank, by the
+ * server's reason for it. The server decides what is blank and why; the page
+ * only words it, so a pair it does not know is skipped rather than guessed at.
+ */
+const BLANK_NOTES = [
+    {
+        name: "{description}",
+        why: "platform",
+        note: "Twitch streams have no description, so {description} is blank in this preview. On YouTube it fills in.",
+    },
+    {
+        name: "{description}",
+        why: "missing",
+        note: "No description is on record for that video, so {description} is blank in this preview.",
+    },
+    {
+        name: "{description}",
+        why: "room",
+        note: "Your own text leaves no room for {description} under Discord's limit, so it is left out.",
+    },
+    {
+        name: "{game}",
+        why: "platform",
+        note: "{game} is Twitch only, so it is blank for this YouTube video.",
+    },
+    {
+        name: "{game}",
+        why: "missing",
+        note: "No category was recorded for that stream, so {game} is blank in this preview.",
+    },
+];
+
+/**
+ * One line per placeholder the draft uses that is blank in this preview.
+ * An older server sends no `blanks` at all, which reads as none.
+ * @param {object} sample - the preview's `sample`
+ * @returns {string[]}
+ */
+export function previewBlankNotes(sample) {
+    const blanks = sample && Array.isArray(sample.blanks) ? sample.blanks : [];
+    const notes = [];
+    for (const b of blanks) {
+        const known = b && BLANK_NOTES.find((n) => n.name === b.name && n.why === b.why);
+        if (known && !notes.includes(known.note)) notes.push(known.note);
+    }
+    return notes;
+}
+
+/**
+ * The line that owns up to a shortened description, or null when the server
+ * fitted everything (or is too old to say).
+ * @param {object} sample - the preview's `sample`
+ * @returns {string | null}
+ */
+export function previewShortenedNote(sample) {
+    if (!sample || sample.shortened !== true) return null;
+    return "The description was too long for Discord, so it was shortened with …; everything else you wrote is kept.";
+}
+
+/**
+ * The token a chooser chip writes for a placeholder that takes a line count.
+ * The number is how many lines, and the bare name is all of them.
+ * @param {string} name - the placeholder as served, braces included: "{description}"
+ * @param {"first" | "lines" | "all"} mode
+ * @param {number | string} [n] - how many lines, for "lines"
+ * @returns {string}
+ */
+export function linesToken(name, mode, n) {
+    if (mode === "all") return name;
+    const count = mode === "first" ? 1 : n;
+    return `${name.replace(/\}$/, "")}:${count}}`;
+}
+
+/**
+ * Put a token on a line of its own between the text before and after the
+ * caret. A multi-line value in the middle of a sentence reads badly, and the
+ * server only removes a blank placeholder's line when nothing else is on it.
+ * Newlines are added only where one is missing, so a caret already on an
+ * empty line adds none.
+ * @param {string} before - the field's text up to the caret (or selection start)
+ * @param {string} text - the token
+ * @param {string} after - the field's text from the caret (or selection end) on
+ * @returns {{text: string, caret: number}} the field's new text, and where typing continues: right after the token
+ */
+export function placeOnOwnLine(before, text, after) {
+    const lead = before !== "" && !before.endsWith("\n") ? "\n" : "";
+    const trail = after !== "" && !after.startsWith("\n") ? "\n" : "";
+    const head = before + lead + text;
+    return { text: head + trail + after, caret: head.length };
+}
+
+/**
  * The one-line summary under an event's name in the list: where it posts,
  * how often it may, and what it has done.
  * @param {object} ev

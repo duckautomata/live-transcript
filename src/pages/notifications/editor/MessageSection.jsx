@@ -6,10 +6,14 @@ import InsertBar from "./InsertBar";
 import Section from "./Section";
 import { useEditor } from "./editorContext";
 
-const HELP = (
+/** The section's help. The chooser sentence is only there when the server offers a chooser. */
+const help = (chooser) => (
     <>
         Placeholders like <code>{"{title}"}</code> are filled in from the stream or video when the event fires; click a
-        chip to insert one. Discord markdown works: **bold**, [text](url).
+        chip to insert one.{" "}
+        {chooser &&
+            "The Video description chip asks how much of the description to include: the first line, a few lines, or all of it. "}
+        Discord markdown works: **bold**, [text](url).
         <br />
         <br />
         Only what you write in the message can ping anyone. A stream title containing @everyone never pings.
@@ -27,7 +31,7 @@ export default function MessageSection() {
             number={3}
             title="What should it say?"
             hint="The message is the text above the card. Pings of roles, users and channels go here."
-            help={HELP}
+            help={help(vocab.placeholders.some((p) => p.lines))}
             field="content"
         >
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>

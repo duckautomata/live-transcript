@@ -4,7 +4,13 @@ import DiscordPreview from "../DiscordPreview";
 import { StatusDot } from "../chips";
 import { usePreview } from "../usePreview";
 import { useActions, useDraft, useDraftShallow, useEditor } from "./editorContext";
-import { TRIGGER_SHORT, previewHasExampleImage, previewNoteShort } from "../../../logic/notifications";
+import {
+    TRIGGER_SHORT,
+    previewBlankNotes,
+    previewHasExampleImage,
+    previewNoteShort,
+    previewShortenedNote,
+} from "../../../logic/notifications";
 
 /**
  * The server's rendering of the draft, beside the form. It is the help
@@ -24,9 +30,23 @@ export default function PreviewPane({ onTest, onSignIn }) {
     const { preview, error, pending, expired, retry } = usePreview(store, channel);
     const sample = (preview && preview.sample) || {};
     const note = preview ? previewNoteShort(sample, previewHasExampleImage(preview)) : null;
+    const blankNotes = previewBlankNotes(sample);
+    const shortenedNote = previewShortenedNote(sample);
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Box
+            sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 1.5,
+                // Beside the form the pane is sticky 72px down the window, so it
+                // may be no taller than what is left under that (less the page's
+                // 24px bottom margin): a whole video description can make the
+                // card taller than the window, and a sticky pane cannot be
+                // scrolled to its end. The card's box below gives up the height.
+                maxHeight: { md: "calc(100vh - 96px)" },
+            }}
+        >
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
                 <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 600 }}>
                     Preview
@@ -50,7 +70,16 @@ export default function PreviewPane({ onTest, onSignIn }) {
                     </FormControl>
                 )}
             </Box>
-            <DiscordPreview preview={preview} pending={pending} />
+            {/* The pane's only scroll region, and only beside the form: it is the
+                one part that shrinks, so the notes and the test button under it
+                stay in view however many of them there are. On a phone the page
+                itself scrolls. Nothing inside the card is cut. */}
+            <Box
+                sx={{ overflowY: { md: "auto" }, minHeight: { md: 120 }, borderRadius: 2 }}
+                data-testid="editor-preview-scroll"
+            >
+                <DiscordPreview preview={preview} pending={pending} />
+            </Box>
             <Box data-testid="editor-preview-note">
                 {expired ? (
                     <Typography
@@ -90,6 +119,34 @@ export default function PreviewPane({ onTest, onSignIn }) {
                             >
                                 <StatusDot color="#9146ff" label="Example" size={8} />
                                 {note.example}
+                            </Typography>
+                        )}
+                        {blankNotes.map((blank) => (
+                            <Typography
+                                key={blank}
+                                variant="caption"
+                                sx={{
+                                    color: "text.secondary",
+                                    display: "flex",
+                                    gap: 0.75,
+                                    mt: 0.25,
+                                }}
+                                data-testid="editor-preview-blank"
+                            >
+                                {/* These notes run to two lines; the dot stays on the first. */}
+                                <Box component="span" sx={{ display: "flex", alignItems: "center", height: "1.66em" }}>
+                                    <StatusDot color="#9e9e9e" label="Blank" size={8} />
+                                </Box>
+                                {blank}
+                            </Typography>
+                        ))}
+                        {shortenedNote && (
+                            <Typography
+                                variant="caption"
+                                sx={{ color: "text.secondary", display: "block", mt: 0.25 }}
+                                data-testid="editor-preview-shortened"
+                            >
+                                {shortenedNote}
                             </Typography>
                         )}
                     </>

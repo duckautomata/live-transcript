@@ -1,6 +1,6 @@
 import { TextField } from "@mui/material";
 import { useDraft, useEditor } from "./editorContext";
-import { getPath, setPath } from "./paths";
+import { getPath, noteFocus, setPath } from "./paths";
 
 /**
  * A TextField bound to one field of the draft. It subscribes to that field
@@ -23,6 +23,7 @@ export default function DraftField({ path, limit, testId, htmlInput, helperText,
         <TextField
             value={value}
             onChange={(e) => setPath(store, path, e.target.value)}
+            onFocus={noteFocus}
             error={Boolean(problem)}
             helperText={problem || counter || helperText}
             variant="outlined"

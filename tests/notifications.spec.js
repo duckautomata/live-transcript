@@ -64,7 +64,15 @@ const vocabulary = {
     placeholders: [
         { name: "{channel}", description: "The channel's display name." },
         { name: "{title}", description: "The stream or video title." },
+        {
+            name: "{description}",
+            description: "YouTube only: the video's description. {description:1} is just the first line.",
+            label: "Video description",
+            lines: { max: 20, default: 3 },
+        },
+        { name: "{game}", description: "Twitch only: the category being streamed." },
         { name: "{url}", description: "Link to the stream or video." },
+        { name: "{timeShort}", description: "The same moment as just a clock time." },
     ],
     defaults: {
         content: "",
@@ -95,6 +103,9 @@ const vocabulary = {
     transcriptUrl: "https://example.test/live-transcript/test/",
 };
 
+/** The placeholders a server from before {description} serves: plain ones only. */
+const OLD_PLACEHOLDERS = ["{channel}", "{title}", "{url}"];
+
 /** A saved event, as the server returns it, for the editing tests. */
 const existingEvent = () => ({
     id: 7,
@@ -118,7 +129,9 @@ const existingEvent = () => ({
 /**
  * Mock the account and notification endpoints for one test (passed to loadInDevmode as its setup step).
  * `state` is shared with the test: `preview` counts renders, `slowPreview` delays them, `expired` makes
- * the account routes answer 401, `log` is the delivery trail, `tests` the test sends.
+ * the account routes answer 401, `log` is the delivery trail, `tests` the test sends. `oldServer` answers
+ * like a server from before {description}: no line-count placeholder, no `blanks` or `shortened` in a
+ * preview's sample. `tallPreview` renders a 60-line card description, and `shortened` reports it as cut.
  */
 async function mockNotificationsApi(page, { events = [], state = {} } = {}) {
     state.preview = 0;
@@ -198,7 +211,10 @@ async function mockNotificationsApi(page, { events = [], state = {} } = {}) {
             events.push(saved);
             return route.fulfill({ status: 201, json: saved });
         }
-        return route.fulfill({ json: { events, log: state.log, ...vocabulary } });
+        const placeholders = vocabulary.placeholders.filter(
+            (p) => !state.oldServer || OLD_PLACEHOLDERS.includes(p.name),
+        );
+        return route.fulfill({ json: { events, log: state.log, ...vocabulary, placeholders } });
     });
     await page.route(`**/${mockconst.keyName}/notifications/*`, async (route) => {
         const req = route.request();
@@ -209,6 +225,14 @@ async function mockNotificationsApi(page, { events = [], state = {} } = {}) {
             if (state.slowPreview) await new Promise((r) => setTimeout(r, 2000));
             const draft = req.postDataJSON().event;
             state.lastPreviewBody = req.postDataJSON();
+            // The mocked detection is a Twitch stream, which has no description: a draft that
+            // uses the placeholder is told so.
+            const usesDescription = `${draft.content || ""}\n${(draft.embed || {}).description || ""}`.includes(
+                "{description",
+            );
+            const tall = state.tallPreview
+                ? "\n\n" + Array.from({ length: 60 }, (_v, i) => `Line ${i + 1} of a long description`).join("\n")
+                : "";
             return route.fulfill({
                 json: {
                     trigger: "live",
@@ -216,7 +240,7 @@ async function mockNotificationsApi(page, { events = [], state = {} } = {}) {
                     embed: {
                         title: "Test's Stream Started",
                         // An offline Twitch stream renders the example title where {title} goes.
-                        description: `**${state.exampleImage ? "Example stream title" : "A mocked stream"}**\n\n[Open on Twitch](https://twitch.tv/example)`,
+                        description: `**${state.exampleImage ? "Example stream title" : "A mocked stream"}**${tall}\n\n[Open on Twitch](https://twitch.tv/example)`,
                         url: "https://twitch.tv/example",
                         color: 0x2ecc71,
                         image: state.exampleImage
@@ -233,6 +257,12 @@ async function mockNotificationsApi(page, { events = [], state = {} } = {}) {
                         exampleImage: Boolean(state.exampleImage),
                         eventTime: 1_700_000_000,
                         ended: Boolean(state.exampleImage),
+                        ...(state.oldServer
+                            ? {}
+                            : {
+                                  shortened: Boolean(state.shortened),
+                                  blanks: usesDescription ? [{ name: "{description}", why: "platform" }] : [],
+                              }),
                     },
                 },
             });
@@ -521,6 +551,164 @@ test("editing, testing, pausing and deleting an existing event", async ({ page }
     await page.getByTestId("confirm-ok").click();
     await expect(page.getByTestId("event-card-7")).toHaveCount(0);
     expect(events).toHaveLength(0);
+});
+
+/** Sign in and open the editor on a new event. */
+async function openNewEvent(page, state = {}) {
+    await loadInDevmode(page, `notifications/?channel=${mockconst.keyName}`, (p) => mockNotificationsApi(p, { state }));
+    await createAccount(page);
+    await page.getByTestId("events-new").click();
+    await expect(page.getByTestId("editor-content")).toBeVisible();
+}
+
+test("the video description chip inserts the first line on a line of its own", async ({ page }) => {
+    await openNewEvent(page);
+    const content = page.getByTestId("editor-content");
+    const bar = page.getByTestId("editor-insertbar-content");
+
+    // The chooser sits right after Mention, and its placeholder gets no plain chip as well.
+    const chips = await bar.locator(":scope > [data-testid]").evaluateAll((els) => els.map((el) => el.dataset.testid));
+    expect(chips.slice(0, 3)).toEqual(["editor-mention", "editor-description", "editor-insert-channel"]);
+    expect(chips).not.toContain("editor-insert-description");
+    await expect(bar.getByTestId("editor-description")).toContainText("Video description");
+
+    // "First line" is the default, so chip then Insert is the whole job.
+    await content.fill("{channel} is live!");
+    await bar.getByTestId("editor-description").click();
+    await expect(page.getByTestId("editor-description-first")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("editor-description-token")).toContainText("Inserts {description:1}.");
+    await expect(page.getByTestId("editor-description-insert")).toBeFocused();
+    await page.getByTestId("editor-description-insert").click();
+    await expect(content).toHaveValue("{channel} is live!\n{description:1}");
+    // The insert puts the caret back on the next frame; let it land before moving on.
+    await expect(content).toBeFocused();
+
+    // In the middle of a line the token still gets a line to itself.
+    await content.fill("before after");
+    await content.evaluate((el) => el.setSelectionRange(6, 6));
+    await bar.getByTestId("editor-description").click();
+    await page.getByTestId("editor-description-insert").click();
+    await expect(content).toHaveValue("before\n{description:1}\n after");
+});
+
+test("the video description chip takes a line count from 2 to the served maximum", async ({ page }) => {
+    await openNewEvent(page);
+    const bar = page.getByTestId("editor-insertbar-content");
+    const insert = page.getByTestId("editor-description-insert");
+    const count = page.getByTestId("editor-description-count");
+
+    await bar.getByTestId("editor-description").click();
+    await expect(count).toHaveCount(0);
+    await page.getByTestId("editor-description-lines").click();
+    await expect(count).toHaveValue("3");
+    await expect(page.getByTestId("editor-description-token")).toContainText("{description:3}");
+    // One line is "First line", and the chooser stops at the server's maximum.
+    for (const bad of ["1", "21", ""]) {
+        await count.fill(bad);
+        await expect(insert).toBeDisabled();
+    }
+    await count.fill("5 lines");
+    await expect(count).toHaveValue("5");
+    await expect(page.getByTestId("editor-description-token")).toContainText("{description:5}");
+    await insert.click();
+    await expect(page.getByTestId("editor-content")).toHaveValue("{description:5}");
+
+    // The choice is remembered while the editor is open.
+    await bar.getByTestId("editor-description").click();
+    await expect(page.getByTestId("editor-description-lines")).toHaveAttribute("aria-pressed", "true");
+    await expect(count).toHaveValue("5");
+});
+
+test("the video description chip can insert all of it, into the card as well", async ({ page }) => {
+    await openNewEvent(page);
+    await page.getByTestId("editor-insertbar-content").getByTestId("editor-description").click();
+    await page.getByTestId("editor-description-all").click();
+    await expect(page.getByTestId("editor-description-token")).toHaveText("Inserts {description}.");
+    await page.getByTestId("editor-description-insert").click();
+    await expect(page.getByTestId("editor-content")).toHaveValue("{description}");
+
+    // The card description has the same chip, with a choice of its own. Nobody has clicked
+    // into that field yet, so the token goes after the default text, not above the title.
+    await page.getByTestId("editor-insertbar-embed.description").getByTestId("editor-description").click();
+    await expect(page.getByTestId("editor-description-first")).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("editor-description-insert").click();
+    await expect(page.getByTestId("editor-embed-description")).toHaveValue(
+        `${vocabulary.defaults.embed.description}\n{description:1}`,
+    );
+});
+
+test("the preview says when a placeholder the draft uses is blank", async ({ page }) => {
+    await openNewEvent(page);
+    await showPane(page, "preview");
+    await expect(page.getByTestId("editor-preview-note")).toContainText("most recent detection");
+    await expect(page.getByTestId("editor-preview-blank")).toHaveCount(0);
+    await expect(page.getByTestId("editor-preview-shortened")).toHaveCount(0);
+
+    // The mocked detection is a Twitch stream: no description there.
+    await showPane(page, "edit");
+    await page.getByTestId("editor-insertbar-content").getByTestId("editor-description").click();
+    await page.getByTestId("editor-description-insert").click();
+    await showPane(page, "preview");
+    await expect(page.getByTestId("editor-preview-blank")).toHaveCount(1);
+    await expect(page.getByTestId("editor-preview-blank")).toContainText("Twitch streams have no description");
+    await expect(page.getByTestId("editor-preview-blank").getByRole("img", { name: "Blank" })).toBeVisible();
+
+    await showPane(page, "edit");
+    await page.getByTestId("editor-content").fill("");
+    await showPane(page, "preview");
+    await expect(page.getByTestId("editor-preview-blank")).toHaveCount(0);
+});
+
+test("a plain placeholder chip still inserts inline at the cursor", async ({ page }) => {
+    await openNewEvent(page);
+    const content = page.getByTestId("editor-content");
+    await content.fill("Now:  on stream");
+    await content.evaluate((el) => el.setSelectionRange(5, 5));
+    await page.getByTestId("editor-insertbar-content").getByTestId("editor-insert-title").click();
+    await expect(content).toHaveValue("Now: {title} on stream");
+    // Focus is back in the field with the cursor after the chip's text, so the next one follows it.
+    await expect(content).toBeFocused();
+    await page.getByTestId("editor-insertbar-content").getByTestId("editor-insert-timeShort").click();
+    await expect(content).toHaveValue("Now: {title}{timeShort} on stream");
+});
+
+test("an older server gets plain chips and no blank notes", async ({ page }) => {
+    await openNewEvent(page, { oldServer: true });
+    const bar = page.getByTestId("editor-insertbar-content");
+    await expect(bar.getByTestId("editor-insert-title")).toBeVisible();
+    await expect(page.getByTestId("editor-description")).toHaveCount(0);
+    await bar.getByTestId("editor-insert-title").click();
+    await expect(page.getByTestId("editor-content")).toHaveValue("{title}");
+
+    await showPane(page, "preview");
+    await expect(page.getByTestId("editor-preview-note")).toContainText("most recent detection");
+    await expect(page.getByTestId("discord-preview")).toContainText("{title}");
+    await expect(page.getByTestId("editor-preview-blank")).toHaveCount(0);
+    await expect(page.getByTestId("editor-preview-shortened")).toHaveCount(0);
+});
+
+test("a very tall preview scrolls in its own box, keeping the notes and the test button in view", async ({ page }) => {
+    // Beside the form only: on a phone the preview is a tab of its own and the page scrolls.
+    test.skip(page.viewportSize().width < 900, "the preview pane is only sticky beside the form");
+    await openNewEvent(page, { tallPreview: true, shortened: true });
+    await page.getByTestId("editor-content").fill("{description}");
+    await expect(page.getByTestId("discord-preview")).toContainText("Line 60 of a long description");
+    await expect(page.getByTestId("editor-preview-shortened")).toContainText("shortened");
+
+    const box = page.getByTestId("editor-preview-scroll");
+    const overflows = () => box.evaluate((el) => el.scrollHeight > el.clientHeight + 100);
+    expect(await overflows()).toBe(true);
+    await expect(page.getByTestId("editor-preview-blank")).toBeInViewport({ ratio: 1 });
+    await expect(page.getByTestId("editor-preview-shortened")).toBeInViewport({ ratio: 1 });
+    await expect(page.getByTestId("editor-test")).toBeInViewport({ ratio: 1 });
+
+    // Still so once the page has scrolled and the pane is stuck under the top bar.
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect(page.getByTestId("editor-test")).toBeInViewport({ ratio: 1 });
+    await expect(page.getByTestId("editor-preview-blank")).toBeInViewport({ ratio: 1 });
+    // The end of the card is reachable inside the box, and nothing in it was cut.
+    await box.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+    await expect(page.getByTestId("discord-preview").getByText("Open on Twitch")).toBeInViewport({ ratio: 1 });
 });
 
 test("a shared account lists its sessions and can end one", async ({ page }) => {
