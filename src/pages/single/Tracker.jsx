@@ -39,7 +39,6 @@ import {
     formatShortDate,
     formatSignedDuration,
     latenessCategory,
-    mergeLatenessRecords,
     parseCSV,
     parsePTtoUTC,
     summarizeLateness,
@@ -591,8 +590,6 @@ const Tracker = ({ wsKey }) => {
     const isLive = useAppStore((state) => state.isLive); // boolean
     const startTimeFromStore = useAppStore((state) => state.startTime); // Unix timestamp in seconds
     const pastStreams = useAppStore((state) => state.pastStreams);
-    const storedHistory = useAppStore((state) => state.latenessHistory[wsKey]);
-    const addLatenessRecords = useAppStore((state) => state.addLatenessRecords);
     const devMode = useAppStore((state) => state.devMode);
     const scheduleMock = useAppStore((state) => state.scheduleMock);
 
@@ -714,8 +711,8 @@ const Tracker = ({ wsKey }) => {
         return map;
     }, [pastStreams, currentStreamIdFromStore, startTimeFromStore]);
 
-    // Records derivable right now from the schedule + what the server has cached.
-    const liveRecords = useMemo(() => {
+    // Punctuality records: the schedule matched against the streams the server has cached.
+    const latenessRecords = useMemo(() => {
         const records = buildLatenessRecords(processedStreams, actualStartsMs);
 
         // The active stream may have matched a schedule row that has no stream id
@@ -728,7 +725,8 @@ const Tracker = ({ wsKey }) => {
             records.push(...buildLatenessRecords([partialWithId], actualStartsMs));
         }
 
-        return records;
+        // Keep oldest first; the partial match is appended after the sorted rows.
+        return records.sort((a, b) => a.scheduledMs - b.scheduledMs);
     }, [
         processedStreams,
         actualStartsMs,
@@ -737,20 +735,6 @@ const Tracker = ({ wsKey }) => {
         currentStreamIdFromStore,
         startTimeFromStore,
     ]);
-
-    // The server only caches a few past streams, so remember what we have seen.
-    // Mocked schedules are shown but never saved, so playing with Dev Tools
-    // scenarios cannot corrupt the real punctuality history.
-    useEffect(() => {
-        if (!mockActive && liveRecords.length > 0) {
-            addLatenessRecords(wsKey, liveRecords);
-        }
-    }, [wsKey, liveRecords, addLatenessRecords, mockActive]);
-
-    const allRecords = useMemo(
-        () => mergeLatenessRecords(storedHistory ?? [], liveRecords),
-        [storedHistory, liveRecords],
-    );
 
     // Next upcoming stream within 12 hours (only checked when offline)
     const nextStream = useMemo(() => {
@@ -863,7 +847,7 @@ const Tracker = ({ wsKey }) => {
                             <Typography variant="h6" sx={{ fontWeight: 800, mb: 2, letterSpacing: "-0.02em" }}>
                                 Punctuality
                             </Typography>
-                            <PunctualitySection records={allRecords} />
+                            <PunctualitySection records={latenessRecords} />
                         </Box>
                     </Stack>
                 </Fade>

@@ -28,8 +28,9 @@ const devSettings = {
  * Load the page in devmode
  * @param {Page} page
  * @param {string} pathUrl
- * @param {(page: Page) => Promise<void>} [setup] - registers extra route mocks. It runs after the favicon
- *   warm-up and before the real navigation: a route registered before that first navigation aborts it.
+ * @param {(page: Page, mockData?: object) => Promise<void>} [setup] - registers extra route mocks. It runs after
+ *   the favicon warm-up and before the real navigation: a route registered before that first navigation aborts it.
+ *   With MOCK_API it also receives the mock data, which it may mutate before the websocket mock sends it.
  */
 export async function loadInDevmode(page, pathUrl, setup) {
     // We need to first load a page to set the devmode. We use the favicon since this is the lightest page possible.
@@ -154,7 +155,7 @@ export async function loadInDevmode(page, pathUrl, setup) {
         });
     });
 
-    if (setup) await setup(page);
+    if (setup) await setup(page, mockData);
     await page.goto(pathUrl);
 }
 

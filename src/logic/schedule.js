@@ -295,25 +295,6 @@ export function buildLatenessRecords(scheduledStreams, actualStartsMs) {
 }
 
 /**
- * Combine two record sets, keeping one entry per stream id. Records from
- * `incoming` win, since they were just derived from live server data.
- * @param {LatenessRecord[]} existing
- * @param {LatenessRecord[]} incoming
- * @returns {LatenessRecord[]} Oldest scheduled start first.
- */
-export function mergeLatenessRecords(existing, incoming) {
-    const byId = new Map();
-    (existing ?? []).forEach((record) => {
-        if (record?.streamId) byId.set(record.streamId, record);
-    });
-    (incoming ?? []).forEach((record) => {
-        if (record?.streamId) byId.set(record.streamId, record);
-    });
-
-    return [...byId.values()].sort((a, b) => a.scheduledMs - b.scheduledMs);
-}
-
-/**
  * @typedef {object} LatenessSummary
  * @property {number} count
  * @property {number} meanMs

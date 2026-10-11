@@ -69,7 +69,6 @@ export default function DevToolsPopup() {
     const setIsLive = useAppStore((state) => state.setIsLive);
     const scheduleMock = useAppStore((state) => state.scheduleMock);
     const setScheduleMock = useAppStore((state) => state.setScheduleMock);
-    const clearLatenessHistory = useAppStore((state) => state.clearLatenessHistory);
 
     // Simulation State
     const [lineId, setLineId] = useState("");
@@ -349,19 +348,10 @@ export default function DevToolsPopup() {
                                         ))}
                                     </Select>
                                 </FormControl>
-                                <Button
-                                    data-testid="devtools-clear-tracker-history"
-                                    variant="outlined"
-                                    color="error"
-                                    onClick={() => clearLatenessHistory()}
-                                >
-                                    Clear Tracker History
-                                </Button>
                             </Box>
                             <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
                                 Replaces the schedule the Tracker page downloads. Countdowns are anchored to the moment
-                                you pick the scenario, so they tick down from there. Mocked results are shown but never
-                                saved to the punctuality history.
+                                you pick the scenario, so they tick down from there.
                             </Typography>
                             {scenarioNeedsActiveStream(scheduleMock) && startTime <= 0 && (
                                 <Typography variant="caption" sx={{ color: "warning.main", display: "block", mt: 1 }}>

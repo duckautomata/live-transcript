@@ -50,7 +50,6 @@ export const useAppStore = create<AppStore>()(
                 membershipKey: state.membershipKey,
                 membershipInfo: state.membershipInfo,
                 useVirtualList: state.useVirtualList,
-                latenessHistory: state.latenessHistory,
                 // The account session: the token is what keeps a visit signed in.
                 accountToken: state.accountToken,
                 accountUser: state.accountUser,

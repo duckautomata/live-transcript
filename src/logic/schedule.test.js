@@ -6,7 +6,6 @@ import {
     formatPTTime,
     formatSignedDuration,
     latenessCategory,
-    mergeLatenessRecords,
     parseCSV,
     parsePTtoUTC,
     summarizeLateness,
@@ -173,32 +172,6 @@ describe("schedule logic", () => {
         it("should return empty for missing inputs", () => {
             expect(buildLatenessRecords([], new Map())).toEqual([]);
             expect(buildLatenessRecords(null, null)).toEqual([]);
-        });
-    });
-
-    describe("mergeLatenessRecords", () => {
-        const record = (streamId, scheduledMs, actualMs) => ({
-            streamId,
-            streamName: streamId,
-            platform: "YouTube",
-            scheduledMs,
-            actualMs,
-        });
-
-        it("should dedupe by stream id, preferring the incoming record", () => {
-            const merged = mergeLatenessRecords([record("a", 100, 200)], [record("a", 100, 300)]);
-            expect(merged).toHaveLength(1);
-            expect(merged[0].actualMs).toBe(300);
-        });
-
-        it("should keep the union sorted by scheduled time", () => {
-            const merged = mergeLatenessRecords([record("b", 200, 200)], [record("a", 100, 100)]);
-            expect(merged.map((r) => r.streamId)).toEqual(["a", "b"]);
-        });
-
-        it("should tolerate missing inputs", () => {
-            expect(mergeLatenessRecords(null, null)).toEqual([]);
-            expect(mergeLatenessRecords(undefined, [record("a", 1, 1)])).toHaveLength(1);
         });
     });
 

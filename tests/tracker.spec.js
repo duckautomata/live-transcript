@@ -1,6 +1,11 @@
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
 import { test, expect } from "./custom-test";
 import { loadInDevmode } from "./helper";
 import * as mockconst from "./mocks/mockconst";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 test("tracker page loads", async ({ page }) => {
     await loadInDevmode(page, `${mockconst.keyName}/track/`);
@@ -36,49 +41,53 @@ test("tracker lists punctuality history for matched streams", async ({ page }) =
  * 20 synthetic tracked streams. Two of them share a calendar day with the stream
  * before them, so their chart labels repeat -- that duplication used to collapse
  * the band scale and slide every later bar out from under its own hit area.
- * @returns {object[]}
+ * @returns {{ csvRows: string[], pastStreams: object[] }} Schedule rows plus the
+ *   server's past-stream entries that give each one an actual start.
  */
 function seededHistory() {
     const deltas = [-3, 12, 0, 5, -1, 20, 8, 2, -6, 15, 4, 0, 9, -2, 18, 6, 1, 11, -4, 7];
-    const records = [];
+    const csvRows = [];
+    const pastStreams = [];
     let day = 1;
     for (let i = 0; i < deltas.length; i++) {
         const secondStreamOfDay = i === 4 || i === 9;
         if (!secondStreamOfDay) day += 1;
+        const streamId = `seed-${String(i).padStart(2, "0")}`;
+        const streamName = `Seeded stream ${i}`;
+        // May 2026 is PDT (UTC-7): 11 AM PT is 18:00 UTC, 5 PM PT is 24:00 UTC.
+        const timePT = secondStreamOfDay ? "11:00:00 AM" : "5:00:00 PM";
         const scheduledMs = Date.UTC(2026, 4, day, secondStreamOfDay ? 18 : 24, 0, 0);
-        records.push({
-            streamId: `seed-${String(i).padStart(2, "0")}`,
-            streamName: `Seeded stream ${i}`,
-            platform: "YouTube",
-            scheduledMs,
-            actualMs: scheduledMs + deltas[i] * 60000,
+        const actualMs = scheduledMs + deltas[i] * 60000;
+
+        csvRows.push(`${streamId},${streamName},YouTube,5/${day}/2026,${timePT}`);
+        pastStreams.push({
+            channelId: "doki",
+            streamId,
+            streamTitle: streamName,
+            startTime: String(actualMs / 1000),
+            isLive: false,
+            mediaType: "video",
+            activatedTime: actualMs * 1000,
         });
     }
-    return records.sort((a, b) => a.scheduledMs - b.scheduledMs);
+    return { csvRows, pastStreams };
 }
 
 /**
- * Seed the persisted lateness history and reload so the tracker renders it.
+ * Load the tracker with the seeded streams added to the mocked server data.
  * @param {import("@playwright/test").Page} page
  */
 async function loadWithSeededHistory(page) {
-    // Establishes devmode and the network mocks.
-    await loadInDevmode(page, `${mockconst.keyName}/track/`);
-    await page.getByTestId("tracker-history-table").waitFor();
+    const { csvRows, pastStreams } = seededHistory();
+    const baseCsv = await fs.readFile(path.resolve(__dirname, "mocks/mockSchedule.csv"), "utf8");
 
-    // Seed before any page script runs. The store persists itself on every write,
-    // so seeding while the tracker is mounted lets its own write clobber ours.
-    await page.addInitScript(
-        ({ key, records }) => {
-            const raw = window.localStorage.getItem("live-transcript-settings");
-            const stored = raw ? JSON.parse(raw) : { state: {}, version: 0 };
-            stored.state.latenessHistory = { [key]: records };
-            window.localStorage.setItem("live-transcript-settings", JSON.stringify(stored));
-        },
-        { key: mockconst.keyName, records: seededHistory() },
-    );
-
-    await page.reload();
+    await loadInDevmode(page, `${mockconst.keyName}/track/`, async (page, mockData) => {
+        // Registered after the helper's schedule mock, so this one wins.
+        await page.route("**/*.csv", async (route) => {
+            await route.fulfill({ body: `${baseCsv.trimEnd()}\n${csvRows.join("\n")}\n`, contentType: "text/csv" });
+        });
+        mockData.pastStreams.data.streams.push(...pastStreams);
+    });
     await page.getByTestId("tracker-history-table").waitFor();
 }
 
@@ -180,18 +189,13 @@ test("schedule scenario is not persisted and resets on refresh", async ({ page }
     await expect(page.getByTestId("tracker-countdown-card")).toBeHidden();
 });
 
-test("mocked schedules are never saved to the punctuality history", async ({ page }) => {
+test("punctuality history is not persisted", async ({ page }) => {
     await loadInDevmode(page, `${mockconst.keyName}/track/`);
-    await page.getByTestId("tracker-page").waitFor();
-    // Let the real (mocked-server) records persist first.
     await expect(page.getByTestId("tracker-history-table").locator("tbody tr")).toHaveCount(3);
 
-    const readHistory = () =>
-        page.evaluate(() => JSON.parse(window.localStorage.getItem("live-transcript-settings")).state.latenessHistory);
-    const before = await readHistory();
-
-    await pickScheduleScenario(page, "Lateness - current stream started 8m late");
-    await expect(page.getByTestId("tracker-lateness-card")).toContainText("Started Late by");
-
-    expect(await readHistory()).toEqual(before);
+    // The history is rebuilt from server data on every load, never saved.
+    const persisted = await page.evaluate(
+        () => JSON.parse(window.localStorage.getItem("live-transcript-settings")).state,
+    );
+    expect(persisted).not.toHaveProperty("latenessHistory");
 });
