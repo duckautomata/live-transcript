@@ -86,7 +86,7 @@ describe("renderDiscordMarkdown", () => {
         expect(renderDiscordMarkdown("See https://a.test/x, or https://b.test/y.")).toBe(
             `See ${link("https://a.test/x")}, or ${link("https://b.test/y")}.`,
         );
-        expect(renderDiscordMarkdown("Really https://a.test/x?!")).toBe(`Really ${link("https://a.test/x")}?!`);
+        expect(renderDiscordMarkdown("[see https://a.test/x]")).toBe(`[see ${link("https://a.test/x")}]`);
         expect(renderDiscordMarkdown("(https://a.test/x)")).toBe(`(${link("https://a.test/x")})`);
         expect(renderDiscordMarkdown("(see https://a.test/x).")).toBe(`(see ${link("https://a.test/x")}).`);
         expect(renderDiscordMarkdown("https://en.wikipedia.org/wiki/Foo_(bar)")).toBe(
@@ -95,6 +95,17 @@ describe("renderDiscordMarkdown", () => {
         expect(renderDiscordMarkdown('"https://a.test/x"')).toBe(`&quot;${link("https://a.test/x")}&quot;`);
         // A scheme with nothing after it is not an address.
         expect(renderDiscordMarkdown("https://.")).toBe("https://.");
+    });
+
+    it("keeps a ! or ? at the end of a link, as Discord does", () => {
+        expect(renderDiscordMarkdown("Live at https://a.test/x! Come")).toBe(
+            `Live at ${link("https://a.test/x!")} Come`,
+        );
+        expect(renderDiscordMarkdown("Really https://a.test/x?!.")).toBe(`Really ${link("https://a.test/x?!")}.`);
+        // The form the server sends a {url} in when the template follows it with one.
+        expect(renderDiscordMarkdown("Live at <https://a.test/x>! Come")).toBe(
+            `Live at ${link("https://a.test/x")}! Come`,
+        );
     });
 
     it("never rewrites the inside of an address", () => {

@@ -161,9 +161,11 @@ function trailingEmphasis(s) {
 
 /**
  * Split what a bare address matched into the address and the text that only
- * follows it. Sentence punctuation, a quote and a ")" that closes a bracket
- * opened before the address are not part of it ("(see https://a.test/x)."),
- * while "https://en.wikipedia.org/wiki/Foo_(bar)" keeps its own. Emphasis
+ * follows it. Discord gives back only . , : ; a quote, "]" and ")" from the
+ * end of a link - a "!" or "?" stays part of the address, so the preview
+ * keeps it too. A ")" that closes a bracket opened before the address is not
+ * part of it ("(see https://a.test/x)."), while
+ * "https://en.wikipedia.org/wiki/Foo_(bar)" keeps its own. Emphasis
  * that was opened earlier on the line closes after the address, so
  * **https://a.test** stays a bold link and /__init__ keeps its underscores.
  * The text is escaped, so a quote is an entity and "&amp;" ends in a ";"
@@ -180,7 +182,7 @@ function splitUrlTail(match, before) {
         const emphasis = trailingEmphasis(url);
         if (quote) end -= quote[0].length;
         else if (url.endsWith("&amp;")) break;
-        else if (/[.,;:!?]$/.test(url)) end -= 1;
+        else if (/[.,;:\]]$/.test(url)) end -= 1;
         else if (url.endsWith(")") && occurrences(url, ")") > occurrences(url, "(")) end -= 1;
         else if (emphasis && occurrences(before, emphasis) % 2 === 1) end -= emphasis.length;
         else break;
