@@ -24,7 +24,6 @@ const VIRTUOSO_COMPONENTS = { Footer };
  * @param {function(number)} props.setPendingJumpId
  * @param {Map<number, Record<number, any[]>>} props.tagsMap - Tag rows per line id (per segment index).
  * @param {number} props.startTime
- * @param {string} props.linkBase - Path (+ search) line links are built on.
  */
 export default function TranscriptVirtual({
     displayData,
@@ -37,8 +36,6 @@ export default function TranscriptVirtual({
     setPendingJumpId,
     tagsMap,
     startTime,
-    linkBase,
-    onLineLinkClick,
 }) {
     const isMobile = useMediaQuery("(max-width:768px)");
     const virtuosoRef = useRef(null);
@@ -197,8 +194,6 @@ export default function TranscriptVirtual({
                             lineTags={tagsMap.get(line.id)}
                             startTime={startTime}
                             searchTerm={searchTerm}
-                            linkBase={linkBase}
-                            onLinkClick={onLineLinkClick}
                         />
                     )}
                     followOutput={atLiveEdge ? "auto" : false}

@@ -72,8 +72,6 @@ const TILE_MAX_PX = 200;
  * @param {Map<number, Record<number, any[]>>} props.tagsMap - Tag rows per line id (per segment index).
  * @param {number} props.startTime
  * @param {string} props.searchTerm - Normalized search term ("" when not filtering).
- * @param {string} props.linkBase - Path (+ search) line links are built on.
- * @param {function(MouseEvent, number): void} [props.onLineLinkClick] - Click handler for a line's timestamp link.
  */
 export default function TranscriptFrame({
     mediaBaseUrl,
@@ -83,8 +81,6 @@ export default function TranscriptFrame({
     tagsMap,
     startTime,
     searchTerm,
-    linkBase,
-    onLineLinkClick,
 }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -313,8 +309,6 @@ export default function TranscriptFrame({
                                     lineTags={tagsMap.get(selectedLine.id)}
                                     startTime={startTime}
                                     searchTerm={searchTerm}
-                                    linkBase={linkBase}
-                                    onLinkClick={onLineLinkClick}
                                 />
                             </Paper>
                         </Box>

@@ -13,6 +13,9 @@ export const server = import.meta.env.VITE_API_URL;
 export const wsServer = import.meta.env.VITE_WS_URL;
 export const maxClipSize = 40;
 
+/** Shows the Stream Tracker page in the sidebar. The route stays reachable by URL either way. */
+export const enableTracker = false;
+
 /** Path the app is served under. Must match `base` in vite.config.js. */
 export const basename = "/live-transcript/";
 

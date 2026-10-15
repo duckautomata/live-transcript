@@ -18,8 +18,6 @@ const LINES_PER_PAGE = 300;
  * @param {Map<number, Record<number, any[]>>} props.tagsMap - Tag rows per line id (per segment index).
  * @param {number} props.startTime
  * @param {string} props.searchTerm - Normalized search term ("" when not filtering).
- * @param {string} props.linkBase - Path (+ search) line links are built on.
- * @param {function(MouseEvent, number): void} [props.onLineLinkClick] - Click handler for a line's timestamp link.
  */
 export default function TranscriptPagination({
     displayData,
@@ -28,8 +26,6 @@ export default function TranscriptPagination({
     tagsMap,
     startTime,
     searchTerm,
-    linkBase,
-    onLineLinkClick,
 }) {
     const [page, setPage] = useState(1);
     const [highlightedId, setHighlightedId] = useState(-1);
@@ -161,8 +157,6 @@ export default function TranscriptPagination({
                             lineTags={tagsMap.get(line.id)}
                             startTime={startTime}
                             searchTerm={searchTerm}
-                            linkBase={linkBase}
-                            onLinkClick={onLineLinkClick}
                         />
                     ))}
                     <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

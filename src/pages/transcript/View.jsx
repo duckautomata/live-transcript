@@ -254,7 +254,7 @@ export default function View({ wsKey }) {
 
     const displayData = filteredTranscript;
 
-    /** Base every line link is built on, so `?stream=` survives a click on a timestamp. */
+    /** Base every line link is built on, so `?stream=` survives a copied or opened line link. */
     const linkBase = location.pathname + location.search;
 
     // ---------------------------------------------------------------------------------------------
@@ -281,15 +281,6 @@ export default function View({ wsKey }) {
 
     /** "Jump to line" from the line menu: show the line in the full, unfiltered transcript. */
     const jumpToLine = useCallback((/** @type {number} */ id) => revealLine(id, { clearSearch: true }), [revealLine]);
-
-    /** A click on a line's timestamp link. Modified clicks are left to the browser (new tab / window). */
-    const handleLineLinkClick = useCallback(
-        (event, /** @type {number} */ id) => {
-            if (event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
-            revealLine(id);
-        },
-        [revealLine],
-    );
 
     // Scroll to and highlight the line named in the hash (#L<id>) for navigations that did not come from a
     // click handled above. location.key makes re-navigating to the same hash scroll again. Waits until the
@@ -479,8 +470,6 @@ export default function View({ wsKey }) {
                         tagsMap={tagsMap}
                         startTime={activeStartTime}
                         searchTerm={activeSearchTerm}
-                        linkBase={linkBase}
-                        onLineLinkClick={handleLineLinkClick}
                     />
                 );
             case 1:
@@ -497,8 +486,6 @@ export default function View({ wsKey }) {
                         setPendingJumpId={setPendingJumpId}
                         tagsMap={tagsMap}
                         startTime={activeStartTime}
-                        linkBase={linkBase}
-                        onLineLinkClick={handleLineLinkClick}
                     />
                 );
             case 0:
@@ -512,8 +499,6 @@ export default function View({ wsKey }) {
                         tagsMap={tagsMap}
                         startTime={activeStartTime}
                         searchTerm={activeSearchTerm}
-                        linkBase={linkBase}
-                        onLineLinkClick={handleLineLinkClick}
                     />
                 );
         }

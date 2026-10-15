@@ -23,7 +23,7 @@ import {
 import { Tooltip, useMediaQuery } from "@mui/material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import AudioFooter from "./AudioFooter";
-import { keyIcons } from "../config";
+import { enableTracker, keyIcons } from "../config";
 import { useAppStore } from "../store/store";
 import { currentPage, notificationsPath, pagePath } from "../logic/links";
 
@@ -63,7 +63,9 @@ export default function Sidebar({ wsKey, children }) {
     const pages = [
         { name: "View", icon: <LiveTvIcon />, value: "", testId: "page-button-view" },
         { name: "Graph", icon: <AssessmentIcon />, value: "graph", testId: "page-button-graph" },
-        { name: "Tracker", icon: <QueryBuilder />, value: "track", testId: "page-button-track" },
+        ...(enableTracker
+            ? [{ name: "Tracker", icon: <QueryBuilder />, value: "track", testId: "page-button-track" }]
+            : []),
         { name: "Tag Formatter", icon: <Construction />, value: "tagFixer", testId: "page-button-tagFixer" },
     ];
 

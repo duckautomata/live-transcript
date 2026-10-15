@@ -1,6 +1,5 @@
-import { IconButton, Link, Typography, Tooltip } from "@mui/material";
+import { IconButton, Typography, Tooltip } from "@mui/material";
 import { forwardRef, Fragment, memo, useMemo } from "react";
-import { Link as RouterLink } from "react-router-dom";
 import Segment from "./Segment";
 import { useTheme, keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
@@ -11,7 +10,6 @@ import { useAppStore } from "../../store/store";
 import { selectActiveMediaType } from "../../store/selectors";
 import { useShallow } from "zustand/shallow";
 import { splitSegmentsByTerm } from "../../logic/search";
-import { lineHash } from "../../logic/links";
 
 /** @typedef {import("../../store/types").Segment} Segment */
 /** @typedef {import('react').ForwardedRef<HTMLDivElement>} Ref */
@@ -74,30 +72,14 @@ function OptionalTooltip({ title, describeChild, children }) {
  * @param {boolean} [props.vodAccurate] - Whether the line timestamp matches the VOD precisely.
  * @param {LineTags} [props.lineTags] - Tag rows for this line, keyed by segment index (undefined for most lines).
  * @param {string} [props.searchTerm] - Normalized search term; every occurrence in the text is highlighted.
- * @param {string} [props.linkBase] - Path (+ search) the timestamp link is built on ("/doki/?stream=x").
- * @param {function(MouseEvent, number): void} [props.onLinkClick] - Called with the click event and the line id when the timestamp link is clicked.
  */
 const Line = memo(
     forwardRef(
         /**
-         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean, vodAccurate?: boolean, startTime?: number, lineTags?: LineTags, searchTerm?: string, linkBase?: string, onLinkClick?: function }} props
+         * @param {{ id: number, lineTimestamp: number, segments: Segment[], highlight?: boolean, mediaAvailable?: boolean, vodAccurate?: boolean, startTime?: number, lineTags?: LineTags, searchTerm?: string }} props
          * @param {Ref} ref
          */
-        (
-            {
-                id,
-                lineTimestamp,
-                segments,
-                highlight,
-                lineTags,
-                startTime,
-                searchTerm,
-                linkBase,
-                onLinkClick,
-                ...props
-            },
-            ref,
-        ) => {
+        ({ id, lineTimestamp, segments, highlight, lineTags, startTime, searchTerm, ...props }, ref) => {
             const theme = useTheme();
 
             const storeStartTime = useAppStore((state) => state.startTime);
@@ -234,7 +216,6 @@ const Line = memo(
             const hasSegments = segments?.length > 0;
             const iconSize = density === "comfortable" ? "medium" : "small";
             const iconSx = density === "compact" ? { padding: 0 } : {};
-            const lineTo = `${linkBase ?? ""}${lineHash(id)}`;
             const menuOpen = !clipMode && isSelected;
 
             return (
@@ -303,18 +284,10 @@ const Line = memo(
                         }
                         describeChild
                     >
-                        {/* A real link, so a line can be opened in a new tab or its address copied. `replace` keeps
-                            a series of jumps from cluttering the back button. */}
-                        <Link
-                            component={RouterLink}
-                            to={lineTo}
-                            replace
-                            onClick={onLinkClick ? (event) => onLinkClick(event, id) : undefined}
-                            underline="hover"
-                            color="inherit"
-                            // The tooltip describes an approximated timestamp, so no native title next to it.
-                            title={isTimestampApproximated ? undefined : "Link to this line"}
-                            data-testid={isTimestampApproximated ? `line-timestamp-${id}-approx` : `line-anchor-${id}`}
+                        <span
+                            data-testid={
+                                isTimestampApproximated ? `line-timestamp-${id}-approx` : `line-timestamp-${id}`
+                            }
                         >
                             [
                             <TimestampTheme style={{ opacity: isTimestampApproximated ? 0.75 : 1 }}>
@@ -322,7 +295,7 @@ const Line = memo(
                                 {convertTime(lineTimestamp)}
                             </TimestampTheme>
                             ]
-                        </Link>
+                        </span>
                     </OptionalTooltip>{" "}
                     {hasSegments ? (
                         segments.map((segment, index) => (

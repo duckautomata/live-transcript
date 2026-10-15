@@ -782,19 +782,16 @@ test.describe("Transcript links and highlighting", () => {
         await expect(page.getByTestId("search-no-match")).toContainText("zzzz-no-such-text-zzzz");
     });
 
-    test("timestamps are links that deep link to the line", async ({ page }) => {
+    test("clicking a timestamp does not jump to the line", async ({ page }) => {
         await loadInDevmode(page, mockconst.keyName);
         await waitForFullSync(page);
         await page.getByTestId("transcript-tab-pagination").click();
 
-        const anchor = page.getByTestId(`line-anchor-${mockconst.emptyLineId}`);
-        await expect(anchor).toHaveAttribute(
-            "href",
-            new RegExp(`/live-transcript/${mockconst.keyName}/?#L${mockconst.emptyLineId}$`),
-        );
-        await anchor.click();
-        await expect(page).toHaveURL(new RegExp(`#L${mockconst.emptyLineId}$`));
-        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).toHaveClass(/highlight/);
+        const timestamp = page.getByTestId(`line-timestamp-${mockconst.emptyLineId}`);
+        await expect(timestamp.locator("a")).toHaveCount(0);
+        await timestamp.click();
+        await expect(page).not.toHaveURL(/#L\d+$/);
+        await expect(page.getByTestId(`transcript-line-${mockconst.emptyLineId}`)).not.toHaveClass(/highlight/);
     });
 
     test("opens a deep link on the line", async ({ page }) => {
