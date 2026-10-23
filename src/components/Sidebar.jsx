@@ -23,6 +23,7 @@ import {
 import { Tooltip, useMediaQuery } from "@mui/material";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import AudioFooter from "./AudioFooter";
+import SiteSwitcher from "./SiteSwitcher";
 import { enableTracker, keyIcons } from "../config";
 import { useAppStore } from "../store/store";
 import { currentPage, notificationsPath, pagePath } from "../logic/links";
@@ -52,7 +53,8 @@ export default function Sidebar({ wsKey, children }) {
     const setSettingsOpen = useAppStore((state) => state.setSettingsOpen);
     const setDevToolsOpen = useAppStore((state) => state.setDevToolsOpen);
     const isMobile = useMediaQuery("(max-width:768px)");
-    const drawerWidth = isMobile ? 180 : 200; // Slightly wider on mobile for better touch targets if needed, or keep same.
+    // Wide enough to keep the longest label, the site name in the site switcher, on one line.
+    const drawerWidth = 200;
     const drawerWidthCollapsed = 60;
 
     // On desktop the drawer can be collapsed to icons only; on mobile it is either fully open or hidden.
@@ -172,6 +174,15 @@ export default function Sidebar({ wsKey, children }) {
                                 {showLabels && <ListItemText primary="" />}
                             </ListItemButton>
                         </ListItem>
+                        {/* Site switcher: back to this site's home, the archive, or the page with all sites */}
+                        <SiteSwitcher
+                            showLabels={showLabels}
+                            collapsed={collapsed}
+                            isMobile={isMobile}
+                            buttonSx={itemButtonSx}
+                            iconSx={itemIconSx}
+                            onNavigate={closeMobileDrawer}
+                        />
                         {/* Home */}
                         <ListItem disablePadding>
                             <Tooltip title={tooltipFor("Home")} placement="right">

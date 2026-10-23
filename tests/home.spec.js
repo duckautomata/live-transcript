@@ -76,6 +76,41 @@ test.describe("homepage", () => {
         await expect(page.getByTestId("page-button-graph")).toHaveAttribute("aria-current", "page");
     });
 
+    test("the site switcher lists the sites and leads back home", async ({ page, isMobile }) => {
+        // The censor page needs no backend, so this test does not touch the network.
+        await page.goto("censor");
+        if (isMobile) {
+            await page.getByTestId("sidebar-open-button").click();
+        }
+
+        const switcher = page.getByTestId("site-switcher-button");
+        await expect(switcher).toHaveAttribute("aria-haspopup", "true");
+        await switcher.click();
+        await expect(switcher).toHaveAttribute("aria-expanded", "true");
+
+        const menu = page.getByRole("menu");
+        await expect(menu.getByRole("menuitem")).toHaveText(["Live Transcript", "Archived Transcript", "All my sites"]);
+        await expect(page.getByTestId("site-switcher-archived-transcript")).toHaveAttribute(
+            "href",
+            "/archived-transcript/",
+        );
+        await expect(page.getByTestId("site-switcher-all-sites")).toHaveAttribute(
+            "href",
+            /^https:\/\/\w+\.duck-automata\.com\/$/,
+        );
+
+        // This site is marked, and choosing it goes back to its home page.
+        const current = page.getByTestId("site-switcher-live-transcript");
+        await expect(current).toHaveAttribute("aria-current", "true");
+        await current.click();
+        await expect(page).toHaveURL(/live-transcript\/$/);
+        await expect(page.getByTestId("home-title")).toBeVisible();
+        await expect(menu).toBeHidden();
+        if (isMobile) {
+            await expect(page.getByTestId("sidebar-open-button")).toBeVisible();
+        }
+    });
+
     test("ctrl+click opens a streamer in a new tab", async ({ page, context, browserName, isMobile }) => {
         // Only desktop Chromium reliably opens a new tab on Ctrl/Cmd+click under automation.
         test.skip(browserName !== "chromium" || isMobile, "Needs desktop Chromium");
