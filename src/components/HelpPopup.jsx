@@ -258,9 +258,17 @@ export default function HelpPopup() {
                                 </Typography>
                                 <HelpImage src={images.sidebar} width="50%" />
                                 <Typography variant="body1" gutterBottom>
-                                    Sidebar is broken up into 3 parts.
+                                    Sidebar is broken up into 4 parts.
                                 </Typography>
                                 <ul>
+                                    <li>
+                                        Site switcher
+                                        <blockquote>
+                                            The grid button at the top. Opens a menu to jump to Archived Transcript or
+                                            to the page with all of my sites. Choosing Live Transcript takes you back to
+                                            the home page.
+                                        </blockquote>
+                                    </li>
                                     <li>
                                         Transcripts
                                         <blockquote>
