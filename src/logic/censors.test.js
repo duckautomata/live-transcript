@@ -643,11 +643,11 @@ describe("genericCensor", () => {
         ["gambling", "bet"],
 
         // Section 9
-        ["snuff", "extinguish"],
-        ["snuffies", "Snum's"],
-        ["snuffles", "Snum's"],
-        ["sloppy", "messy"],
-        ["sloppies", "messy"],
+        // ["snuff", "extinguish"],
+        // ["snuffies", "Snum's"],
+        // ["snuffles", "Snum's"],
+        // ["sloppy", "messy"],
+        // ["sloppies", "messy"],
     ];
 
     // P(word)P
@@ -664,7 +664,7 @@ describe("genericCensor", () => {
         ["mom", "female caregiver"],
         ["mother", "female caregiver"],
         ["red", "crimson"],
-        ["smut", "messy"],
+        // ["smut", "messy"],
     ];
 
     // word in any position

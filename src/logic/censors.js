@@ -205,13 +205,13 @@ const replacements = [
     [new RegExp(`${P}red${P}`, "gi"), "$1crimson$2"],
 
     // --- SECTION 9: Names ---
-    [new RegExp(`${P}snuffy`, "gi"), "$1Snum"],
-    [new RegExp(`${P}snuffies`, "gi"), "$1Snum's"],
-    [new RegExp(`${P}snuffles`, "gi"), "$1Snum's"],
-    [new RegExp(`${P}snuff`, "gi"), "$1extinguish"],
-    [new RegExp(`${P}smut${P}`, "gi"), "$1messy$2"],
-    [new RegExp(`${P}sloppy`, "gi"), "$1messy"],
-    [new RegExp(`${P}sloppies`, "gi"), "$1messy"],
+    // [new RegExp(`${P}snuffy`, "gi"), "$1Snum"],
+    // [new RegExp(`${P}snuffies`, "gi"), "$1Snum's"],
+    // [new RegExp(`${P}snuffles`, "gi"), "$1Snum's"],
+    // [new RegExp(`${P}snuff`, "gi"), "$1extinguish"],
+    // [new RegExp(`${P}smut${P}`, "gi"), "$1messy$2"],
+    // [new RegExp(`${P}sloppy`, "gi"), "$1messy"],
+    // [new RegExp(`${P}sloppies`, "gi"), "$1messy"],
 
     // --- CLEANUP ---
     [/\\/g, ""],
