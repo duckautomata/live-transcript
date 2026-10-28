@@ -171,8 +171,8 @@ const replacements = [
 
     // --- SOCIAL MEDIA ---
     [new RegExp(`${P}*#(\\w*[a-zA-Z]+\\w*)`, "gi"), "$1hashtag-$2"],
-    [new RegExp(`${P}(mess)a(ge|ging)`, "gi"), "$1chat"],
-    [new RegExp(`${P}comment`, "gi"), "$1chat"],
+    // [new RegExp(`${P}(mess)a(ge|ging)`, "gi"), "$1chat"],
+    // [new RegExp(`${P}comment`, "gi"), "$1chat"],
     [new RegExp(`${P}(tw)i(tter|tch)`, "gi"), "$1social media"],
     [new RegExp(`${P}tiktok`, "gi"), "$1social media"],
     [new RegExp(`${P}facebook`, "gi"), "$1social media"],

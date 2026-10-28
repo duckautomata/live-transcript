@@ -606,9 +606,9 @@ describe("genericCensor", () => {
         ["telegram", "social media"],
 
         // Social Media
-        ["message", "chat"],
-        ["messaging", "chat"],
-        ["comment", "chat"],
+        // ["message", "chat"],
+        // ["messaging", "chat"],
+        // ["comment", "chat"],
         ["twitter", "social media"],
         ["twitch", "social media"],
         ["tiktok", "social media"],
